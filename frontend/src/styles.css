@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* Estilos para el enlace activo en el menú (replica el diseño original de Flowbite) */
+.active {
+  @apply text-white! bg-primary-700! lg:bg-transparent! lg:text-primary-700! dark:text-white!;
+}
