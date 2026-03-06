@@ -1,1 +1,90 @@
-<p>login works!</p>
+<div
+  class="min-h-screen bg-slate-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 font-sans"
+>
+  <div
+    class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+  >
+    <div class="bg-blue-600 px-8 py-6 flex flex-col items-center justify-center text-center">
+      <div class="bg-white/20 p-4 rounded-full flex items-center justify-center mb-3">
+        <mat-icon class="text-white text-3xl" style="height: 30px; width: 30px">lock</mat-icon>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-white m-0 tracking-tight">Bienvenido a CastilFac</h1>
+        <p class="text-blue-100 text-sm mt-1">Inicia sesion para gestionar tu taller</p>
+      </div>
+    </div>
+
+    <div class="p-8">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Email de acceso</mat-label>
+            <span matTextPrefix
+              ><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span
+            >
+            <input
+              matInput
+              formControlName="emailUsuario"
+              placeholder="usuario@empresa.com"
+              autocomplete="email"
+            />
+            @if (emailUsuario.errors?.['required'] && emailUsuario.touched) {
+              <mat-error>El email es requerido</mat-error>
+            }
+            @if (emailUsuario.errors?.['email']) {
+              <mat-error>Email no valido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Contraseña</mat-label>
+            <span matTextPrefix><mat-icon class="text-slate-400 mr-2">key</mat-icon></span>
+            <input
+              type="password"
+              matInput
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            @if (password.errors?.['required'] && password.touched) {
+              <mat-error>La contraseña es requerida</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="flex justify-end mt-1">
+            <a
+              href="#"
+              class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
+            >
+              ¿Has olvidado tu contraseña?
+            </a>
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="userForm.invalid"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-colors text-base"
+          >
+            Iniciar Sesion
+          </button>
+        </div>
+
+        <div class="text-center mt-6 border-t border-slate-100 pt-6">
+          <p class="text-sm text-slate-600">
+            ¿Tu taller aun no tiene cuenta?
+            <a
+              routerLink="/registro"
+              class="font-bold text-blue-600 hover:text-blue-500 transition-colors"
+            >
+              Registrate aqui
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

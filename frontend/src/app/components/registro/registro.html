@@ -1,186 +1,195 @@
 <div class="min-h-screen bg-slate-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 font-sans">
-  
-    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-      
-      <div class="bg-blue-600 px-8 py-6 flex items-center gap-4">
-        <div class="bg-white/20 p-3 rounded-full flex items-center justify-center">
-          <mat-icon class="text-white">person_add</mat-icon>
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold text-white m-0">Alta en el Sistema</h1>
-          <p class="text-blue-100 text-sm mt-1">Completa los datos para dar de alta una empresa y su administrador</p>
-        </div>
+  <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+    <div class="bg-blue-600 px-8 py-6 flex items-center gap-4">
+      <div class="bg-white/20 p-3 rounded-full flex items-center justify-center">
+        <mat-icon class="text-white">person_add</mat-icon>
       </div>
-  
-      <div class="p-8">
-        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-8">
-      
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            
-            <div class="space-y-4">
-              <h2 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
-                <mat-icon class="text-blue-500 text-sm">business</mat-icon> Datos de la Empresa
-              </h2>
-              
-              <div class="grid grid-cols-1 gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-white m-0">Alta en el Sistema</h1>
+        <p class="text-blue-100 text-sm mt-1">
+          Completa los datos para dar de alta una empresa y su administrador
+        </p>
+      </div>
+    </div>
+
+    <div class="p-8">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div class="space-y-4">
+            <h2 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <mat-icon class="text-blue-500 text-sm">business</mat-icon> Datos de la Empresa
+            </h2>
+
+            <div class="grid grid-cols-1 gap-4">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Nombre comercial</mat-label>
+                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">store</mat-icon></span>
+                <input matInput formControlName="nombre_comercial" placeholder="Nombre comercial" />
+                @if (nombre_comercial.errors?.['required'] && nombre_comercial.touched) {
+                <mat-error>El nombre comercial es requerido</mat-error>
+                }
+                @if (nombre_comercial.errors?.['maxlength']) {
+                <mat-error>Maximo 150 caracteres</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="grid grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Nombre comercial</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">store</mat-icon></span>
-                  <input matInput formControlName="nombre_comercial" placeholder="Nombre comercial" />
-                  @if (nombre_comercial.errors?.['required'] && nombre_comercial.touched) {
-                    <mat-error>El nombre comercial es requerido</mat-error>
+                  <mat-label>Razon social</mat-label>
+                  <input matInput formControlName="razon_social" placeholder="Razon social" />
+                  @if (razon_social.errors?.['required'] && razon_social.touched) {
+                  <mat-error>La razon social es requerida</mat-error>
                   }
-                  @if (nombre_comercial.errors?.['maxlength']) {
-                    <mat-error>Maximo 150 caracteres</mat-error>
-                  }
-                </mat-form-field>
-            
-                <div class="grid grid-cols-2 gap-4">
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Razon social</mat-label>
-                    <input matInput formControlName="razon_social" placeholder="Razon social" />
-                    @if (razon_social.errors?.['required'] && razon_social.touched) {
-                      <mat-error>La razon social es requerida</mat-error>
-                    }
-                    @if (razon_social.errors?.['maxlength']) {
-                      <mat-error>Maximo 100 caracteres</mat-error>
-                    }
-                  </mat-form-field>
-              
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>NIF</mat-label>
-                    <input matInput formControlName="nif" placeholder="NIF" />
-                    @if (nif.errors?.['required'] && nif.touched) {
-                      <mat-error>El NIF es requerido</mat-error>
-                    }
-                  </mat-form-field>
-                </div>
-            
-                <div class="grid grid-cols-2 gap-4">
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Email empresa</mat-label>
-                    <span matTextPrefix><mat-icon class="text-slate-400 mr-2">email</mat-icon></span>
-                    <input matInput formControlName="emailEmpresa" placeholder="Email empresa" />
-                    @if (emailEmpresa.errors?.['required'] && emailEmpresa.touched) {
-                      <mat-error>Requerido</mat-error>
-                    }
-                    @if (emailEmpresa.errors?.['email']) {
-                      <mat-error>Email no valido</mat-error>
-                    }
-                  </mat-form-field>
-              
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Telefono</mat-label>
-                    <span matTextPrefix><mat-icon class="text-slate-400 mr-2">phone</mat-icon></span>
-                    <input matInput formControlName="telefono" placeholder="Telefono" />
-                    @if (telefono.errors?.['required'] && telefono.touched) {
-                      <mat-error>Requerido</mat-error>
-                    }
-                    @if (telefono.errors?.['maxlength']) {
-                      <mat-error>Max. 150 caracteres</mat-error>
-                    }
-                  </mat-form-field>
-                </div>
-            
-                <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Direccion completa</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">location_on</mat-icon></span>
-                  <input matInput formControlName="direccion" placeholder="Calle, numero, piso..." />
-                  @if (direccion.errors?.['required'] && direccion.touched) {
-                    <mat-error>La direccion es requerida</mat-error>
-                  }
-                  @if (direccion.errors?.['maxlength']) {
-                    <mat-error>Maximo 150 caracteres</mat-error>
-                  }
-                </mat-form-field>
-            
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>C.P.</mat-label>
-                    <input matInput formControlName="codigo_postal" placeholder="C.P." />
-                    @if (codigo_postal.errors?.['required'] && codigo_postal.touched) {
-                      <mat-error>Requerido</mat-error>
-                    }
-                  </mat-form-field>
-              
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Ciudad</mat-label>
-                    <input matInput formControlName="ciudad" placeholder="Ciudad" />
-                    @if (ciudad.errors?.['required'] && ciudad.touched) {
-                      <mat-error>Requerida</mat-error>
-                    }
-                  </mat-form-field>
-              
-                  <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Provincia</mat-label>
-                    <input matInput formControlName="provincia" placeholder="Provincia" />
-                    @if (provincia.errors?.['required'] && provincia.touched) {
-                      <mat-error>Requerida</mat-error>
-                    }
-                  </mat-form-field>
-                </div>
-              </div>
-            </div>
-      
-            <div class="space-y-4">
-              <h2 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
-                <mat-icon class="text-blue-500 text-sm">manage_accounts</mat-icon> Administrador del Sistema
-              </h2>
-              
-              <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">                
-                <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Nombre Completo</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">person</mat-icon></span>
-                  <input matInput formControlName="nombre" placeholder="Nombre del administrador" />
-                  @if (nombre.errors?.['required'] && nombre.touched) {
-                    <mat-error>El nombre es requerido</mat-error>
-                  }
-                  @if (nombre.errors?.['maxlength']) {
-                    <mat-error>Maximo 150 caracteres</mat-error>
+                  @if (razon_social.errors?.['maxlength']) {
+                  <mat-error>Maximo 100 caracteres</mat-error>
                   }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Email de acceso</mat-label>
-                    <span matTextPrefix><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span>
-                    <input matInput formControlName="emailUsuario" placeholder="usuario@empresa.com" />
-                    @if (emailUsuario.errors?.['required'] && emailUsuario.touched) {
-                      <mat-error>Requerido</mat-error>
-                    }
-                    @if (emailUsuario.errors?.['email']) {
-                      <mat-error>Email no valido</mat-error>
-                    }
-                  </mat-form-field>
-                
-                <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Contraseña</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">lock</mat-icon></span>
-                  <input type="password" matInput formControlName="password" placeholder="••••••••" />
-                  @if (password.errors?.['required'] && password.touched) {
-                    <mat-error>La contraseña es requerida</mat-error>
+                  <mat-label>NIF</mat-label>
+                  <input matInput formControlName="nif" placeholder="NIF" />
+                  @if (nif.errors?.['required'] && nif.touched) {
+                  <mat-error>El NIF es requerido</mat-error>
                   }
-                  @if (password.errors?.['minlength']) {
-                    <mat-error>Minimo 8 caracteres</mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>Email empresa</mat-label>
+                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">email</mat-icon></span>
+                  <input matInput formControlName="emailEmpresa" placeholder="Email empresa" />
+                  @if (emailEmpresa.errors?.['required'] && emailEmpresa.touched) {
+                  <mat-error>Requerido</mat-error>
+                  }
+                  @if (emailEmpresa.errors?.['email']) {
+                  <mat-error>Email no valido</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>Telefono</mat-label>
+                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">phone</mat-icon></span>
+                  <input matInput formControlName="telefono" placeholder="Telefono" />
+                  @if (telefono.errors?.['required'] && telefono.touched) {
+                  <mat-error>Requerido</mat-error>
+                  }
+                  @if (telefono.errors?.['maxlength']) {
+                  <mat-error>Max. 150 caracteres</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Direccion completa</mat-label>
+                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">location_on</mat-icon></span>
+                <input matInput formControlName="direccion" placeholder="Calle, numero, piso..." />
+                @if (direccion.errors?.['required'] && direccion.touched) {
+                <mat-error>La direccion es requerida</mat-error>
+                }
+                @if (direccion.errors?.['maxlength']) {
+                <mat-error>Maximo 150 caracteres</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>C.P.</mat-label>
+                  <input matInput formControlName="codigo_postal" placeholder="C.P." />
+                  @if (codigo_postal.errors?.['required'] && codigo_postal.touched) {
+                  <mat-error>Requerido</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>Ciudad</mat-label>
+                  <input matInput formControlName="ciudad" placeholder="Ciudad" />
+                  @if (ciudad.errors?.['required'] && ciudad.touched) {
+                  <mat-error>Requerida</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>Provincia</mat-label>
+                  <input matInput formControlName="provincia" placeholder="Provincia" />
+                  @if (provincia.errors?.['required'] && provincia.touched) {
+                  <mat-error>Requerida</mat-error>
                   }
                 </mat-form-field>
               </div>
             </div>
-            
           </div>
-  
-          <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 mt-8">
-            <button mat-stroked-button type="button" (click)="onReset()" 
-                    class="text-slate-600 border-slate-300 hover:bg-slate-50 px-6 py-2">
+
+          <div class="space-y-4">
+            <h2 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <mat-icon class="text-blue-500 text-sm">manage_accounts</mat-icon> Administrador del
+              Sistema
+            </h2>
+
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Nombre Completo</mat-label>
+                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">person</mat-icon></span>
+                <input matInput formControlName="nombre" placeholder="Nombre del administrador" />
+                @if (nombre.errors?.['required'] && nombre.touched) {
+                <mat-error>El nombre es requerido</mat-error>
+                }
+                @if (nombre.errors?.['maxlength']) {
+                <mat-error>Maximo 150 caracteres</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Email de acceso</mat-label>
+                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span>
+                <input matInput formControlName="emailUsuario" placeholder="usuario@empresa.com" />
+                @if (emailUsuario.errors?.['required'] && emailUsuario.touched) {
+                <mat-error>Requerido</mat-error>
+                }
+                @if (emailUsuario.errors?.['email']) {
+                <mat-error>Email no valido</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Contraseña</mat-label>
+                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">lock</mat-icon></span>
+                <input type="password" matInput formControlName="password" placeholder="••••••••" />
+                @if (password.errors?.['required'] && password.touched) {
+                <mat-error>La contraseña es requerida</mat-error>
+                }
+                @if (password.errors?.['minlength']) {
+                <mat-error>Minimo 8 caracteres</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-t border-slate-200 mt-8">
+          
+          <div class="text-sm text-slate-600 order-2 md:order-1 text-center md:text-left">
+            ¿Tu taller ya tiene una cuenta?
+            <br class="md:hidden" />
+            <a routerLink="/login" class="font-bold text-blue-600 hover:text-blue-700 transition-colors ml-1">
+              Inicia Sesion aqui
+            </a>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 order-1 md:order-2 w-full md:w-auto">
+            <button mat-stroked-button type="button" (click)="onReset()"
+              class="w-full sm:w-auto text-slate-600 border-slate-300 hover:bg-slate-50 px-6 py-2">
               Limpiar Formulario
             </button>
-            
-            <button mat-flat-button color="primary" type="submit" [disabled]="userForm.invalid" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+
+            <button mat-flat-button color="primary" type="submit" [disabled]="userForm.invalid"
+              class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
               Guardar Registro
             </button>
           </div>
-      
+          
+        </div>
         </form>
-      </div>
     </div>
   </div>
+</div>
