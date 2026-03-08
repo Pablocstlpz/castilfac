@@ -1,0 +1,52 @@
+<div class="min-h-screen bg-slate-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 font-sans">
+  
+    <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-8 sm:p-10 text-center">
+      
+      <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-rose-50 border-4 border-rose-100 mb-6">
+        <svg class="h-12 w-12 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+        </svg>
+      </div>
+  
+      <h2 class="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">
+        Suscripcion Finalizada
+      </h2>
+      
+      <p class="text-slate-600 mb-6 leading-relaxed">
+        Tu periodo de prueba o ciclo de facturacion en CastilFac ha terminado. Para seguir gestionando tu taller y acceder a tus presupuestos, necesitas renovar tu plan.
+      </p>
+  
+      <div class="bg-slate-50 rounded-xl p-5 mb-8 border border-slate-200 text-left">
+        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Tus datos estan a salvo
+        </h3>
+        <ul class="space-y-2 text-sm text-slate-600">
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+            Tus clientes y tarifas siguen guardados.
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+            Tus presupuestos generados no se han borrado.
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+            Recuperaras el acceso inmediato al realizar el pago.
+          </li>
+        </ul>
+      </div>
+  
+      <div class="space-y-4">
+        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          Renovar Suscripcion
+        </button>
+        
+        <button (click)="cerrarSesion()" class="w-full bg-white hover:bg-slate-50 text-slate-600 font-medium py-3 px-4 rounded-xl border border-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200">
+          Cerrar Sesion
+        </button>
+      </div>
+  
+    </div>
+  </div>

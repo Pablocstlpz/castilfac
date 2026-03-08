@@ -1,6 +1,7 @@
 import { Empresa } from '../models/empresas.model.js';
 import { Op } from 'sequelize';
 import { sequelize } from '../data/db.js';
+import { Usuario } from '../models/usuarios.model.js';
 
 export const getEmpresas = async (req, res) => {
     try {
@@ -91,7 +92,7 @@ export const getEmpresaByNif = async (req, res) => {
 export const createEmpresa = async (req, res) => {
     try {
         //recojo los datos del body
-        const { nombre_comercial, razon_social, nif, email, telefono, direccion, codigo_postal, ciudad, provincia, logo_url } = req.body;
+        const { nombre_comercial, razon_social, nif, email, telefono, direccion, codigo_postal, ciudad, provincia, logo_url, fecha_vencimiento, suscripcion_activa, activo } = req.body;
         
         //valido que todos los campos sean requeridos
         if (!nombre_comercial || !razon_social || !nif || !email || !telefono || !direccion || !codigo_postal || !ciudad || !provincia) {
@@ -111,7 +112,7 @@ export const createEmpresa = async (req, res) => {
         }
 
         //valido que el telefono sea un telefono valido
-        if (!telefono.match(/^[0-9]{9}$/)) {
+        if (!telefono.match(/^\+?[1-9]\d{6,14}$/)) {
             return res.status(400).json({ message: 'El telefono debe ser un telefono valido' });
         }
 
@@ -135,15 +136,7 @@ export const createEmpresa = async (req, res) => {
             where: { email: email }
         });
         if (existeEmpresa) {
-            return res.status(400).json({ message: 'El email ya esta registrado en la empresa' });
-        }
-
-        //valido que el nif no este registrado en la empresa
-        const existeEmpresaNif = await Empresa.findOne({
-            where: { nif: nifMayusculas }
-        });
-        if (existeEmpresaNif) {
-            return res.status(400).json({ message: 'El NIF ya esta registrado en la empresa' });
+            return res.status(400).json({ message: 'El email ya esta registrado' });
         }
 
         //valido que el email no este registrado en algun usuario
@@ -151,8 +144,29 @@ export const createEmpresa = async (req, res) => {
             where: { email: email }
         });
         if (existeUsuario) {
-            return res.status(400).json({ message: 'El email ya esta registrado en un usuario' });
+            return res.status(400).json({ message: 'El email ya esta registrado' });
         }
+
+        //valido que el nif no este registrado en la empresa
+        const existeEmpresaNif = await Empresa.findOne({
+            where: { nif: nifMayusculas }
+        });
+        if (existeEmpresaNif) {
+            return res.status(400).json({ message: 'El NIF ya esta registrado' });
+        }
+
+        //valido que el telefono no lo tenga otra empresa
+        const existeEmpresaTelefono = await Empresa.findOne({
+            where: { telefono: telefono }
+        });
+        if (existeEmpresaTelefono) {
+            return res.status(400).json({ message: 'El telefono ya esta registrado' });
+        }
+
+        // Si no viene fecha_vencimiento, usar hoy + 14 días (prueba gratis)
+        const fechaVencimiento = fecha_vencimiento
+            ? new Date(fecha_vencimiento)
+            : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
         //creo la empresa
         const empresa = await Empresa.create({ 
@@ -164,7 +178,10 @@ export const createEmpresa = async (req, res) => {
             direccion: direccion, 
             codigo_postal: codigo_postal, 
             ciudad: ciudad, 
-            provincia: provincia, 
+            provincia: provincia,
+            fecha_vencimiento: fechaVencimiento,
+            suscripcion_activa: suscripcion_activa ?? false,
+            activo: activo ?? true,
         });
 
         //devuelvo la empresa creada
@@ -204,6 +221,12 @@ export const updateEmpresa = async (req, res) => {
             return res.status(400).json({ message: 'El email debe ser un email valido' });
         }
 
+        //valido que el nif sea un CIF válido de empresa
+        const nifUpperUpdate = nif.toUpperCase();
+        if (!/^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/.test(nifUpperUpdate)) {
+            return res.status(400).json({ message: 'El CIF debe ser un CIF válido de empresa' });
+        }
+
         // comprobar que el email no está usado por OTRA empresa distinta
         const existeEmpresa = await Empresa.findOne({
             where: {
@@ -217,10 +240,12 @@ export const updateEmpresa = async (req, res) => {
             return res.status(400).json({ message: 'El email ya esta registrado' });
         }
 
-        //valido que el nif sea un CIF válido de empresa
-        const nifUpperUpdate = nif.toUpperCase();
-        if (!/^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/.test(nifUpperUpdate)) {
-            return res.status(400).json({ message: 'El CIF debe ser un CIF válido de empresa' });
+        //valido que el email no este registrado en algun usuario
+        const existeUsuario = await Usuario.findOne({
+            where: { email: email }
+        });
+        if (existeUsuario) {
+            return res.status(400).json({ message: 'El email ya esta registrado en un usuario' });
         }
 
         //valido que el nif no este registrado en la empresa
@@ -233,16 +258,18 @@ export const updateEmpresa = async (req, res) => {
             return res.status(400).json({ message: 'El NIF ya esta registrado en la empresa' });
         }
 
-        //valido que el email no este registrado en algun usuario
-        const existeUsuario = await Usuario.findOne({
-            where: { email: email }
+        //valido que el telefono no lo tenga otra empresa
+        const existeEmpresaTelefono = await Empresa.findOne({
+            where: { telefono: telefono,
+                id: { [Op.ne]: id }   //excluye a la propia empresa
+            }
         });
-        if (existeUsuario) {
-            return res.status(400).json({ message: 'El email ya esta registrado en un usuario' });
+        if (existeEmpresaTelefono) {
+            return res.status(400).json({ message: 'El telefono ya esta registrado' });
         }
 
         //valido que el telefono sea un telefono valido
-        if (!telefono.match(/^[0-9]{9}$/)) {
+        if (!telefono.match(/^\+?[1-9]\d{6,14}$/)) {
             return res.status(400).json({ message: 'El telefono debe ser un telefono valido' });
         }
 
@@ -265,7 +292,7 @@ export const updateEmpresa = async (req, res) => {
         const empresaActualizada = await empresaExiste.update({ 
             nombre_comercial: nombre_comercial, 
             razon_social: razon_social, 
-            nif: nif, 
+            nif: nifUpperUpdate, 
             email: email, 
             telefono: telefono, 
             direccion: direccion, 
@@ -274,7 +301,8 @@ export const updateEmpresa = async (req, res) => {
             provincia: provincia, 
             suscripcion_activa: suscripcion_activa, 
             fecha_vencimiento: fecha_vencimiento, 
-            activo: activo, 
+            activo: activo,
+            fecha_actualizacion: new Date(),
             logo_url: logo_url });
 
         //devuelvo la empresa actualizada

@@ -276,3 +276,47 @@ export const deleteUsuarioCorreo = async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar el usuario por correo' });
     }
 }
+
+export const getUsuarioCorreoContraseña = async (req, res) => {
+    try {
+        //recojo el correo y la contraseña que se pasan por el body
+        const { correo, contraseña } = req.body;
+
+        //valido que el correo y la contraseña sean requeridos
+        if (!correo || !contraseña) {
+            return res.status(400).json({ message: 'El correo y la contraseña son requeridos' });
+        }
+
+        //valido que el correo sea un email valido
+        if (!correo.includes('@')) {
+            return res.status(400).json({ message: 'El correo debe ser un email valido' });
+        }
+
+        //valido que la contraseña tenga al menos 8 caracteres
+        if (contraseña.length < 8) {
+            return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres' });
+        }
+
+        //busco el usuario solo por correo (la contraseña en BD esta hasheada)
+        const usuario = await Usuario.findOne({ where: { email: correo } });
+
+        if (!usuario) {
+            return res.status(404).json({ message: 'El correo o la contraseña son incorrectos' });
+        }
+
+        //comparo la contraseña en claro con el hash guardado
+        const contraseñaCorrecta = await bcrypt.compare(contraseña, usuario.password);
+        if (!contraseñaCorrecta) {
+            return res.status(404).json({ message: 'El correo o la contraseña son incorrectos' });
+        }
+
+        //devuelvo el usuario
+        res.status(200).json(usuario);
+
+    } catch (error) {
+        //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
+        console.log(error);
+        //devuelvo un mensaje de error
+        res.status(500).json({ message: 'Error al obtener el usuario por correo y contraseña' });
+    }
+}

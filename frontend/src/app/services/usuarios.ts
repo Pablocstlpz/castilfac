@@ -63,6 +63,12 @@ export class UsuariosServices {
     );
   }
 
+  getUsuarioCorreoContraseña(correo: string, contraseña: string): Observable<{ message: string, usuario: Usuario }> {
+    return this.http.post<{ message: string, usuario: Usuario }>(`${this.URL}/usuarios/login`, { correo, contraseña }, this.httpOptions).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.log(error);
 

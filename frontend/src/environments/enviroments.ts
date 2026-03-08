@@ -1,3 +1,4 @@
+//URL que se usara en los servicios para consumir el backend
 export const environment = {
     production: false,
     apiUrl: 'http://localhost:3000/api'

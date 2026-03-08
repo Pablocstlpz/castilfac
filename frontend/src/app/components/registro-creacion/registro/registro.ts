@@ -15,12 +15,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Usuario } from '../../interfaces/usuario';
-import { UsuariosServices } from '../../services/usuarios';
-import { Empresa } from '../../interfaces/empresa';
-import { EmpresasServices } from '../../services/empresas';
+import { Usuario } from '../../../interfaces/usuario';
+import { UsuariosServices } from '../../../services/usuarios';
+import { Empresa } from '../../../interfaces/empresa';
+import { EmpresasServices } from '../../../services/empresas';
 import { timeout } from 'rxjs';
-
 
 @Component({
   selector: 'app-formulario',
@@ -32,12 +31,12 @@ import { timeout } from 'rxjs';
     ReactiveFormsModule,
     MatOptionModule,
     MatSelectModule,
-    RouterLink
-],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+    RouterLink,
+  ],
+  templateUrl: './registro.html',
+  styleUrl: './registro.css',
 })
-export class Login {
+export class Registro {
   public userForm!: FormGroup;
   public hidePassword: boolean = true; // Variable para controlar la visibilidad de la contraseña
 
@@ -56,7 +55,6 @@ export class Login {
         [
           Validators.required,
           Validators.maxLength(150),
-          Validators.pattern('^[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+$'),
         ],
       ],
       razon_social: ['', [Validators.required, Validators.maxLength(150)]],
@@ -174,8 +172,8 @@ export class Login {
       codigo_postal: this.userForm.value.codigo_postal,
       ciudad: this.userForm.value.ciudad,
       provincia: this.userForm.value.provincia,
-      suscripcion_activa: false, //true si tiene subscripcion, false si no
-      fecha_vencimiento: new Date(), //la fecha en la que vence la suscripcion
+      suscripcion_activa: true, //true si tiene subscripcion, false si no
+      fecha_vencimiento: new Date(new Date().setDate(new Date().getDate() + 14)), //la fecha en la que vence la suscripcion
       activo: true, //la empresa esta activa por defecto al crearla, se puede desactivar desde el panel de administración
       logo_url: '',
     };

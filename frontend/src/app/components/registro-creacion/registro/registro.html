@@ -41,7 +41,7 @@
                   <mat-error>La razon social es requerida</mat-error>
                   }
                   @if (razon_social.errors?.['maxlength']) {
-                  <mat-error>Maximo 100 caracteres</mat-error>
+                  <mat-error>Maximo 150 caracteres</mat-error>
                   }
                 </mat-form-field>
 
@@ -50,6 +50,15 @@
                   <input matInput formControlName="nif" placeholder="NIF" />
                   @if (nif.errors?.['required'] && nif.touched) {
                   <mat-error>El NIF es requerido</mat-error>
+                  }
+                  @if (nif.errors?.['pattern']) {
+                  <mat-error>El NIF no es valido</mat-error>
+                  }
+                  @if (nif.errors?.['minlength']) {
+                  <mat-error>El NIF debe tener 9 caracteres</mat-error>
+                  }
+                  @if (nif.errors?.['maxlength']) {
+                  <mat-error>El NIF debe tener 9 caracteres</mat-error>
                   }
                 </mat-form-field>
               </div>
@@ -77,6 +86,9 @@
                   @if (telefono.errors?.['maxlength']) {
                   <mat-error>Max. 150 caracteres</mat-error>
                   }
+                  @if (telefono.errors?.['pattern']) {
+                  <mat-error>El telefono no es valido</mat-error>
+                  }
                 </mat-form-field>
               </div>
 
@@ -88,7 +100,7 @@
                 <mat-error>La direccion es requerida</mat-error>
                 }
                 @if (direccion.errors?.['maxlength']) {
-                <mat-error>Maximo 150 caracteres</mat-error>
+                <mat-error>Maximo 200 caracteres</mat-error>
                 }
               </mat-form-field>
 
@@ -99,6 +111,15 @@
                   @if (codigo_postal.errors?.['required'] && codigo_postal.touched) {
                   <mat-error>Requerido</mat-error>
                   }
+                  @if (codigo_postal.errors?.['pattern']) {
+                  <mat-error>El codigo postal no es valido</mat-error>
+                  }
+                  @if (codigo_postal.errors?.['minlength']) {
+                  <mat-error>El codigo postal debe tener 5 caracteres</mat-error>
+                  }
+                  @if (codigo_postal.errors?.['maxlength']) {
+                  <mat-error>El codigo postal debe tener 5 caracteres</mat-error>
+                  }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full">
@@ -107,6 +128,12 @@
                   @if (ciudad.errors?.['required'] && ciudad.touched) {
                   <mat-error>Requerida</mat-error>
                   }
+                  @if (ciudad.errors?.['maxlength']) {
+                  <mat-error>Maximo 150 caracteres</mat-error>
+                  }
+                  @if (ciudad.errors?.['pattern']) {
+                  <mat-error>La ciudad no es valida</mat-error>
+                  }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full">
@@ -114,6 +141,12 @@
                   <input matInput formControlName="provincia" placeholder="Provincia" />
                   @if (provincia.errors?.['required'] && provincia.touched) {
                   <mat-error>Requerida</mat-error>
+                  }
+                  @if (provincia.errors?.['maxlength']) {
+                  <mat-error>Maximo 150 caracteres</mat-error>
+                  }
+                  @if (provincia.errors?.['pattern']) {
+                  <mat-error>La provincia no es valida</mat-error>
                   }
                 </mat-form-field>
               </div>
@@ -136,6 +169,9 @@
                 }
                 @if (nombre.errors?.['maxlength']) {
                 <mat-error>Maximo 150 caracteres</mat-error>
+                }
+                @if (nombre.errors?.['pattern']) {
+                <mat-error>El nombre no es valido</mat-error>
                 }
               </mat-form-field>
 

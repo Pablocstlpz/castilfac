@@ -31,7 +31,7 @@ export class EmpresasServices {
     );
   }
 
-  getEmpresa(id: string): Observable<Empresa> {
+  getEmpresa(id: number): Observable<Empresa> {
     return this.http.get<Empresa>(`${this.URL}/empresas/${id}`).pipe(
       map(response => response), // Aseguramos que la respuesta se trate como un objeto Usuario
       catchError(this.handleError)
@@ -45,8 +45,8 @@ export class EmpresasServices {
     );
   }
 
-  addEmpresa(empresa: Empresa): Observable<{ id: string }> {
-    return this.http.post<{ id: string }>(`${this.URL}/empresas`, empresa, this.httpOptions).pipe(
+  addEmpresa(empresa: Empresa): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.URL}/empresas`, empresa, this.httpOptions).pipe(
       catchError(this.handleError)
     );
   }
