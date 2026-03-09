@@ -93,6 +93,14 @@ export const routes: Routes = [
     path: 'nosubscripcion',
     loadComponent: () => import('./components/nopermitir/nosubscripcion/nosubscripcion').then((m) => m.Nosubscripcion),
   },
+  {
+    path: 'iniciooperario',
+    loadComponent: () => import('./components/iniciooperario/iniciooperario').then((m) => m.Iniciooperario),
+  },
+  {
+    path: 'sesioncerrada',
+    loadComponent: () => import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
+  },
   //Ruta 404 no found
   {
     path: '**',

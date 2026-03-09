@@ -63,8 +63,16 @@ export class Login {
     return this.userForm.get('password') as FormControl;
   }
 
+  ngOnInit(): void {
+    const usuarioLocal = this.authentication.obtenerUsuarioSesion();
+    if (usuarioLocal !== null && usuarioLocal.rol === 'operario') {
+      this.router.navigate(['/iniciooperario']);
+    }
+  }
+
   //cuando se da click a registrar:
   onSubmit(): void {
+
     this.router.navigate(['/loginespera']);
 
     //guardo el correo
