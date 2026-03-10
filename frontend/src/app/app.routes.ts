@@ -98,6 +98,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/iniciooperario/iniciooperario').then((m) => m.Iniciooperario),
   },
   {
+    path: 'inicioadmin',
+    loadComponent: () => import('./components/inicioadmin/inicioadmin').then((m) => m.Inicioadmin),
+  },
+  {
     path: 'sesioncerrada',
     loadComponent: () => import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
   },
