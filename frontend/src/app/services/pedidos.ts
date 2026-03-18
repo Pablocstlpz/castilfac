@@ -1,0 +1,88 @@
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Pedido } from '../interfaces/pedido';
+
+import { catchError, map, Observable, tap, throwError } from 'rxjs';
+
+import { environment } from '../../environments/enviroments';
+
+@Injectable({
+  providedIn: 'root',
+})
+
+export class PedidosServices {
+  private URL = environment.apiUrl;
+
+  private httpOptions = {
+
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      //  'Authorization': `Bearer ${this.token}`
+    })
+  };
+
+  private http = inject(HttpClient);
+
+  //OBTENER TODOS LOS PEDIDOS
+  getPedidos(): Observable<Pedido[]> { // El método getPedidos devuelve un Observable que emitirá un array de objetos Pedido. Este método se encarga de realizar una petición GET al endpoint correspondiente para obtener la lista de pedidos.  
+    return this.http.get<Pedido[]>(`${this.URL}/pedidos`).pipe(
+      map(response => response), // Aseguramos que la respuesta se trate como un array de Pedido
+      catchError(this.handleError)
+    );
+  }
+
+  //BUSCAR PEDIDOS POR ID EMPRESA
+  getPedidosByEmpresa(id: number): Observable<Pedido[]> {
+    return this.http.get<Pedido[]>(`${this.URL}/pedidos/empresa/${id}`).pipe(
+      map(response => response), // Aseguramos que la respuesta se trate como un array de Pedido
+      catchError(this.handleError)
+    );
+  }
+
+  //BUSCAR PEDIDO POR ID OPERARIO
+  getPedidosByOperario(id: number): Observable<Pedido[]> {
+    return this.http.get<Pedido[]>(`${this.URL}/pedidos/operario/${id}`).pipe(
+      map(response => response), // Aseguramos que la respuesta se trate como un array de Pedido
+      catchError(this.handleError)
+    );
+  }
+
+  // addUsuario(usuario: Usuario): Observable<{ id: string }> {
+  //   return this.http.post<{ id: string }>(`${this.URL}/usuarios`, usuario, this.httpOptions).pipe(
+  //     catchError(this.handleError)
+  //   );
+  // }
+
+  // updateUsuario(usuario: Usuario): Observable<{ message: string }> {
+  //   return this.http.put<{ message: string }>(`${this.URL}/usuarios/${usuario.id}`, usuario, this.httpOptions).pipe(
+  //     catchError(this.handleError)
+  //   );
+  // }
+
+  //deleteUsuario(id: string): Observable<Usuario> {
+  deletePedido(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.URL}/pedidos/${id}`, this.httpOptions).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // deleteUsuarioCorreo(correo: string): Observable<{ message: string }> {
+  //   return this.http.delete<{ message: string }>(`${this.URL}/usuarios/correo/${correo}`, this.httpOptions).pipe(
+  //     catchError(this.handleError)
+  //   );
+  // }
+
+  // getUsuarioCorreoContraseña(correo: string, contraseña: string): Observable<{ message: string, usuario: Usuario }> {
+  //   return this.http.post<{ message: string, usuario: Usuario }>(`${this.URL}/usuarios/login`, { correo, contraseña }, this.httpOptions).pipe(
+  //     catchError(this.handleError)
+  //   );
+  // }
+
+  private handleError(error: HttpErrorResponse) {
+    console.log(error);
+
+    const errorMessage = error.error?.message || 'Error desconocido al procesar la solicitud';
+
+    return throwError(() => new Error(errorMessage));
+  }
+}
