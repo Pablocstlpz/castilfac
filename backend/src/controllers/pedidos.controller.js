@@ -51,10 +51,13 @@ export const getPedidosByOperario = async (req, res) => {
             { replacements: [id] }
         );
 
-        //valido que haya pedidos, si no hay digo que no hay
+        // Sin pedidos en fabricación: lista vacía (200), no 404 — si no, el cliente HTTP falla y la UI no actualiza
         if (pedidos.length === 0) {
-            return res.status(404).json({ message: 'No hay pedidos asignados a este operario' });
+            return res.status(200).json([]);
         }
+
+        //ordenar por fecha de inicio estimada
+        pedidos.sort((a, b) => new Date(a.fecha_inicio_estimada) - new Date(b.fecha_inicio_estimada));
 
         //devuelvo los pedidos
         res.status(200).json(pedidos);
@@ -128,5 +131,69 @@ export const deletePedido = async (req, res) => {
         console.log(error);
         //devuelvo un mensaje de error
         res.status(500).json({ message: 'Error al borrar el pedido' });
+    }
+}
+
+//MARCAR COMO FABRICADO
+export const marcarComoFabricado = async (req, res) => {
+    try {
+
+        //obtengo el id del pedido
+        const { id } = req.params
+
+        //busco el pedido por su id
+        const pedido = await Pedido.findByPk(id);
+
+        //valido que el pedido exista
+        if (!pedido) {
+            return res.status(404).json({ message: 'Pedido no encontrado' });
+        }
+
+        //marco como fabricado
+        pedido.estado_fabricacion = 'fabricado';
+        //lo guardo
+        await pedido.save();
+
+        //confirmo que el pedido se ha marcado como fabricado
+        res.status(200).json({ message: 'Pedido marcado como fabricado correctamente' });
+
+    } catch (error) {
+        //muestro el error por consola
+        console.log(error);
+        //devuelvo un mensaje de error
+        res.status(500).json({ message: 'Error al marcar como fabricado el pedido' });
+    }
+}
+
+//OBTENER TODOS LOS PEDIDOS DE UN OPERARIO 
+export const getPedidosHistorialByOperario = async (req, res) => {
+    try {
+
+        //obtengo el id del operario de URL
+        const { id } = req.params
+
+        //busco los pedidos junto con nombre/dirección del cliente
+        const [pedidos] = await sequelize.query(
+            `
+            ${PEDIDOS_WITH_CLIENTE_SELECT}
+            WHERE p.operario_asignado_id = ?
+            ORDER BY p.id DESC
+            `,
+            { replacements: [id] }
+        );
+
+        //valido que haya pedidos, si no hay digo que no hay
+        if (pedidos.length === 0) {
+            return res.status(404).json({ message: 'No hay pedidos de este operario' });
+        }
+
+        //devuelvo los pedidos
+        res.status(200).json(pedidos);
+
+    } catch (error) {
+        //muestro el error por consola
+        console.log(error);
+        //devuelvo un mensaje de error
+        res.status(500).json({ message: 'Error al obtener los pedidos de este operario' });
     }
 }
