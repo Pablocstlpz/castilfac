@@ -105,6 +105,10 @@ export const routes: Routes = [
     path: 'sesioncerrada',
     loadComponent: () => import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
   },
+  {
+    path: 'historial-operario',
+    loadComponent: () => import('./components/iniciooperario/historial-completo-operario/historial-completo-operario').then((m) => m.HistorialCompletoOperario),
+  },
   //Ruta 404 no found
   {
     path: '**',
