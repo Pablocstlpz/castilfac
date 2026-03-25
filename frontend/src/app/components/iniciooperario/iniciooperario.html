@@ -23,7 +23,7 @@
           <mat-icon>view_list</mat-icon>
           <span class="font-medium">Ordenes de Trabajo</span>
         </a>
-        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+        <a routerLink="/historial-operario" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
           <mat-icon>history</mat-icon>
           <span class="font-medium">Historial Completado</span>
         </a>
@@ -92,7 +92,8 @@
                   </button>
                 </div>
                 <div>
-                  <button class="flex mt-5 w-full items-center justify-center gap-2 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors shadow-sm">
+                  <button class="flex mt-5 w-full items-center justify-center gap-2 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors shadow-sm"
+                  (click)="marcarFabricado(pedido.id)">
                     <mat-icon>check_circle</mat-icon>
                     Marcar como Fabricado
                   </button>

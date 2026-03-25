@@ -9,10 +9,12 @@ import { UpperCasePipe } from '@angular/common';
 import { PedidosServices } from '../../services/pedidos';
 import { Pedido } from '../../interfaces/pedido';
 import { Signal } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-iniciooperario',
-  imports: [CommonModule, MatIconModule, UpperCasePipe],
+  imports: [CommonModule, MatIconModule, UpperCasePipe, RouterLink],
   templateUrl: './iniciooperario.html',
   styleUrl: './iniciooperario.css',
 })
@@ -24,6 +26,7 @@ export class Iniciooperario {
   public usuario: Usuario = this.authentication.obtenerUsuarioSesion(); // Inyectamos el servicio Usuario para poder utilizar sus metodos
   private pedidosServices = inject(PedidosServices); // Inyectamos el servicio PedidosServices para poder utilizar sus metodos
   public pedidosArray = signal<Pedido[]>([]) //inyecto el array de pedidos para poder utilizarlos en el html
+  private snackBar = inject(MatSnackBar); //inyecto el servicio MatSnackBar para poder utilizar sus metodos
 
   //al cargar la pagina
   ngOnInit(): void {
@@ -45,4 +48,32 @@ export class Iniciooperario {
       this.pedidosArray.set(pedidos);
     });
   }
-}
+
+    //marcar como fabricado cuando se da click al boton
+    marcarFabricado(id: number): void {
+      try {
+        this.pedidosServices.marcarComoFabricado(id).subscribe({
+          next: () => {
+            this.obtenerPedidosEnFabricacion();
+            this.snackBar.open('Pedido marcado como fabricado', 'Cerrar', {
+              duration: 3000,
+              panelClass: 'snackbar-success',
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+            });
+          },
+          error: (err) => {
+            console.error(err);
+            this.snackBar.open(err?.message ?? 'No se pudo marcar el pedido', 'Cerrar', {
+              duration: 4000,
+              panelClass: 'snackbar-error',
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+            });
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
