@@ -66,6 +66,21 @@ export class PedidosServices {
     );
   }
 
+  //MARCAR COMO FABRICADO
+  marcarComoFabricado(id: number): Observable<{ message: string }> {
+    return this.http
+      .put<{ message: string }>(`${this.URL}/pedidos/marcar-fabricado/${id}`, {}, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
+  //OBTENER TODOS LOS PEDIDOS POR UN OPERARIO
+  getPedidosHistorialByOperario(id: number): Observable<Pedido[]> {
+    return this.http.get<Pedido[]>(`${this.URL}/pedidos/historial/operario/${id}`).pipe(
+      map(response => response), // Aseguramos que la respuesta se trate como un array de Pedido
+      catchError(this.handleError)
+    );
+  }
+
   // deleteUsuarioCorreo(correo: string): Observable<{ message: string }> {
   //   return this.http.delete<{ message: string }>(`${this.URL}/usuarios/correo/${correo}`, this.httpOptions).pipe(
   //     catchError(this.handleError)
