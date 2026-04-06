@@ -31,9 +31,17 @@ export class UsuariosServices {
     );
   }
 
-  getUsuario(id: string): Observable<Usuario> {
+  getUsuario(id: number): Observable<Usuario> {
     return this.http.get<Usuario>(`${this.URL}/usuarios/${id}`).pipe(
       map(response => response), // Aseguramos que la respuesta se trate como un objeto Usuario
+      catchError(this.handleError)
+    );
+  }
+
+  //RECORDAR QUE ÑAS URL QUE HAY AQUI SON LAS DE LAS RUTAS DEL BACKEND PARA ACCEDER A LOS DATOS, EN EL FRONTEND NO SE USAN
+  getUsuarioPorEmpresa(empresa_id: number): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.URL}/usuarios/empresa/${empresa_id}`).pipe(
+      map(response => response), // Aseguramos que la respuesta se trate como un array de Usuario
       catchError(this.handleError)
     );
   }
