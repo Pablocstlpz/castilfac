@@ -7,7 +7,7 @@ import { Authentication } from '../../services/authentication';
 
 @Component({
   selector: 'app-inicioadmin',
-  imports: [MatIconModule, CommonModule],
+  imports: [MatIconModule, CommonModule, RouterLink],
   templateUrl: './inicioadmin.html',
   styleUrl: './inicioadmin.css',
 })
