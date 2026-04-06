@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
+@import "sweetalert2/dist/sweetalert2.min.css";
 
 /* Estilos para el enlace activo en el menú (replica el diseño original de Flowbite) */
 .active {
