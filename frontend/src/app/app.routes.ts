@@ -109,6 +109,10 @@ export const routes: Routes = [
     path: 'historial-operario',
     loadComponent: () => import('./components/iniciooperario/historial-completo-operario/historial-completo-operario').then((m) => m.HistorialCompletoOperario),
   },
+  {
+    path: 'gestion-personal',
+    loadComponent: () => import('./components/inicioadmin/gestion-personal/gestion-personal').then((m) => m.GestionPersonal),
+  },
   //Ruta 404 no found
   {
     path: '**',
