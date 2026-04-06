@@ -41,7 +41,9 @@
   
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-2">Administracion</p>
   
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+        <a 
+        routerLink="/gestion-personal"
+        class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
           <mat-icon>groups</mat-icon>
           <span class="font-medium text-sm">Gestion de Personal</span>
         </a>
@@ -149,7 +151,9 @@
               <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-slate-800 transition-colors">
                 <mat-icon class="text-slate-600 group-hover:text-white">person_add</mat-icon>
               </div>
-              <div>
+              <div
+              routerLink="/gestion-personal"
+              >
                 <h4 class="font-bold text-slate-800 group-hover:text-slate-800 transition-colors">Añadir Operario</h4>
                 <p class="text-xs text-slate-500 mt-0.5">Dar de alta un trabajador</p>
               </div>
