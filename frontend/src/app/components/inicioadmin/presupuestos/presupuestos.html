@@ -1,0 +1,243 @@
+<div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 min-h-full font-sans">
+  <div class="sm:flex sm:items-center sm:justify-between mb-8 border-b border-slate-200 pb-5">
+    <div>
+      <h1
+        class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3"
+      >
+        <mat-icon class="text-blue-600 text-3xl">request_quote</mat-icon>
+        Presupuestos
+      </h1>
+      <p class="text-slate-500 mt-2">
+        Gestiona las ofertas enviadas a clientes y conviertelas en ordenes de trabajo.
+      </p>
+    </div>
+
+    <div class="mt-4 sm:mt-0 flex gap-3">
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-all"
+      >
+        <mat-icon class="text-sm h-5 w-5 text-slate-500">filter_list</mat-icon>
+        Filtrar
+      </button>
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all"
+      >
+        <mat-icon class="text-sm h-5 w-5">add_circle</mat-icon>
+        Nuevo Presupuesto
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div
+      class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
+    >
+      <div>
+        <p class="text-sm font-medium text-slate-500">Total Borradores</p>
+        <p class="text-2xl font-bold text-slate-800">4</p>
+      </div>
+      <div
+        class="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600"
+      >
+        <mat-icon>edit_document</mat-icon>
+      </div>
+    </div>
+
+    <div
+      class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
+    >
+      <div>
+        <p class="text-sm font-medium text-slate-500">Ptes. de Respuesta</p>
+        <p class="text-2xl font-bold text-slate-800">12</p>
+      </div>
+      <div class="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+        <mat-icon>send</mat-icon>
+      </div>
+    </div>
+
+    <div
+      class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
+    >
+      <div>
+        <p class="text-sm font-medium text-slate-500">Aprobados (Mes)</p>
+        <p class="text-2xl font-bold text-emerald-600">8</p>
+      </div>
+      <div
+        class="h-10 w-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600"
+      >
+        <mat-icon>check_circle</mat-icon>
+      </div>
+    </div>
+
+    <div
+      class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
+    >
+      <div>
+        <p class="text-sm font-medium text-slate-500">Tasa de Exito</p>
+        <p class="text-2xl font-bold text-slate-800">65%</p>
+      </div>
+      <div
+        class="h-10 w-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-600"
+      >
+        <mat-icon>trending_up</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th
+              scope="col"
+              class="py-3.5 pl-6 pr-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >
+              Referencia / Fecha
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >
+              Cliente
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >
+              Importe Total
+            </th>
+            <th
+              scope="col"
+              class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+            >
+              Estado
+            </th>
+            <th scope="col" class="relative py-3.5 pl-3 pr-6">
+              <span class="sr-only">Acciones</span>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="whitespace-nowrap py-4 pl-6 pr-3">
+              <div class="font-bold text-slate-900">PRE-26-042</div>
+              <div class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                <mat-icon class="text-[14px]">calendar_today</mat-icon>
+                15/04/2026
+              </div>
+            </td>
+
+            <td class="px-3 py-4">
+              <div class="text-sm font-medium text-slate-800">Constructora Los Pinos SL</div>
+              <div class="text-xs text-slate-500">B11111111</div>
+            </td>
+
+            <td class="whitespace-nowrap px-3 py-4">
+              <div class="text-sm font-bold text-slate-800">3.450,00 €</div>
+              <div class="text-xs text-slate-400">IVA no incluido</div>
+            </td>
+
+            <td class="whitespace-nowrap px-3 py-4">
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200"
+              >
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                Aprobado
+              </span>
+            </td>
+
+            <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
+              <div
+                class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <button
+                  class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                >
+                  <mat-icon class="text-[16px]">precision_manufacturing</mat-icon>
+                  Fabricar
+                </button>
+                <button
+                  class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Ver Detalles"
+                >
+                  <mat-icon class="text-[20px]">visibility</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="whitespace-nowrap py-4 pl-6 pr-3">
+              <div class="font-bold text-slate-900">PRE-26-045</div>
+              <div class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                <mat-icon class="text-[14px]">calendar_today</mat-icon>
+                16/04/2026
+              </div>
+            </td>
+
+            <td class="px-3 py-4">
+              <div class="text-sm font-medium text-slate-800">Juan Gomez</div>
+              <div class="text-xs text-slate-500">Particular</div>
+            </td>
+
+            <td class="whitespace-nowrap px-3 py-4">
+              <div class="text-sm font-bold text-slate-800">840,50 €</div>
+              <div class="text-xs text-slate-400">IVA no incluido</div>
+            </td>
+
+            <td class="whitespace-nowrap px-3 py-4">
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 border border-blue-200"
+              >
+                <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                Enviado
+              </span>
+            </td>
+
+            <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
+              <div
+                class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <button
+                  class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Editar"
+                >
+                  <mat-icon class="text-[20px]">edit</mat-icon>
+                </button>
+                <button
+                  class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Descargar PDF"
+                >
+                  <mat-icon class="text-[20px]">picture_as_pdf</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
+      <span class="text-sm text-slate-500">
+        Mostrando <span class="font-medium text-slate-900">1</span> a
+        <span class="font-medium text-slate-900">10</span> de
+        <span class="font-medium text-slate-900">45</span> presupuestos
+      </span>
+      <div class="flex gap-2">
+        <button
+          class="px-3 py-1 border border-slate-300 rounded bg-white text-slate-500 hover:bg-slate-50 text-sm"
+          disabled
+        >
+          Anterior
+        </button>
+        <button
+          class="px-3 py-1 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50 text-sm"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
