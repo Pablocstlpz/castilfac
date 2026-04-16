@@ -15,14 +15,13 @@ export class Inicioadmin {
   private comprobarUsuarioEmpresa = inject(ComprobarUsuarioEmpresa);
   private authentication = inject(Authentication);
   private router = inject(Router);
-  
+
   ngOnInit() {
     this.comprobarUsuarioEmpresa.comprobarUsuarioEmpresa();
-    }
+  }
 
-    cerrarSesion() {
-      this.authentication.cerrarSesion();
-      this.router.navigate(['/sesioncerrada']);
-    }
-
+  cerrarSesion() {
+    this.authentication.cerrarSesion();
+    this.router.navigate(['/sesioncerrada']);
+  }
 }

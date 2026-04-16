@@ -1,179 +1,135 @@
-<div class="min-h-screen bg-slate-50 flex font-sans">
+<section class="h-full flex flex-col overflow-hidden bg-slate-50">
+  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+    <div class="flex items-center md:hidden gap-2">
+      <mat-icon class="text-blue-600">business</mat-icon>
+      <span class="font-bold text-slate-800">CastilFac</span>
+    </div>
 
-    <aside class="w-64 bg-slate-900 text-white flex-col hidden md:flex shadow-2xl z-10">
-      <div class="h-16 flex items-center px-6 border-b border-slate-700 bg-slate-950">
-        <mat-icon class="text-blue-500 mr-2">business</mat-icon>
-        <span class="text-lg font-bold tracking-wider">CASTILFAC</span>
+    <h1 class="hidden md:block text-xl font-bold text-slate-800">Resumen del Taller</h1>
+
+    <div class="flex items-center gap-4">
+      <button
+        class="hidden sm:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm"
+      >
+        <mat-icon class="text-sm">add</mat-icon> Nuevo Presupuesto
+      </button>
+      <button class="text-slate-400 hover:text-blue-600 transition-colors relative">
+        <mat-icon>notifications</mat-icon>
+        <span
+          class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"
+        ></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-y-auto p-6 lg:p-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-slate-500 text-sm font-medium">Presupuestos (Mes)</h3>
+          <div class="p-2 bg-blue-50 rounded-lg">
+            <mat-icon class="text-blue-600">request_quote</mat-icon>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-800">24</p>
+        <p class="text-sm text-emerald-600 mt-2 flex items-center gap-1 font-medium">
+          <mat-icon class="text-sm">trending_up</mat-icon> +12% que el mes pasado
+        </p>
       </div>
-  
-      <div class="p-6 border-b border-slate-800">
-        <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Conectado como</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md">
-            AD
+
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-slate-500 text-sm font-medium">Trabajos Activos</h3>
+          <div class="p-2 bg-amber-50 rounded-lg">
+            <mat-icon class="text-amber-600">precision_manufacturing</mat-icon>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-800">7</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">En cola o fabricacion</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-slate-500 text-sm font-medium">Ingresos Estimados</h3>
+          <div class="p-2 bg-emerald-50 rounded-lg">
+            <mat-icon class="text-emerald-600">euro</mat-icon>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-800">14.250 €</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aceptados</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-slate-500 text-sm font-medium">Personal Activo</h3>
+          <div class="p-2 bg-purple-50 rounded-lg">
+            <mat-icon class="text-purple-600">groups</mat-icon>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-800">3</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">Operarios en el sistema</p>
+      </div>
+    </div>
+
+    <h2 class="text-lg font-bold text-slate-800 mb-4">Accesos Rapidos</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-600 transition-colors"
+          >
+            <mat-icon class="text-blue-600 group-hover:text-white">add_circle</mat-icon>
           </div>
           <div>
-            <p class="font-bold text-sm">Administrador</p>
-            <p class="text-xs text-emerald-400 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Gerencia
-            </p>
+            <h4
+              class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors"
+              routerLink="/inicioadmin/presupuestos"
+            >
+              Crear Presupuesto
+            </h4>
+            <p class="text-xs text-slate-500 mt-0.5">Diseñar ventanas, puertas...</p>
           </div>
         </div>
       </div>
-  
-      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Principal</p>
-        
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
-          <mat-icon>dashboard</mat-icon>
-          <span class="font-medium text-sm">Panel de Control</span>
-        </a>
-        
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-          <mat-icon>request_quote</mat-icon>
-          <span class="font-medium text-sm">Presupuestos</span>
-        </a>
-  
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-          <mat-icon>category</mat-icon>
-          <span class="font-medium text-sm">Catalogo y Precios</span>
-        </a>
-  
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-2">Administracion</p>
-  
-        <a 
-        routerLink="/gestion-personal"
-        class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-          <mat-icon>groups</mat-icon>
-          <span class="font-medium text-sm">Gestion de Personal</span>
-        </a>
-  
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-          <mat-icon>inventory_2</mat-icon>
-          <span class="font-medium text-sm">Trabajos y Estados</span>
-        </a>
-  
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-          <mat-icon>settings</mat-icon>
-          <span class="font-medium text-sm">Configuracion</span>
-        </a>
-      </nav>
-  
-      <div class="p-4 border-t border-slate-800 bg-slate-900">
-        <button class="flex items-center gap-3 px-4 py-2 w-full text-slate-400 hover:text-red-400 transition-colors">
-          <mat-icon>logout</mat-icon>
-          <span class="font-medium text-sm">Cerrar Sesion</span>
-        </button>
-      </div>
-    </aside>
-  
-    <main class="flex-1 flex flex-col overflow-hidden">
-      
-      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-        <div class="flex items-center md:hidden gap-2">
-          <mat-icon class="text-blue-600">business</mat-icon>
-          <span class="font-bold text-slate-800">CastilFac</span>
-        </div>
-        
-        <h1 class="hidden md:block text-xl font-bold text-slate-800">Resumen del Taller</h1>
-  
+
+      <div
+        class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+        routerLink="/inicioadmin/gestion-personal"
+      >
         <div class="flex items-center gap-4">
-          <button class="hidden sm:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm">
-            <mat-icon class="text-sm">add</mat-icon> Nuevo Presupuesto
-          </button>
-          <button class="text-slate-400 hover:text-blue-600 transition-colors relative">
-            <mat-icon>notifications</mat-icon>
-            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-          </button>
-        </div>
-      </header>
-  
-      <div class="flex-1 overflow-y-auto p-6 lg:p-8">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          
-          <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-500 text-sm font-medium">Presupuestos (Mes)</h3>
-              <div class="p-2 bg-blue-50 rounded-lg"><mat-icon class="text-blue-600">request_quote</mat-icon></div>
-            </div>
-            <p class="text-3xl font-bold text-slate-800">24</p>
-            <p class="text-sm text-emerald-600 mt-2 flex items-center gap-1 font-medium">
-              <mat-icon class="text-sm">trending_up</mat-icon> +12% que el mes pasado
-            </p>
+          <div
+            class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-slate-800 transition-colors"
+          >
+            <mat-icon class="text-slate-600 group-hover:text-white">person_add</mat-icon>
           </div>
-  
-          <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-500 text-sm font-medium">Trabajos Activos</h3>
-              <div class="p-2 bg-amber-50 rounded-lg"><mat-icon class="text-amber-600">precision_manufacturing</mat-icon></div>
-            </div>
-            <p class="text-3xl font-bold text-slate-800">7</p>
-            <p class="text-sm text-slate-500 mt-2 font-medium">En cola o fabricacion</p>
-          </div>
-  
-          <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-500 text-sm font-medium">Ingresos Estimados</h3>
-              <div class="p-2 bg-emerald-50 rounded-lg"><mat-icon class="text-emerald-600">euro</mat-icon></div>
-            </div>
-            <p class="text-3xl font-bold text-slate-800">14.250 €</p>
-            <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aceptados</p>
-          </div>
-  
-          <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-slate-500 text-sm font-medium">Personal Activo</h3>
-              <div class="p-2 bg-purple-50 rounded-lg"><mat-icon class="text-purple-600">groups</mat-icon></div>
-            </div>
-            <p class="text-3xl font-bold text-slate-800">3</p>
-            <p class="text-sm text-slate-500 mt-2 font-medium">Operarios en el sistema</p>
+          <div>
+            <h4 class="font-bold text-slate-800 group-hover:text-slate-800 transition-colors">
+              Gestion de Personal
+            </h4>
+            <p class="text-xs text-slate-500 mt-0.5">Gestione los operarios de la empresa</p>
           </div>
         </div>
-  
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Accesos Rapidos</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <div class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                <mat-icon class="text-blue-600 group-hover:text-white">add_circle</mat-icon>
-              </div>
-              <div>
-                <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Crear Presupuesto</h4>
-                <p class="text-xs text-slate-500 mt-0.5">Diseñar ventanas, puertas...</p>
-              </div>
-            </div>
-          </div>
-  
-          <div class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-slate-800 transition-colors">
-                <mat-icon class="text-slate-600 group-hover:text-white">person_add</mat-icon>
-              </div>
-              <div
-              routerLink="/gestion-personal"
-              >
-                <h4 class="font-bold text-slate-800 group-hover:text-slate-800 transition-colors">Añadir Operario</h4>
-                <p class="text-xs text-slate-500 mt-0.5">Dar de alta un trabajador</p>
-              </div>
-            </div>
-          </div>
-  
-          <div class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
-                <mat-icon class="text-emerald-600 group-hover:text-white">price_change</mat-icon>
-              </div>
-              <div>
-                <h4 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">Actualizar Tarifas</h4>
-                <p class="text-xs text-slate-500 mt-0.5">Modificar coste del aluminio</p>
-              </div>
-            </div>
-          </div>
-  
-        </div>
-  
       </div>
-    </main>
+
+      <div
+        class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-600 transition-colors"
+          >
+            <mat-icon class="text-emerald-600 group-hover:text-white">price_change</mat-icon>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">
+              Actualizar Tarifas
+            </h4>
+            <p class="text-xs text-slate-500 mt-0.5">Modificar coste del aluminio</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
