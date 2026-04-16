@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { Authentication } from '../../../services/authentication';
 
 @Component({
   selector: 'app-head',
@@ -8,5 +9,27 @@ import { RouterLink } from '@angular/router';
   styleUrl: './head.css',
 })
 export class Head {
-  
+  private authentication = inject(Authentication);
+  private router = inject(Router);
+
+  get usuario() {
+    return this.authentication.obtenerUsuarioSesion();
+  }
+
+  cerrarSesion(): void {
+    this.authentication.cerrarSesion();
+    this.router.navigate(['/sesioncerrada']);
+  }
+
+  rutaPerfil(): string {
+    if (this.usuario?.rol === 'admin') {
+      return '/inicioadmin';
+    }
+
+    if (this.usuario?.rol === 'operario') {
+      return '/iniciooperario';
+    }
+
+    return '/company';
+  }
 }
