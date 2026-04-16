@@ -5,16 +5,14 @@ import { Authentication } from '../../services/authentication';
 import { Router } from '@angular/router';
 import { ComprobarUsuarioEmpresa } from '../../services/comprobar-usuario-empresa';
 import { Usuario } from '../../interfaces/usuario';
-import { UpperCasePipe } from '@angular/common';
 import { PedidosServices } from '../../services/pedidos';
 import { Pedido } from '../../interfaces/pedido';
 import { Signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-iniciooperario',
-  imports: [CommonModule, MatIconModule, UpperCasePipe, RouterLink],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './iniciooperario.html',
   styleUrl: './iniciooperario.css',
 })

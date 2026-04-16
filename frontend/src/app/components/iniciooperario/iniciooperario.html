@@ -1,99 +1,77 @@
 <div class="min-h-screen bg-slate-100 flex font-sans">
-
-    <aside class="w-64 bg-slate-900 text-white flex flex-col hidden md:flex shadow-2xl">
-      <div class="h-16 flex items-center px-6 border-b border-slate-700 bg-slate-950">
-        <mat-icon class="text-blue-500 mr-2">handyman</mat-icon>
-        <span class="text-lg font-bold tracking-wider">CASTILFAC</span>
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:hidden">
+      <div class="flex items-center gap-2">
+        <mat-icon class="text-blue-600">handyman</mat-icon>
+        <span class="font-bold text-slate-800">CastilFac Operario</span>
       </div>
-  
-      <div class="p-6 border-b border-slate-800">
-        <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Conectado como</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-            {{usuario.nombre.charAt(0) | uppercase}}</div>
-          <div>
-            <p class="font-bold text-sm">{{usuario.nombre}}</p>
-            <p class="text-xs text-blue-400">{{usuario.rol | uppercase}}</p>
-          </div>
-        </div>
-      </div>
-  
-      <nav class="flex-1 px-4 py-6 space-y-2">
-        <a href="#" class="flex items-center gap-3 px-4 py-3 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30 transition-colors">
-          <mat-icon>view_list</mat-icon>
-          <span class="font-medium">Ordenes de Trabajo</span>
-        </a>
-        <a routerLink="/historial-operario" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-          <mat-icon>history</mat-icon>
-          <span class="font-medium">Historial Completado</span>
-        </a>
+      <button class="text-slate-500"><mat-icon>menu</mat-icon></button>
+    </header>
 
-        <div class="p-4 border-t border-slate-800">
-        <button class="flex items-center gap-3 px-4 py-2 w-full text-slate-400 hover:text-red-400 transition-colors" (click)="cerrarSesion()">
-          <mat-icon>logout</mat-icon>
-          <span class="font-medium">Cerrar Sesion</span>
-        </button>
+    <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+      <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          Trabajos Pendientes
+        </h1>
+        <p class="text-slate-500 mt-1">Revisa las hojas de fabricacion y los planos asignados.</p>
       </div>
-      </nav>
 
-      
-    </aside>
-  
-    <main class="flex-1 flex flex-col overflow-hidden">
-      
-      <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:hidden">
-        <div class="flex items-center gap-2">
-          <mat-icon class="text-blue-600">handyman</mat-icon>
-          <span class="font-bold text-slate-800">CastilFac Operario</span>
-        </div>
-        <button class="text-slate-500"><mat-icon>menu</mat-icon></button>
-      </header>
-  
-      <div class="flex-1 overflow-y-auto p-4 sm:p-8">
-        
-        <div class="mb-8">
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Trabajos Pendientes</h1>
-          <p class="text-slate-500 mt-1">Revisa las hojas de fabricacion y los planos asignados para hoy.</p>
-        </div>
-  
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          @if (pedidosArray().length > 0) {
-          @for (pedido of pedidosArray() ; track $index) {
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-              <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        @if (pedidosArray().length > 0) {
+          @for (pedido of pedidosArray(); track $index) {
+            <div
+              class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow"
+            >
+              <div
+                class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50"
+              >
                 <div class="flex items-center gap-3">
-                  <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full uppercase tracking-wide">
-                    {{pedido.estado_fabricacion}}
+                  <span
+                    class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full uppercase tracking-wide"
+                  >
+                    {{ pedido.estado_fabricacion }}
                   </span>
-                  <span class="text-sm font-semibold text-slate-500">Ref: {{pedido.numero_pedido}}</span>
+                  <span class="text-sm font-semibold text-slate-500"
+                    >Ref: {{ pedido.numero_pedido }}</span
+                  >
                 </div>
-                <span class="text-sm text-slate-400 flex items-center gap-1"><mat-icon class="text-sm">event</mat-icon> Entrega: {{pedido.fecha_entrega_estimada}}</span>
+                <span class="text-sm text-slate-400 flex items-center gap-1"
+                  ><mat-icon class="text-sm">event</mat-icon> Entrega:
+                  {{ pedido.fecha_entrega_estimada }}</span
+                >
               </div>
-              
+
               <div class="p-6">
-                <h3 class="text-xl font-bold text-slate-800 mb-2">{{pedido.cliente_nombre}}</h3>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">{{ pedido.cliente_nombre }}</h3>
                 <p class="text-slate-600 text-sm mb-6 flex items-start gap-2">
                   <mat-icon class="text-slate-400 text-sm mt-0.5">location_on</mat-icon>
-                  Ubicación: @if (pedido.cliente_direccion) {
-                    {{pedido.cliente_direccion}}
+                  Ubicación:
+                  @if (pedido.cliente_direccion) {
+                    {{ pedido.cliente_direccion }}
                   } @else {
                     Direccion no disponible
                   }
                 </p>
-                
+
                 <div class="grid grid-cols-2 gap-3">
-                  <button class="flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 font-medium transition-colors">
+                  <button
+                    class="flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 font-medium transition-colors"
+                  >
                     <mat-icon class="text-red-500">picture_as_pdf</mat-icon>
                     Ver Plano / PDF
                   </button>
-                  <button class="flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm">
+                  <button
+                    class="flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
+                  >
                     <mat-icon>precision_manufacturing</mat-icon>
                     Hoja Fabricacion
                   </button>
                 </div>
                 <div>
-                  <button class="flex mt-5 w-full items-center justify-center gap-2 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors shadow-sm"
-                  (click)="marcarFabricado(pedido.id)">
+                  <button
+                    class="flex mt-5 w-full items-center justify-center gap-2 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors shadow-sm"
+                    (click)="marcarFabricado(pedido.id)"
+                  >
                     <mat-icon>check_circle</mat-icon>
                     Marcar como Fabricado
                   </button>
@@ -101,12 +79,12 @@
               </div>
             </div>
           }
-          } @else {
-            <div class="flex items-center justify-center">
-              <p class="text-slate-500">No hay pedidos pendientes</p>
-            </div>
-          }
-        </div>
+        } @else {
+          <div class="flex items-center justify-center">
+            <p class="text-slate-500 text-center">No hay pedidos pendientes</p>
+          </div>
+        }
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
+</div>
