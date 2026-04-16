@@ -1,0 +1,96 @@
+<aside
+  class="w-64 h-screen sticky top-0 self-start bg-slate-900 text-white flex-col hidden md:flex shadow-2xl z-10"
+>
+  <div class="h-16 flex items-center px-6 border-b border-slate-700 bg-slate-950">
+    <mat-icon class="text-blue-500 mr-2">business</mat-icon>
+    <span class="text-lg font-bold tracking-wider">CASTILFAC</span>
+  </div>
+
+  <div class="p-6 border-b border-slate-800">
+    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Conectado como</p>
+    <div class="flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md"
+      >
+        AD
+      </div>
+      <div>
+        <p class="font-bold text-sm">Administrador</p>
+        <p class="text-xs text-emerald-400 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Gerencia
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Principal</p>
+
+    <a
+      routerLink="/inicioadmin"
+      routerLinkActive="!bg-blue-600 !text-white shadow-md"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    >
+      <mat-icon>dashboard</mat-icon>
+      <span class="font-medium text-sm">Panel de Control</span>
+    </a>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 px-3 py-2.5 w-full text-left rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    >
+      <mat-icon>request_quote</mat-icon>
+      <span class="font-medium text-sm">Presupuestos</span>
+    </button>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 px-3 py-2.5 w-full text-left rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    >
+      <mat-icon>category</mat-icon>
+      <span class="font-medium text-sm">Catalogo y Precios</span>
+    </button>
+
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-2">
+      Administracion
+    </p>
+
+    <a
+      routerLink="/inicioadmin/gestion-personal"
+      routerLinkActive="!bg-blue-600 !text-white shadow-md"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    >
+      <mat-icon>groups</mat-icon>
+      <span class="font-medium text-sm">Gestion de Personal</span>
+    </a>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 px-3 py-2.5 w-full text-left rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    >
+      <mat-icon>inventory_2</mat-icon>
+      <span class="font-medium text-sm">Trabajos y Estados</span>
+    </button>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 px-3 py-2.5 w-full text-left rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    >
+      <mat-icon>settings</mat-icon>
+      <span class="font-medium text-sm">Configuracion</span>
+    </button>
+  </nav>
+
+  <div class="p-4 border-t border-slate-800 bg-slate-900">
+    <button
+      class="flex items-center gap-3 px-4 py-2 w-full text-slate-400 hover:text-red-400 transition-colors"
+    >
+      <mat-icon>logout</mat-icon>
+      <span class="font-medium text-sm">Cerrar Sesion</span>
+    </button>
+  </div>
+</aside>
