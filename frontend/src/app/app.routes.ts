@@ -161,6 +161,11 @@ export const routes: Routes = [
           import('./components/inicioadmin/presupuestos/presupuestos').then((m) => m.Presupuestos),
       },
       {
+        path: 'pedidos',
+        loadComponent: () =>
+          import('./components/inicioadmin/pedidos/pedidos').then((m) => m.Pedidos),
+      },
+      {
         path: 'gestion-personal',
         loadComponent: () =>
           import('./components/inicioadmin/gestion-personal/gestion-personal').then(
