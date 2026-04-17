@@ -31,9 +31,9 @@
             <mat-icon class="text-blue-600">request_quote</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">24</p>
+        <p class="text-3xl font-bold text-slate-800">AGREGAR DESPUES</p>
         <p class="text-sm text-emerald-600 mt-2 flex items-center gap-1 font-medium">
-          <mat-icon class="text-sm">trending_up</mat-icon> +12% que el mes pasado
+          <mat-icon class="text-sm">trending_up</mat-icon> CALCULAR PORCENTAJE DESPUES% que el mes pasado
         </p>
       </div>
 
@@ -44,7 +44,7 @@
             <mat-icon class="text-amber-600">precision_manufacturing</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">7</p>
+        <p class="text-3xl font-bold text-slate-800">AGREGAR DESPUES</p>
         <p class="text-sm text-slate-500 mt-2 font-medium">En cola o fabricacion</p>
       </div>
 
@@ -55,7 +55,7 @@
             <mat-icon class="text-emerald-600">euro</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">14.250 €</p>
+        <p class="text-3xl font-bold text-slate-800">AGREGAR DESPUES</p>
         <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aceptados</p>
       </div>
 
@@ -66,7 +66,7 @@
             <mat-icon class="text-purple-600">groups</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">3</p>
+        <p class="text-3xl font-bold text-slate-800">{{ numeroUsuarios() }}</p>
         <p class="text-sm text-slate-500 mt-2 font-medium">Operarios en el sistema</p>
       </div>
     </div>
@@ -75,6 +75,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
         class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+        routerLink="/inicioadmin/presupuestos"
       >
         <div class="flex items-center gap-4">
           <div
@@ -83,10 +84,7 @@
             <mat-icon class="text-blue-600 group-hover:text-white">add_circle</mat-icon>
           </div>
           <div>
-            <h4
-              class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors"
-              routerLink="/inicioadmin/presupuestos"
-            >
+            <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
               Crear Presupuesto
             </h4>
             <p class="text-xs text-slate-500 mt-0.5">Diseñar ventanas, puertas...</p>
