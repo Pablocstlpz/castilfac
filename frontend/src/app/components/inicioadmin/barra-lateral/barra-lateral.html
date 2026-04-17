@@ -37,13 +37,16 @@
       <span class="font-medium text-sm">Panel de Control</span>
     </a>
 
-    <button
-      type="button"
-      class="flex items-center gap-3 px-3 py-2.5 w-full text-left rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+    <a
+      routerLink="/inicioadmin/pedidos"
+      routerLinkActive="!bg-blue-600 !text-white shadow-md"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
     >
       <mat-icon>request_quote</mat-icon>
-      <span class="font-medium text-sm">Presupuestos</span>
-    </button>
+      <span class="font-medium text-sm">Pedidos</span>
+    </a>
 
     <button
       type="button"
