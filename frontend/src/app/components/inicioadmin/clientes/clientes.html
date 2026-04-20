@@ -1,0 +1,107 @@
+<!-- IMPLEMENTAR TODA LOGICA Y VER LOS DETALLES Y EDITAR Y AGREGAR CLIENTES -->
+
+<div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 min-h-screen pb-24 font-sans">
+  <div class="sm:flex sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+        <mat-icon class="text-indigo-600 text-3xl">people</mat-icon>
+        Cartera de Clientes
+      </h1>
+      <p class="text-slate-500 mt-1">Gestiona los datos de contacto y condiciones comerciales.</p>
+    </div>
+    <button
+      class="mt-4 sm:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 transition-all flex items-center gap-2"
+    >
+      <mat-icon>person_add</mat-icon>
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <div
+    class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center"
+  >
+    <div class="flex-1 min-w-[300px] relative">
+      <mat-icon class="absolute left-3 top-2.5 text-slate-400">search</mat-icon>
+      <input
+        type="text"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        placeholder="Buscar por nombre o NIF..."
+        class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+      />
+    </div>
+
+    <select
+      [ngModel]="filtroTipo()"
+      (ngModelChange)="filtroTipo.set($event)"
+      class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+    >
+      <option value="todos">Todos los tipos</option>
+      <option value="particular">Particular</option>
+      <option value="empresa">Empresa</option>
+      <option value="vip">VIP</option>
+    </select>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Cliente</th>
+          <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">NIF/CIF</th>
+          <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Tipo</th>
+          <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Dto. Fijo</th>
+          <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        @for (cliente of clientesFiltrados(); track cliente.id) {
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="text-sm font-bold text-slate-900">
+                {{ cliente.nombre_empresa_o_particular }}
+              </div>
+              <div class="text-xs text-slate-500">{{ cliente.email }}</div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600 font-mono">
+              {{ cliente.nif_cif || '---' }}
+            </td>
+            <td class="px-6 py-4">
+              <span
+                [ngClass]="{
+                  'bg-blue-100 text-blue-700 border-blue-200':
+                    cliente.tipo_cliente === 'particular',
+                  'bg-indigo-100 text-indigo-700 border-indigo-200':
+                    cliente.tipo_cliente === 'empresa',
+                  'bg-amber-100 text-amber-700 border-amber-200': cliente.tipo_cliente === 'vip',
+                  'bg-purple-100 text-purple-700 border-purple-200':
+                    cliente.tipo_cliente === 'mayorista',
+                }"
+                class="px-2.5 py-1 rounded-full text-[10px] font-black border uppercase"
+              >
+                {{ cliente.tipo_cliente }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm font-bold text-slate-700">
+              {{ cliente.descuento_fijo }}%
+            </td>
+            <td class="px-6 py-4 text-right space-x-2">
+              <button class="text-slate-400 hover:text-indigo-600 transition-colors">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button class="text-slate-400 hover:text-blue-600 transition-colors">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                (click)="eliminarCliente(cliente.id)"
+                class="text-slate-400 hover:text-red-600 transition-colors"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
