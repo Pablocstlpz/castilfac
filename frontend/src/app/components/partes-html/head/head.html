@@ -1,7 +1,7 @@
 <header>
   <nav class="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
     <div class="flex flex-wrap justify-between items-center mx-auto max-w-7xl">
-      <a routerLink="/" class="flex items-center">
+      <a class="flex items-center" [routerLink]="rutaInicio()">
         <img src="/img/Logo-castilfac.png" class="mr-3 h-6 sm:h-9" alt="" />
         <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white"
           >CastilFac</span
@@ -16,7 +16,6 @@
             Cerrar sesión
           </button>
           <a
-            [routerLink]="rutaPerfil()"
             class="text-blue-700 bg-blue-50 hover:bg-blue-100 focus:ring-4 focus:ring-blue-200 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none border border-blue-100"
             >Perfil</a
           >

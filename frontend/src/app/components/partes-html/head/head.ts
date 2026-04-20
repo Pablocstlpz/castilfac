@@ -21,15 +21,13 @@ export class Head {
     this.router.navigate(['/sesioncerrada']);
   }
 
-  rutaPerfil(): string {
+  rutaInicio(): string {
     if (this.usuario?.rol === 'admin') {
       return '/inicioadmin';
-    }
-
-    if (this.usuario?.rol === 'operario') {
+    } else if (this.usuario?.rol === 'operario') {
       return '/iniciooperario';
+    } else {
+      return '/';
     }
-
-    return '/company';
   }
 }
