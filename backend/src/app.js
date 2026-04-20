@@ -1,38 +1,40 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
 
-import { PORT } from './config.js'
-import { empresasRoutes } from './routes/empresas.route.js';
-import { usuariosRoutes } from './routes/usuarios.route.js';
-import { pedidosRoutes } from './routes/pedidos.route.js';
+import { PORT } from "./config.js";
+import { empresasRoutes } from "./routes/empresas.route.js";
+import { usuariosRoutes } from "./routes/usuarios.route.js";
+import { pedidosRoutes } from "./routes/pedidos.route.js";
+import { clientesRoutes } from "./routes/clientes.routes.js";
 
 const app = express();
 
 const corsOption = {
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 app.use(cors(corsOption)); //habilitar cors
 
 app.use(express.json()); // Para parsear JSON en el body
 
 // Usar las rutas directas); // No necesitas añadir un prefijo aquí
-app.use('/api', empresasRoutes);
-app.use('/api', usuariosRoutes);
-app.use('/api', pedidosRoutes);
+app.use("/api", empresasRoutes);
+app.use("/api", usuariosRoutes);
+app.use("/api", pedidosRoutes);
+app.use("/api", clientesRoutes);
 
-app.get('/', (req, res) => {
-    res.json({
-        message: 'API REST con Express.js',
-    })
+app.get("/", (req, res) => {
+  res.json({
+    message: "API REST con Express.js",
+  });
 });
 // Manejar rutas no encontradas (404)
 app.use((req, res) => {
-    res.status(404).json({ message: 'Página no encontrada' });
+  res.status(404).json({ message: "Página no encontrada" });
 });
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
