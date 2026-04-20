@@ -34,6 +34,29 @@ export const getPedidos = async (req, res) => {
   }
 };
 
+//OBTENER PEDIDO POR SU ID
+export const getPedidoById = async (req, res) => {
+  try {
+    //obtengo el id del pedido de URL
+    const { id } = req.params;
+    // busco el pedido por su id
+    const pedido = await Pedido.findByPk(id);
+
+    //valido que haya pedidos, si no hay digo que no hay
+    if (!pedido) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    //devuelvo el pedido
+    res.status(200).json(pedido);
+  } catch (error) {
+    //muestro el error por consola
+    console.log(error);
+    //devuelvo un mensaje de error
+    res.status(500).json({ message: "Error al obtener el pedido" });
+  }
+};
+
 //BUSCAR PEDIDO POR OPERARIO
 export const getPedidosByOperario = async (req, res) => {
   try {
@@ -67,11 +90,9 @@ export const getPedidosByOperario = async (req, res) => {
     //muestro el error por consola
     console.log(error);
     //devuelvo un mensaje de error
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener los pedidos asignados a este operario",
-      });
+    res.status(500).json({
+      message: "Error al obtener los pedidos asignados a este operario",
+    });
   }
 };
 
@@ -111,6 +132,73 @@ export const getPedidosByEmpresa = async (req, res) => {
 };
 
 //AÑADIR PEDIDO
+
+//ACTUALIZAR PEDIDO
+export const updatePedido = async (req, res) => {
+  try {
+    //obtengo el id del pedido de URL
+    const { id } = req.params;
+    //obtengo los datos del pedido del body
+    const {
+      cliente_id,
+      estado_fabricacion,
+      fecha_inicio_estimada,
+      fecha_entrega_estimada,
+      fecha_entrega_real,
+      fecha_instalacion,
+      importe_acordado,
+      importe_pagado,
+      operario_asignado_id,
+      notas_operario,
+    } = req.body;
+
+    //busco el pedido por su id
+    const pedido = await Pedido.findByPk(id);
+
+    //valido que el pedido exista
+    if (!pedido) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    const camposActualizar = {
+      cliente_id,
+      estado_fabricacion,
+      fecha_inicio_estimada,
+      fecha_entrega_estimada,
+      fecha_entrega_real,
+      fecha_instalacion,
+      importe_acordado,
+      importe_pagado,
+      operario_asignado_id,
+      notas_operario,
+      fecha_actualizacion: new Date(),
+    };
+
+    //elimino campos no enviados para permitir actualizaciones parciales
+    Object.keys(camposActualizar).forEach((campo) => {
+      if (camposActualizar[campo] === undefined) {
+        delete camposActualizar[campo];
+      }
+    });
+
+    if (Object.keys(camposActualizar).length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No se han enviado campos para actualizar" });
+    }
+
+    //actualizo los datos del pedido
+    await pedido.update(camposActualizar);
+
+    //confirmo que el pedido se ha actualizado
+    res.status(200).json({ message: "Pedido actualizado correctamente" });
+  } catch (error) {
+    //muestro el error por consola
+    console.log(error);
+    //devuelvo un mensaje de error
+    res.status(500).json({ message: "Error al actualizar el pedido" });
+  }
+};
 
 //BORRAR PEDIDO
 export const deletePedido = async (req, res) => {
