@@ -1,3 +1,5 @@
+<!-- FALTA IMPLEMENTAR PODER VER UN SOLO PEDIDIO DETALLADO -->
+
 <div class="flex-1 overflow-y-auto h-full p-4 sm:p-8 bg-slate-50 font-sans">
   <div class="sm:flex sm:items-center sm:justify-between mb-8 border-b border-slate-200 pb-5">
     <div>
@@ -15,23 +17,99 @@
 
   <div class="flex flex-wrap gap-2 mb-6">
     <button
-      (click)="filtroActual.set('todos')"
+      (click)="filtrarPedidos('todos')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
       [class.bg-slate-900]="filtroActual() === 'todos'"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+      [class.text-white]="filtroActual() === 'todos'"
+      [class.bg-white]="filtroActual() !== 'todos'"
+      [class.text-slate-600]="filtroActual() !== 'todos'"
+      [class.border-slate-200]="filtroActual() !== 'todos'"
     >
       Todos
     </button>
+
     <button
-      (click)="filtroActual.set('en_fabricacion')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+      (click)="filtrarPedidos('pendiente')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-amber-500]="filtroActual() === 'pendiente'"
+      [class.text-white]="filtroActual() === 'pendiente'"
+      [class.bg-amber-50]="filtroActual() !== 'pendiente'"
+      [class.text-amber-700]="filtroActual() !== 'pendiente'"
+      [class.border-amber-200]="filtroActual() !== 'pendiente'"
+    >
+      Pendientes
+    </button>
+
+    <button
+      (click)="filtrarPedidos('en_fabricacion')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-blue-600]="filtroActual() === 'en_fabricacion'"
+      [class.text-white]="filtroActual() === 'en_fabricacion'"
+      [class.bg-blue-50]="filtroActual() !== 'en_fabricacion'"
+      [class.text-blue-700]="filtroActual() !== 'en_fabricacion'"
+      [class.border-blue-200]="filtroActual() !== 'en_fabricacion'"
     >
       En Fabricacion
     </button>
+
     <button
-      (click)="filtroActual.set('pendiente')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+      (click)="filtrarPedidos('fabricado')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-sky-500]="filtroActual() === 'fabricado'"
+      [class.text-white]="filtroActual() === 'fabricado'"
+      [class.bg-sky-50]="filtroActual() !== 'fabricado'"
+      [class.text-sky-700]="filtroActual() !== 'fabricado'"
+      [class.border-sky-200]="filtroActual() !== 'fabricado'"
     >
-      Pendientes
+      Fabricados
+    </button>
+
+    <button
+      (click)="filtrarPedidos('entregado')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-cyan-600]="filtroActual() === 'entregado'"
+      [class.text-white]="filtroActual() === 'entregado'"
+      [class.bg-cyan-50]="filtroActual() !== 'entregado'"
+      [class.text-cyan-700]="filtroActual() !== 'entregado'"
+      [class.border-cyan-200]="filtroActual() !== 'entregado'"
+    >
+      Entregados
+    </button>
+
+    <button
+      (click)="filtrarPedidos('instalado')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-fuchsia-600]="filtroActual() === 'instalado'"
+      [class.text-white]="filtroActual() === 'instalado'"
+      [class.bg-fuchsia-50]="filtroActual() !== 'instalado'"
+      [class.text-fuchsia-700]="filtroActual() !== 'instalado'"
+      [class.border-fuchsia-200]="filtroActual() !== 'instalado'"
+    >
+      Instalados
+    </button>
+
+    <button
+      (click)="filtrarPedidos('finalizado')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-emerald-600]="filtroActual() === 'finalizado'"
+      [class.text-white]="filtroActual() === 'finalizado'"
+      [class.bg-emerald-50]="filtroActual() !== 'finalizado'"
+      [class.text-emerald-700]="filtroActual() !== 'finalizado'"
+      [class.border-emerald-200]="filtroActual() !== 'finalizado'"
+    >
+      Finalizados
+    </button>
+
+    <button
+      (click)="filtrarPedidos('cancelado')"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
+      [class.bg-red-600]="filtroActual() === 'cancelado'"
+      [class.text-white]="filtroActual() === 'cancelado'"
+      [class.bg-red-50]="filtroActual() !== 'cancelado'"
+      [class.text-red-700]="filtroActual() !== 'cancelado'"
+      [class.border-red-200]="filtroActual() !== 'cancelado'"
+    >
+      Cancelado
     </button>
   </div>
 
@@ -73,7 +151,10 @@
             <tr class="hover:bg-slate-50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="text-sm font-bold text-slate-900">{{ pedido.numero_pedido }}</div>
-                <div class="text-xs text-slate-500">ID Cliente: #{{ pedido.cliente_id }}</div>
+                <div class="text-xs text-slate-500 font-medium">
+                  {{ getNombreCliente(pedido.cliente_id) }}
+                  <span class="text-slate-400 font-normal">(#{{ pedido.cliente_id }})</span>
+                </div>
               </td>
 
               <td class="px-6 py-4">
@@ -83,12 +164,18 @@
                       pedido.estado_fabricacion === 'pendiente',
                     'bg-blue-100 text-blue-700 border-blue-200':
                       pedido.estado_fabricacion === 'en_fabricacion',
+                    'bg-sky-100 text-sky-700 border-sky-200':
+                      pedido.estado_fabricacion === 'fabricado',
+                    'bg-cyan-100 text-cyan-700 border-cyan-200':
+                      pedido.estado_fabricacion === 'entregado',
+                    'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200':
+                      pedido.estado_fabricacion === 'instalado',
                     'bg-emerald-100 text-emerald-700 border-emerald-200':
                       pedido.estado_fabricacion === 'finalizado',
-                    'bg-slate-100 text-slate-600 border-slate-200':
-                      pedido.estado_fabricacion === 'fabricado',
+                    'bg-red-100 text-red-700 border-red-200':
+                      pedido.estado_fabricacion === 'cancelado',
                   }"
-                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border"
+                  class="inline-flex items-center justify-center w-32.5 px-2.5 py-1.5 rounded-full text-[11px] font-extrabold border tracking-wider"
                 >
                   {{ pedido.estado_fabricacion | uppercase }}
                 </span>
@@ -97,22 +184,30 @@
               <td class="px-6 py-4">
                 <div class="flex items-center gap-2">
                   <div
-                    class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600"
+                    class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200"
                   >
-                    {{ pedido.operario_asignado_id ? 'OP' : '?' }}
-                  </div>
-                  <span class="text-sm text-slate-700">
                     {{
                       pedido.operario_asignado_id
-                        ? 'ID: ' + pedido.operario_asignado_id
-                        : 'Sin asignar'
+                        ? (getNombreOperario(pedido.operario_asignado_id).charAt(0) | uppercase)
+                        : '?'
                     }}
-                  </span>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-slate-700">
+                      {{ getNombreOperario(pedido.operario_asignado_id) }}
+                    </span>
+                    @if (pedido.operario_asignado_id) {
+                      <span class="text-[10px] text-slate-400"
+                        >ID: #{{ pedido.operario_asignado_id }}</span
+                      >
+                    }
+                  </div>
                 </div>
               </td>
 
               <td class="px-6 py-4">
-                <div class="w-full max-w-[100px]">
+                <div class="w-full max-w-25">
                   <div class="flex justify-between mb-1">
                     <span class="text-[10px] font-bold text-slate-500">
                       {{ calcularPorcentajePago(pedido.importe_acordado, pedido.importe_pagado) }}%
@@ -134,7 +229,10 @@
               </td>
 
               <td class="px-6 py-4 text-right">
-                <button class="text-slate-400 hover:text-blue-600 transition-colors">
+                <button
+                  class="text-slate-400 hover:text-blue-600 transition-colors"
+                  [routerLink]="['/inicioadmin/pedidos/pedido-detallado', pedido.id]"
+                >
                   <mat-icon>visibility</mat-icon>
                 </button>
               </td>
