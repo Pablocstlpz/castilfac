@@ -166,6 +166,25 @@ export const routes: Routes = [
           import('./components/inicioadmin/pedidos/pedidos').then((m) => m.Pedidos),
       },
       {
+        path: 'pedidos/pedido-detallado/:id',
+        loadComponent: () =>
+          import('./components/inicioadmin/pedidos/detalle-pedido/detalle-pedido').then(
+            (m) => m.DetallePedido,
+          ),
+      },
+      {
+        path: 'clientes',
+        loadComponent: () =>
+          import('./components/inicioadmin/clientes/clientes').then((m) => m.Clientes),
+      },
+      {
+        path: 'clientes/detalle-cliente',
+        loadComponent: () =>
+          import('./components/inicioadmin/clientes/detalle-cliente/detalle-cliente').then(
+            (m) => m.DetalleCliente,
+          ),
+      },
+      {
         path: 'gestion-personal',
         loadComponent: () =>
           import('./components/inicioadmin/gestion-personal/gestion-personal').then(
