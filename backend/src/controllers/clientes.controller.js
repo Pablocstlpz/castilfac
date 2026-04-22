@@ -1,4 +1,4 @@
-import { Cliente } from "../models/clientes.model.js";
+import { Cliente } from "../models/cliente.model.js";
 import { sequelize } from "../data/db.js";
 
 //FALTAN VALIDACIONES

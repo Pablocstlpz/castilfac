@@ -1,4 +1,4 @@
-import { Pedido } from "../models/pedidos.model.js";
+import { Pedido } from "../models/pedido.model.js";
 import { sequelize } from "../data/db.js";
 
 const PEDIDOS_WITH_CLIENTE_SELECT = `
