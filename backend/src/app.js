@@ -5,7 +5,13 @@ import { PORT } from "./config.js";
 import { empresasRoutes } from "./routes/empresas.route.js";
 import { usuariosRoutes } from "./routes/usuarios.route.js";
 import { pedidosRoutes } from "./routes/pedidos.route.js";
-import { clientesRoutes } from "./routes/clientes.routes.js";
+import { clientesRoutes } from "./routes/clientes.route.js";
+import { categoriasRoutes } from "./routes/categorias.route.js";
+import { materialesRoutes } from "./routes/materiales.route.js";
+import { preciosEmpresaRoutes } from "./routes/preciosEmpresa.route.js";
+import { plantillasProductosRoutes } from "./routes/plantillasProductos.routes.js";
+import { plantillasMaterialesRoutes } from "./routes/plantillasMateriales.route.js";
+import { presupuestosRoutes } from "./routes/presupuestos.route.js";
 
 const app = express();
 
@@ -23,6 +29,12 @@ app.use("/api", empresasRoutes);
 app.use("/api", usuariosRoutes);
 app.use("/api", pedidosRoutes);
 app.use("/api", clientesRoutes);
+app.use("/api", categoriasRoutes);
+app.use("/api", materialesRoutes);
+app.use("/api", preciosEmpresaRoutes);
+app.use("/api", plantillasProductosRoutes);
+app.use("/api", plantillasMaterialesRoutes);
+app.use("/api", presupuestosRoutes);
 
 app.get("/", (req, res) => {
   res.json({
