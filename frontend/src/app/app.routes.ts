@@ -185,6 +185,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'catalogo-y-precios',
+        loadComponent: () =>
+          import('./components/inicioadmin/catalogo-y-precios/catalogo-y-precios').then(
+            (m) => m.CatalogoYPrecios,
+          ),
+      },
+      {
         path: 'gestion-personal',
         loadComponent: () =>
           import('./components/inicioadmin/gestion-personal/gestion-personal').then(
