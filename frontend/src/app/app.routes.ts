@@ -178,10 +178,17 @@ export const routes: Routes = [
           import('./components/inicioadmin/clientes/clientes').then((m) => m.Clientes),
       },
       {
-        path: 'clientes/detalle-cliente',
+        path: 'clientes/detalle-cliente/:id',
         loadComponent: () =>
           import('./components/inicioadmin/clientes/detalle-cliente/detalle-cliente').then(
             (m) => m.DetalleCliente,
+          ),
+      },
+      {
+        path: 'clientes/formulario-cliente',
+        loadComponent: () =>
+          import('./components/inicioadmin/clientes/cliente-formulario/cliente-formulario').then(
+            (m) => m.ClienteFormulario,
           ),
       },
       {
