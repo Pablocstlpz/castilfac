@@ -4,13 +4,13 @@ import { Router } from "express";
 import {
   obtenerMateriales,
   obtenerMaterialPorId,
+  toggleActivoMaterial,
 } from "../controllers/materiales.controller.js";
 
 const router = Router();
 
-// Ruta para obtener todos los materiales
 router.get("/materiales", obtenerMateriales);
-// Ruta para obtener un material por su ID
 router.get("/materiales/:id", obtenerMaterialPorId);
+router.patch("/materiales/:id/activo", toggleActivoMaterial);
 
 export { router as materialesRoutes };
