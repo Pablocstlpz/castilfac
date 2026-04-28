@@ -9,7 +9,7 @@ import { Material } from '../interfaces/material';
   providedIn: 'root',
 })
 export class Materiales {
-  private URL = environment.apiUrl;
+  private URL = environment.apiUrl
 
   private httpOptions = {
     headers: new HttpHeaders({
@@ -28,12 +28,16 @@ export class Materiales {
     );
   }
 
-  //obtener un material por id
   getMaterial(id: number): Observable<Material> {
-    return this.http.get<Material>(`${this.URL}/materiales/${id}`).pipe(
-      map((response) => response), // Aseguramos que la respuesta se trate como un objeto Material
-      catchError(this.handleError),
-    );
+    return this.http
+      .get<Material>(`${this.URL}/materiales/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  toggleActivo(id: number): Observable<Material> {
+    return this.http
+      .patch<Material>(`${this.URL}/materiales/${id}/activo`, {}, this.httpOptions)
+      .pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse) {
