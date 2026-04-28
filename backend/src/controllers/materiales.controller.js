@@ -24,15 +24,31 @@ export const obtenerMaterialPorId = async (req, res) => {
     const { id } = req.params;
     const material = await Material.findByPk(id);
 
-    //validar que el resultado no sea nulo
     if (!material) {
       return res.status(404).json({ error: "Material no encontrado" });
     }
 
-    //si hay datos, envio el resultado como JSON
     res.status(200).json(material);
   } catch (error) {
     console.error("Error al obtener material por ID:", error);
     res.status(500).json({ error: "Error al obtener material por ID" });
+  }
+};
+
+export const toggleActivoMaterial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const material = await Material.findByPk(id);
+
+    if (!material) {
+      return res.status(404).json({ error: "Material no encontrado" });
+    }
+
+    await material.update({ activo: !material.activo });
+
+    res.status(200).json(material);
+  } catch (error) {
+    console.error("Error al cambiar estado del material:", error);
+    res.status(500).json({ error: "Error al cambiar estado del material" });
   }
 };
