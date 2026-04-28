@@ -46,6 +46,14 @@ export class PedidosServices {
     );
   }
 
+  //BUSCAR PEDIDOS POR ID CLIENTE
+  getPedidosByCliente(id: number): Observable<Pedido[]> {
+    return this.http.get<Pedido[]>(`${this.URL}/pedidos/cliente/${id}`).pipe(
+      map((response) => response),
+      catchError(this.handleError),
+    );
+  }
+
   //BUSCAR PEDIDO POR ID OPERARIO
   getPedidosByOperario(id: number): Observable<Pedido[]> {
     return this.http.get<Pedido[]>(`${this.URL}/pedidos/operario/${id}`).pipe(
