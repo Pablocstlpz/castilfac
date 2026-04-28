@@ -12,6 +12,10 @@ import { preciosEmpresaRoutes } from "./routes/preciosEmpresa.route.js";
 import { plantillasProductosRoutes } from "./routes/plantillasProductos.routes.js";
 import { plantillasMaterialesRoutes } from "./routes/plantillasMateriales.route.js";
 import { presupuestosRoutes } from "./routes/presupuestos.route.js";
+import { elementosRoutes } from "./routes/elementos.route.js";
+import { elementosMaterialesRoutes } from "./routes/elementosMateriales.route.js";
+import { historialPreciosBaseRoutes } from "./routes/historialPreciosBase.route.js";
+import { historialPreciosEmpresaRoutes } from "./routes/historialPreciosEmpresa.route.js";
 
 const app = express();
 
@@ -35,6 +39,10 @@ app.use("/api", preciosEmpresaRoutes);
 app.use("/api", plantillasProductosRoutes);
 app.use("/api", plantillasMaterialesRoutes);
 app.use("/api", presupuestosRoutes);
+app.use("/api", elementosRoutes);
+app.use("/api", elementosMaterialesRoutes);
+app.use("/api", historialPreciosBaseRoutes);
+app.use("/api", historialPreciosEmpresaRoutes);
 
 app.get("/", (req, res) => {
   res.json({
