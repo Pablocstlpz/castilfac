@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { UsuariosServices } from '../../../services/usuarios';
 import { Usuario } from '../../../interfaces/usuario';
 import { Router } from '@angular/router';
@@ -6,23 +6,34 @@ import { Authentication } from '../../../services/authentication';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { UpperCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-gestion-personal',
-  imports: [MatIcon, DatePipe, UpperCasePipe],
+  imports: [MatIcon, DatePipe, UpperCasePipe, FormsModule],
   templateUrl: './gestion-personal.html',
   styleUrl: './gestion-personal.css',
 })
 export class GestionPersonal {
-  //inyecto el servicio de usuarios
   private usuariosServices = inject(UsuariosServices);
-  //inyecto el servicio de autenticacion
   private authentication = inject(Authentication);
-  //inyecto el router para poder redirigir
   private router = inject(Router);
-  //creo un signal de usuarios que tendra una array de usuarios y se inicializaera vacia
+
   public usuarios = signal<Usuario[]>([]);
+  public busqueda = signal<string>('');
+  public filtroRol = signal<string>('todos');
+
+  public usuariosFiltrados = computed(() => {
+    const q = this.busqueda().toLowerCase().trim();
+    const rol = this.filtroRol();
+    return this.usuarios().filter((u) => {
+      const coincideBusqueda =
+        !q || u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      const coincideRol = rol === 'todos' || u.rol === rol;
+      return coincideBusqueda && coincideRol;
+    });
+  });
 
   //al cargar la pagina
   ngOnInit(): void {
