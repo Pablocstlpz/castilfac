@@ -28,6 +28,13 @@ export class Presupuestos {
     );
   }
 
+  //obtener un presupuesto por su id
+  getPresupuesto(id: number): Observable<Presupuesto> {
+    return this.http
+      .get<Presupuesto>(`${this.URL}/presupuestos/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.log(error);
 
