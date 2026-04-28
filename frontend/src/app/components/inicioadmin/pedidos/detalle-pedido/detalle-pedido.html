@@ -1,234 +1,230 @@
-<div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 min-h-screen pb-24 font-sans">
-  @if (pedido()) {
-    <div class="mb-6 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <button
-          (click)="volverAtras()"
-          class="p-2 bg-white border border-slate-200 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-        >
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-        <div>
-          <h1 class="text-2xl font-extrabold text-slate-900 flex items-center gap-3">
-            {{ pedido().numero_pedido }}
+<div class="h-screen overflow-y-auto p-4 sm:p-8 bg-slate-50 pb-32 font-sans">
 
-            <span
-              [ngClass]="{
-                'bg-amber-100 text-amber-700 border-amber-200':
-                  pedido().estado_fabricacion === 'pendiente',
-                'bg-blue-100 text-blue-700 border-blue-200':
-                  pedido().estado_fabricacion === 'en_fabricacion',
-                'bg-sky-100 text-sky-700 border-sky-200':
-                  pedido().estado_fabricacion === 'fabricado',
-                'bg-cyan-100 text-cyan-700 border-cyan-200':
-                  pedido().estado_fabricacion === 'entregado',
-                'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200':
-                  pedido().estado_fabricacion === 'instalado',
-                'bg-emerald-100 text-emerald-700 border-emerald-200':
-                  pedido().estado_fabricacion === 'finalizado',
-                'bg-red-100 text-red-700 border-red-200':
-                  pedido().estado_fabricacion === 'cancelado',
-              }"
-              class="px-3 py-1 rounded-full text-[11px] font-extrabold border tracking-wider uppercase ml-2"
-            >
-              {{ pedido().estado_fabricacion }}
-            </span>
-          </h1>
-          <p class="text-sm text-slate-500 mt-1">
-            Cliente:
-            <span class="font-bold text-slate-700">
-              {{ pedido()?.cliente?.nombre || pedido()?.cliente_nombre || 'Sin nombre' }}
-            </span>
-            | Tel: {{ pedido()?.cliente?.telefono || 'Sin telefono' }}
-          </p>
-        </div>
+  <!-- Toast de éxito -->
+  @if (mensajeExito()) {
+    <div class="fixed top-6 right-6 z-50 bg-emerald-600 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg flex items-center gap-2">
+      <mat-icon class="text-white text-base">check_circle</mat-icon>
+      {{ mensajeExito() }}
+    </div>
+  }
+
+  @if (pedido()) {
+
+    <!-- CABECERA -->
+    <div class="mb-6 flex items-center gap-4">
+      <button
+        (click)="volverAtras()"
+        class="p-2 bg-white border border-slate-200 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900 flex items-center gap-3">
+          {{ pedido()!.numero_pedido }}
+          <span
+            [ngClass]="{
+              'bg-amber-100 text-amber-700 border-amber-200': pedido()!.estado_fabricacion === 'pendiente',
+              'bg-blue-100 text-blue-700 border-blue-200': pedido()!.estado_fabricacion === 'en_fabricacion',
+              'bg-sky-100 text-sky-700 border-sky-200': pedido()!.estado_fabricacion === 'fabricado',
+              'bg-cyan-100 text-cyan-700 border-cyan-200': pedido()!.estado_fabricacion === 'entregado',
+              'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200': pedido()!.estado_fabricacion === 'instalado',
+              'bg-emerald-100 text-emerald-700 border-emerald-200': pedido()!.estado_fabricacion === 'finalizado',
+              'bg-red-100 text-red-700 border-red-200': pedido()!.estado_fabricacion === 'cancelado',
+            }"
+            class="px-3 py-1 rounded-full text-[11px] font-extrabold border tracking-wider uppercase"
+          >
+            {{ pedido()!.estado_fabricacion }}
+          </span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Cliente: <span class="font-bold text-slate-700">{{ pedido()!.cliente_nombre || 'Sin nombre' }}</span>
+          @if (pedido()!.cliente_direccion) { | {{ pedido()!.cliente_direccion }} }
+        </p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- ========== COLUMNA IZQUIERDA (2/3) ========== -->
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div
-            class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center"
-          >
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <mat-icon class="text-slate-400">format_list_bulleted</mat-icon>
-              Hoja de Fabricacion
-            </h2>
-            <span
-              class="text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200"
-            >
-              {{ elementos().length }} Lineas
-            </span>
-          </div>
 
-          <div class="p-0">
-            <ul class="divide-y divide-slate-100">
-              @for (item of elementos(); track item.id) {
-                <li
-                  class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                >
-                  <div class="flex items-start gap-4">
-                    <div
-                      class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-black text-lg border border-blue-100"
-                    >
-                      {{ item.cantidad }}
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold text-slate-800">{{ item.descripcion }}</p>
-                      <p class="text-xs text-slate-500 mt-1">ID Elemento: #{{ item.id }}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <mat-icon
-                      [class]="item.estado === 'completado' ? 'text-emerald-500' : 'text-slate-300'"
-                    >
-                      {{ item.estado === 'completado' ? 'check_circle' : 'radio_button_unchecked' }}
-                    </mat-icon>
-                  </div>
-                </li>
-              }
-            </ul>
-          </div>
-        </div>
-
-        <div class="bg-amber-50 rounded-2xl shadow-sm border border-amber-200 p-6">
-          <h2 class="text-sm font-bold text-amber-800 flex items-center gap-2 mb-2">
-            <mat-icon class="text-amber-600">warning</mat-icon>
-            Notas del Presupuesto
+        <!-- Fechas del pedido -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <mat-icon class="text-slate-400">info</mat-icon>
+            Información del Pedido
           </h2>
-          <p class="text-sm text-amber-900 leading-relaxed">
-            El cliente ha pedido que los cristales lleven tratamiento acustico. Revisar albaranes
-            del proveedor antes de cortar el aluminio.
-          </p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha Pedido</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">{{ pedido()!.fecha_pedido | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Inicio Estimado</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">
+                {{ pedido()!.fecha_inicio_estimada ? (pedido()!.fecha_inicio_estimada | date: 'dd/MM/yyyy') : '—' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Entrega Estimada</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">
+                {{ pedido()!.fecha_entrega_estimada ? (pedido()!.fecha_entrega_estimada | date: 'dd/MM/yyyy') : '—' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Entrega Real</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">
+                {{ pedido()!.fecha_entrega_real ? (pedido()!.fecha_entrega_real | date: 'dd/MM/yyyy') : '—' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Instalación</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">
+                {{ pedido()!.fecha_instalacion ? (pedido()!.fecha_instalacion | date: 'dd/MM/yyyy') : '—' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Operario</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">{{ getNombreOperario(pedido()!.operario_asignado_id) }}</p>
+            </div>
+          </div>
         </div>
+
+        <!-- Detalle del presupuesto vinculado -->
+        @if (presupuesto()) {
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <mat-icon class="text-slate-400">description</mat-icon>
+                Presupuesto Vinculado
+              </h2>
+              <span class="text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
+                {{ presupuesto()!.numero_presupuesto }}
+              </span>
+            </div>
+            <div class="p-6">
+              <!-- Desglose de costes -->
+              <div class="space-y-3 mb-5">
+                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span class="text-sm text-slate-500">Coste materiales</span>
+                  <span class="text-sm font-semibold text-slate-700">
+                    {{ presupuesto()!.coste_materiales | number: '1.2-2' }} €
+                  </span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span class="text-sm text-slate-500">Coste mano de obra</span>
+                  <span class="text-sm font-semibold text-slate-700">
+                    {{ presupuesto()!.coste_mano_obra | number: '1.2-2' }} €
+                  </span>
+                </div>
+                @if (presupuesto()!.otros_costes) {
+                  <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span class="text-sm text-slate-500">
+                      Otros costes
+                      @if (presupuesto()!.detalle_otros_costes) {
+                        <span class="text-xs text-slate-400 ml-1">({{ presupuesto()!.detalle_otros_costes }})</span>
+                      }
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">
+                      {{ presupuesto()!.otros_costes | number: '1.2-2' }} €
+                    </span>
+                  </div>
+                }
+                @if (presupuesto()!.descuento_aplicado) {
+                  <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span class="text-sm text-slate-500">
+                      Descuento
+                      @if (presupuesto()!.motivo_descuento) {
+                        <span class="text-xs text-slate-400 ml-1">({{ presupuesto()!.motivo_descuento }})</span>
+                      }
+                    </span>
+                    <span class="text-sm font-semibold text-red-500">
+                      -{{ presupuesto()!.descuento_aplicado | number: '1.2-2' }} €
+                    </span>
+                  </div>
+                }
+                <div class="flex justify-between items-center pt-2">
+                  <span class="text-sm font-bold text-slate-800">Precio final</span>
+                  <span class="text-lg font-extrabold text-slate-900">
+                    {{ presupuesto()!.precio_final | number: '1.2-2' }} €
+                  </span>
+                </div>
+              </div>
+
+              <!-- Notas del presupuesto -->
+              @if (presupuesto()!.notas_cliente) {
+                <div class="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
+                  <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">Notas para el cliente</p>
+                  <p class="text-sm text-slate-700">{{ presupuesto()!.notas_cliente }}</p>
+                </div>
+              }
+              @if (presupuesto()!.notas_internas) {
+                <div class="mt-3 bg-amber-50 rounded-xl p-4 border border-amber-100">
+                  <p class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">Notas internas</p>
+                  <p class="text-sm text-slate-700">{{ presupuesto()!.notas_internas }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Notas del pedido / operario -->
+        <div class="bg-amber-50 rounded-2xl shadow-sm border border-amber-200 p-6">
+          <h2 class="text-sm font-bold text-amber-800 flex items-center gap-2 mb-3">
+            <mat-icon class="text-amber-600">edit_note</mat-icon>
+            Notas del Pedido
+          </h2>
+          <textarea
+            [(ngModel)]="notasPedido"
+            rows="4"
+            placeholder="Añade notas o instrucciones para el operario..."
+            class="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:ring-amber-400 focus:border-amber-400 resize-none"
+          ></textarea>
+          <div class="flex justify-end mt-3">
+            <button
+              (click)="guardarNotas()"
+              class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold rounded-lg transition-colors"
+            >
+              Guardar notas
+            </button>
+          </div>
+        </div>
+
       </div>
 
+      <!-- ========== COLUMNA DERECHA (1/3) ========== -->
       <div class="space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-base font-bold text-slate-800 mb-5 flex items-center gap-2">
-            <mat-icon class="text-slate-400">tune</mat-icon>
-            Gestion del Pedido
-          </h2>
 
-          <div class="space-y-5">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"
-                >Cambiar Estado</label
-              >
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  (click)="cambiarEstado('pendiente')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'pendiente'"
-                  class="py-2 text-xs font-bold rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all ring-amber-500 ring-offset-1"
-                >
-                  PENDIENTE
-                </button>
+        <!-- Panel de cobro — arriba para que sea visible sin scroll -->
+        <div class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 text-white relative overflow-hidden">
+          <mat-icon class="absolute -bottom-4 -right-4 text-7xl text-slate-800 opacity-50 pointer-events-none">
+            account_balance_wallet
+          </mat-icon>
 
-                <button
-                  (click)="cambiarEstado('en_fabricacion')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'en_fabricacion'"
-                  class="py-2 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all ring-blue-500 ring-offset-1"
-                >
-                  FABRICANDO
-                </button>
-
-                <button
-                  (click)="cambiarEstado('fabricado')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'fabricado'"
-                  class="py-2 text-xs font-bold rounded-lg border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 transition-all ring-sky-500 ring-offset-1"
-                >
-                  FABRICADO
-                </button>
-
-                <button
-                  (click)="cambiarEstado('entregado')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'entregado'"
-                  class="py-2 text-xs font-bold rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition-all ring-cyan-500 ring-offset-1"
-                >
-                  ENTREGADO
-                </button>
-
-                <button
-                  (click)="cambiarEstado('instalado')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'instalado'"
-                  class="py-2 text-xs font-bold rounded-lg border border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 transition-all ring-fuchsia-500 ring-offset-1"
-                >
-                  INSTALADO
-                </button>
-
-                <button
-                  (click)="cambiarEstado('finalizado')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'finalizado'"
-                  class="py-2 text-xs font-bold rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all ring-emerald-500 ring-offset-1"
-                >
-                  FINALIZADO
-                </button>
-
-                <button
-                  (click)="cambiarEstado('cancelado')"
-                  [class.ring-2]="pedido().estado_fabricacion === 'cancelado'"
-                  class="col-span-2 py-2 text-xs font-bold rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all ring-red-500 ring-offset-1"
-                >
-                  CANCELADO
-                </button>
-              </div>
-            </div>
-
-            <hr class="border-slate-100" />
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"
-                >Asignar a Operario</label
-              >
-              <select
-                (change)="asignarOperario($event)"
-                [value]="pedido().operario_asignado_id"
-                class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
-              >
-                <option value="null">Sin asignar</option>
-                @for (op of usuarios(); track op.id) {
-                  <option [value]="op.id">{{ op!.nombre }}</option>
-                }
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 text-white relative overflow-hidden"
-        >
-          <mat-icon
-            class="absolute -bottom-4 -right-4 text-7xl text-slate-800 opacity-50 pointer-events-none"
-            >account_balance_wallet</mat-icon
-          >
-
-          <h2 class="text-base font-bold mb-4 relative z-10 flex items-center gap-2">
-            Estado de Cobro
-          </h2>
+          <h2 class="text-base font-bold mb-4 relative z-10">Estado de Cobro</h2>
 
           <div class="relative z-10">
             <div class="flex justify-between items-end mb-2">
               <div>
                 <p class="text-xs text-slate-400">Total Acordado</p>
-                <p class="text-xl font-bold">{{ pedido().importe_acordado | number: '1.2-2' }} €</p>
+                <p class="text-xl font-bold">{{ pedido()!.importe_acordado | number: '1.2-2' }} €</p>
               </div>
               <div class="text-right">
                 <p class="text-xs text-slate-400">Pagado</p>
-                <p class="text-lg font-bold text-emerald-400">
-                  {{ pedido().importe_pagado | number: '1.2-2' }} €
-                </p>
+                <p class="text-lg font-bold text-emerald-400">{{ pedido()!.importe_pagado | number: '1.2-2' }} €</p>
               </div>
             </div>
 
-            <div class="w-full bg-slate-700 rounded-full h-2 mb-4">
+            <div class="w-full bg-slate-700 rounded-full h-2 mb-1">
               <div
                 class="bg-emerald-500 h-2 rounded-full transition-all duration-500"
                 [style.width.%]="calcularPorcentajePago()"
               ></div>
             </div>
+            <p class="text-right text-xs text-slate-400 mb-4">{{ calcularPorcentajePago() }}%</p>
 
-            <div class="mt-4 pt-4 border-t border-slate-700 flex gap-2">
+            <div class="pt-4 border-t border-slate-700 flex gap-2">
               <input
                 type="number"
                 [(ngModel)]="nuevoPago"
@@ -245,8 +241,113 @@
             </div>
           </div>
         </div>
+
+        <!-- Panel de gestión -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 class="text-base font-bold text-slate-800 mb-5 flex items-center gap-2">
+            <mat-icon class="text-slate-400">tune</mat-icon>
+            Gestion del Pedido
+          </h2>
+
+          <div class="space-y-5">
+
+            <!-- Cambiar estado -->
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cambiar Estado</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button (click)="cambiarEstado('pendiente')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'pendiente'"
+                  class="py-2 text-xs font-bold rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all ring-amber-500 ring-offset-1">
+                  PENDIENTE
+                </button>
+                <button (click)="cambiarEstado('en_fabricacion')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'en_fabricacion'"
+                  class="py-2 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all ring-blue-500 ring-offset-1">
+                  FABRICANDO
+                </button>
+                <button (click)="cambiarEstado('fabricado')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'fabricado'"
+                  class="py-2 text-xs font-bold rounded-lg border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 transition-all ring-sky-500 ring-offset-1">
+                  FABRICADO
+                </button>
+                <button (click)="cambiarEstado('entregado')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'entregado'"
+                  class="py-2 text-xs font-bold rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition-all ring-cyan-500 ring-offset-1">
+                  ENTREGADO
+                </button>
+                <button (click)="cambiarEstado('instalado')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'instalado'"
+                  class="py-2 text-xs font-bold rounded-lg border border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 transition-all ring-fuchsia-500 ring-offset-1">
+                  INSTALADO
+                </button>
+                <button (click)="cambiarEstado('finalizado')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'finalizado'"
+                  class="py-2 text-xs font-bold rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all ring-emerald-500 ring-offset-1">
+                  FINALIZADO
+                </button>
+                <button (click)="cambiarEstado('cancelado')"
+                  [class.ring-2]="pedido()!.estado_fabricacion === 'cancelado'"
+                  class="col-span-2 py-2 text-xs font-bold rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all ring-red-500 ring-offset-1">
+                  CANCELADO
+                </button>
+              </div>
+            </div>
+
+            <hr class="border-slate-100" />
+
+            <!-- Asignar operario -->
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Asignar a Operario</label>
+              <select
+                (change)="asignarOperario($event)"
+                class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
+              >
+                <option value="null" [selected]="pedido()!.operario_asignado_id === null">Sin asignar</option>
+                @for (op of usuarios(); track op.id) {
+                  <option [value]="op.id" [selected]="pedido()!.operario_asignado_id === op.id">{{ op.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <hr class="border-slate-100" />
+
+            <!-- Fechas de entrega e instalación -->
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Fechas de Entrega e Instalación
+              </label>
+              <div class="space-y-3">
+                <div>
+                  <p class="text-xs text-slate-400 mb-1">Entrega real</p>
+                  <input
+                    type="date"
+                    [(ngModel)]="fechaEntregaReal"
+                    class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
+                  />
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400 mb-1">Instalación</p>
+                  <input
+                    type="date"
+                    [(ngModel)]="fechaInstalacion"
+                    class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
+                  />
+                </div>
+                <button
+                  (click)="guardarFechas()"
+                  class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition-colors"
+                >
+                  Guardar fechas
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
+
   } @else {
     <div class="flex items-center justify-center h-64">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
