@@ -1,9 +1,12 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Cliente } from '../../../interfaces/cliente';
-// import { ClientesServices } from '../../../services/clientes';
+import { ClientesServices } from '../../../services/clientes';
+import { Authentication } from '../../../services/authentication';
 
 @Component({
   selector: 'app-clientes',
@@ -12,15 +15,16 @@ import { Cliente } from '../../../interfaces/cliente';
   styleUrl: './clientes.css',
 })
 export class Clientes {
-  // private clientesService = inject(ClientesServices);
+  private clientesService = inject(ClientesServices);
+  private authentication = inject(Authentication);
+  private router = inject(Router);
 
-  public clientes = signal<Cliente[]>([]);
+  public clientesArray = signal<Cliente[]>([]);
   public busqueda = signal<string>('');
   public filtroTipo = signal<string>('todos');
 
-  // Signal computada para filtrar en tiempo real sin llamar a la API constantemente
   public clientesFiltrados = computed(() => {
-    return this.clientes().filter((c) => {
+    return this.clientesArray().filter((c) => {
       const coincideBusqueda =
         c.nombre_empresa_o_particular.toLowerCase().includes(this.busqueda().toLowerCase()) ||
         c.nif_cif?.toLowerCase().includes(this.busqueda().toLowerCase());
@@ -30,44 +34,67 @@ export class Clientes {
   });
 
   ngOnInit(): void {
-    this.cargarClientes();
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (usuario === null || usuario.rol !== 'admin') {
+      this.router.navigate(['/nopermisos']);
+      return;
+    }
+    this.cargarClientes(usuario.empresa_id);
   }
 
-  cargarClientes(): void {
-    // Simulación de carga. Aquí iría tu: this.clientesService.getClientes().subscribe(...)
-    const ejemplo = [
-      {
-        id: 1,
-        nombre_empresa_o_particular: 'Construcciones Garcia SL',
-        nif_cif: 'B12345678',
-        email: 'info@garcia.com',
-        tipo_cliente: 'empresa',
-        descuento_fijo: 5,
-      },
-      {
-        id: 2,
-        nombre_empresa_o_particular: 'Juan Perez',
-        nif_cif: '12345678Z',
-        email: 'juan@mail.com',
-        tipo_cliente: 'particular',
-        descuento_fijo: 0,
-      },
-      {
-        id: 3,
-        nombre_empresa_o_particular: 'Hotel Transilvania VIP',
-        nif_cif: 'B99887766',
-        email: 'admin@hotel.com',
-        tipo_cliente: 'vip',
-        descuento_fijo: 15,
-      },
-    ];
-    this.clientes.set(ejemplo as any);
+  cargarClientes(empresa_id: number): void {
+    this.clientesService.getClientePorEmpresa(empresa_id).subscribe((clientes) => {
+      this.clientesArray.set(clientes);
+    });
+  }
+
+  verCliente(id: number): void {
+    this.router.navigate(['/inicioadmin/clientes/detalle-cliente', id]);
+  }
+
+  crearCliente(): void {
+    this.router.navigate(['/inicioadmin/clientes/formulario-cliente']);
+  }
+
+  editarCliente(cliente: Cliente): void {
+    this.router.navigate(['/inicioadmin/clientes/formulario-cliente'], {
+      queryParams: { id: cliente.id },
+    });
   }
 
   eliminarCliente(id: number): void {
-    if (confirm('¿Seguro que quieres eliminar este cliente? Se aplicara borrado logico.')) {
-      // this.clientesService.delete(id).subscribe(() => this.cargarClientes());
-      this.clientes.set(this.clientes().filter((c) => c.id !== id));
-    }
+    Swal.fire({
+      title: '¿Eliminar cliente?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      this.clientesService.deleteCliente(id).subscribe({
+        next: () => {
+          const usuario = this.authentication.obtenerUsuarioSesion();
+          if (usuario) this.cargarClientes(usuario.empresa_id);
+          void Swal.fire({
+            title: 'Eliminado',
+            text: 'El cliente ha sido eliminado correctamente.',
+            icon: 'success',
+            confirmButtonColor: '#2563eb',
+          });
+        },
+        error: (err: Error) => {
+          void Swal.fire({
+            title: 'Error',
+            text: err.message ?? 'No se pudo eliminar el cliente.',
+            icon: 'error',
+            confirmButtonColor: '#2563eb',
+          });
+        },
+      });
+    });
   }
 }

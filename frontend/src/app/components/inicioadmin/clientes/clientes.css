@@ -1,0 +1,5 @@
+/* Espaciado personalizado para el título de SweetAlert2 */
+.swal2-title-custom {
+  line-height: 1.5 !important;
+  white-space: pre-line;
+}
