@@ -39,16 +39,23 @@ export const getPedidoById = async (req, res) => {
   try {
     //obtengo el id del pedido de URL
     const { id } = req.params;
-    // busco el pedido por su id
-    const pedido = await Pedido.findByPk(id);
 
-    //valido que haya pedidos, si no hay digo que no hay
-    if (!pedido) {
+    // busco el pedido junto con el nombre y dirección del cliente via JOIN
+    const [pedidos] = await sequelize.query(
+      `
+            ${PEDIDOS_WITH_CLIENTE_SELECT}
+            WHERE p.id = ?
+            `,
+      { replacements: [id] },
+    );
+
+    //valido que exista
+    if (pedidos.length === 0) {
       return res.status(404).json({ message: "Pedido no encontrado" });
     }
 
-    //devuelvo el pedido
-    res.status(200).json(pedido);
+    //devuelvo el pedido (el primero del array)
+    res.status(200).json(pedidos[0]);
   } catch (error) {
     //muestro el error por consola
     console.log(error);
@@ -93,6 +100,39 @@ export const getPedidosByOperario = async (req, res) => {
     res.status(500).json({
       message: "Error al obtener los pedidos asignados a este operario",
     });
+  }
+};
+
+//BUSCAR PEDIDOS POR CLIENTE
+export const getPedidosByCliente = async (req, res) => {
+  try {
+    //obtengo el id del cliente de URL
+    const { id } = req.params;
+
+    // busco los pedidos junto con nombre/dirección del cliente
+    const [pedidos] = await sequelize.query(
+      `
+            ${PEDIDOS_WITH_CLIENTE_SELECT}
+            WHERE p.cliente_id = ?
+            ORDER BY p.id DESC
+            `,
+      { replacements: [id] },
+    );
+
+    //si no hay pedidos devuelvo array vacio para que el frontend no falle
+    if (pedidos.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    //devuelvo los pedidos
+    res.status(200).json(pedidos);
+  } catch (error) {
+    //muestro el error por consola
+    console.log(error);
+    //devuelvo un mensaje de error
+    res
+      .status(500)
+      .json({ message: "Error al obtener los pedidos de este cliente" });
   }
 };
 
