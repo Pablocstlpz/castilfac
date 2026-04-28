@@ -1,7 +1,5 @@
-<!-- FALTA IMPLEMENTAR PODER VER UN SOLO PEDIDIO DETALLADO -->
-
-<div class="flex-1 overflow-y-auto h-full p-4 sm:p-8 bg-slate-50 font-sans">
-  <div class="sm:flex sm:items-center sm:justify-between mb-8 border-b border-slate-200 pb-5">
+<div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 min-h-screen pb-24 font-sans">
+  <div class="sm:flex sm:items-center sm:justify-between mb-8">
     <div>
       <h1
         class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3"
@@ -15,108 +13,40 @@
     </div>
   </div>
 
-  <div class="flex flex-wrap gap-2 mb-6">
-    <button
-      (click)="filtrarPedidos('todos')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-slate-900]="filtroActual() === 'todos'"
-      [class.text-white]="filtroActual() === 'todos'"
-      [class.bg-white]="filtroActual() !== 'todos'"
-      [class.text-slate-600]="filtroActual() !== 'todos'"
-      [class.border-slate-200]="filtroActual() !== 'todos'"
-    >
-      Todos
-    </button>
+  <div
+    class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center"
+  >
+    <div class="flex-1 min-w-75 relative">
+      <mat-icon class="absolute left-3 top-2.5 text-slate-400">search</mat-icon>
+      <input
+        type="text"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        placeholder="Buscar por nº pedido o cliente..."
+        class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+      />
+    </div>
 
-    <button
-      (click)="filtrarPedidos('pendiente')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-amber-500]="filtroActual() === 'pendiente'"
-      [class.text-white]="filtroActual() === 'pendiente'"
-      [class.bg-amber-50]="filtroActual() !== 'pendiente'"
-      [class.text-amber-700]="filtroActual() !== 'pendiente'"
-      [class.border-amber-200]="filtroActual() !== 'pendiente'"
+    <select
+      [ngModel]="filtroEstado()"
+      (ngModelChange)="filtroEstado.set($event)"
+      class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
-      Pendientes
-    </button>
-
-    <button
-      (click)="filtrarPedidos('en_fabricacion')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-blue-600]="filtroActual() === 'en_fabricacion'"
-      [class.text-white]="filtroActual() === 'en_fabricacion'"
-      [class.bg-blue-50]="filtroActual() !== 'en_fabricacion'"
-      [class.text-blue-700]="filtroActual() !== 'en_fabricacion'"
-      [class.border-blue-200]="filtroActual() !== 'en_fabricacion'"
-    >
-      En Fabricacion
-    </button>
-
-    <button
-      (click)="filtrarPedidos('fabricado')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-sky-500]="filtroActual() === 'fabricado'"
-      [class.text-white]="filtroActual() === 'fabricado'"
-      [class.bg-sky-50]="filtroActual() !== 'fabricado'"
-      [class.text-sky-700]="filtroActual() !== 'fabricado'"
-      [class.border-sky-200]="filtroActual() !== 'fabricado'"
-    >
-      Fabricados
-    </button>
-
-    <button
-      (click)="filtrarPedidos('entregado')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-cyan-600]="filtroActual() === 'entregado'"
-      [class.text-white]="filtroActual() === 'entregado'"
-      [class.bg-cyan-50]="filtroActual() !== 'entregado'"
-      [class.text-cyan-700]="filtroActual() !== 'entregado'"
-      [class.border-cyan-200]="filtroActual() !== 'entregado'"
-    >
-      Entregados
-    </button>
-
-    <button
-      (click)="filtrarPedidos('instalado')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-fuchsia-600]="filtroActual() === 'instalado'"
-      [class.text-white]="filtroActual() === 'instalado'"
-      [class.bg-fuchsia-50]="filtroActual() !== 'instalado'"
-      [class.text-fuchsia-700]="filtroActual() !== 'instalado'"
-      [class.border-fuchsia-200]="filtroActual() !== 'instalado'"
-    >
-      Instalados
-    </button>
-
-    <button
-      (click)="filtrarPedidos('finalizado')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-emerald-600]="filtroActual() === 'finalizado'"
-      [class.text-white]="filtroActual() === 'finalizado'"
-      [class.bg-emerald-50]="filtroActual() !== 'finalizado'"
-      [class.text-emerald-700]="filtroActual() !== 'finalizado'"
-      [class.border-emerald-200]="filtroActual() !== 'finalizado'"
-    >
-      Finalizados
-    </button>
-
-    <button
-      (click)="filtrarPedidos('cancelado')"
-      class="px-4 py-2 rounded-lg text-sm font-medium transition-all border"
-      [class.bg-red-600]="filtroActual() === 'cancelado'"
-      [class.text-white]="filtroActual() === 'cancelado'"
-      [class.bg-red-50]="filtroActual() !== 'cancelado'"
-      [class.text-red-700]="filtroActual() !== 'cancelado'"
-      [class.border-red-200]="filtroActual() !== 'cancelado'"
-    >
-      Cancelado
-    </button>
+      <option value="todos">Todos</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="en_fabricacion">En Fabricación</option>
+      <option value="fabricado">Fabricado</option>
+      <option value="entregado">Entregado</option>
+      <option value="instalado">Instalado</option>
+      <option value="finalizado">Finalizado</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
   </div>
 
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-12">
-    <div class="overflow-x-auto">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-y-auto max-h-[60vh]">
       <table class="min-w-full divide-y divide-slate-200">
-        <thead class="bg-slate-50">
+        <thead class="bg-slate-50 sticky top-0 z-10">
           <tr>
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
@@ -192,7 +122,6 @@
                         : '?'
                     }}
                   </div>
-
                   <div class="flex flex-col">
                     <span class="text-sm font-semibold text-slate-700">
                       {{ getNombreOperario(pedido.operario_asignado_id) }}
@@ -237,11 +166,23 @@
                 </button>
               </td>
             </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-10 text-center text-slate-500">
+                <mat-icon class="text-4xl text-slate-300 mb-2">inventory_2</mat-icon>
+                <p>No se han encontrado pedidos.</p>
+              </td>
+            </tr>
           }
         </tbody>
       </table>
     </div>
-  </div>
 
-  <div class="h-10 w-full"></div>
+    <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
+      <span class="text-sm text-slate-500">
+        Mostrando
+        <span class="font-medium text-slate-900">{{ pedidos().length }}</span> pedidos
+      </span>
+    </div>
+  </div>
 </div>

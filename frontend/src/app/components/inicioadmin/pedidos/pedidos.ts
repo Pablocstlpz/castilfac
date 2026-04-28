@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { UpperCasePipe } from '@angular/common';
@@ -7,6 +7,7 @@ import { Pedido } from '../../../interfaces/pedido';
 import { Authentication } from '../../../services/authentication';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { UsuariosServices } from '../../../services/usuarios';
 import { Usuario } from '../../../interfaces/usuario';
 import { ClientesServices } from '../../../services/clientes';
@@ -14,37 +15,36 @@ import { Cliente } from '../../../interfaces/cliente';
 
 @Component({
   selector: 'app-pedidos',
-  imports: [MatIcon, DatePipe, UpperCasePipe, NgClass, RouterLink],
+  imports: [MatIcon, DatePipe, UpperCasePipe, NgClass, RouterLink, FormsModule],
   templateUrl: './pedidos.html',
   styleUrl: './pedidos.css',
 })
 export class Pedidos {
-  //inyecto el servicio de pedidos
   private pedidosServices = inject(PedidosServices);
-
-  //inyecto el servicio de autenticacion
   private authentication = inject(Authentication);
-
-  //inyecto el servicio de usuarios
   private usuariosServices = inject(UsuariosServices);
-
-  //inyecto el servicio de clientes
   private clientesServices = inject(ClientesServices);
-
-  //inyecto el router para poder redirigir
   private router = inject(Router);
 
-  //hago signal de pedidos que tendra un array de pedidos y se inicializara vacia
-  public pedidos = signal<Pedido[]>([]);
-
-  //hago signal de filtroActual que tendra un string y se inicializara en 'todos'
-  public filtroActual = signal<string>('todos');
-
-  //signal para almacenar usuarios de empresa
+  private todosPedidos = signal<Pedido[]>([]);
   public usuarios = signal<Usuario[]>([]);
-
-  //signal para almacenar clientes de empresa
   public clientes = signal<Cliente[]>([]);
+
+  public busqueda = signal<string>('');
+  public filtroEstado = signal<string>('todos');
+
+  public pedidos = computed(() => {
+    const q = this.busqueda().toLowerCase().trim();
+    const estado = this.filtroEstado();
+    return this.todosPedidos().filter((p) => {
+      const coincideEstado = estado === 'todos' || p.estado_fabricacion === estado;
+      const coincideBusqueda =
+        !q ||
+        p.numero_pedido.toLowerCase().includes(q) ||
+        this.getNombreCliente(p.cliente_id).toLowerCase().includes(q);
+      return coincideEstado && coincideBusqueda;
+    });
+  });
 
   //al cargar la pagina
   ngOnInit(): void {
@@ -66,10 +66,9 @@ export class Pedidos {
     this.cargarClientes(usuario.empresa_id);
   }
 
-  //funcion para obtener los pedidos de la empresa
   obtenerPedidos(empresa_id: number): void {
     this.pedidosServices.getPedidosByEmpresa(empresa_id).subscribe((pedidos) => {
-      this.pedidos.set(pedidos);
+      this.todosPedidos.set(pedidos);
     });
   }
 
@@ -77,23 +76,6 @@ export class Pedidos {
   calcularPorcentajePago(acordado: number, pagado: number): number {
     if (!acordado || acordado === 0) return 0;
     return Math.round((pagado / acordado) * 100);
-  }
-
-  //funcion para filtrar segun el boton pulsado
-  filtrarPedidos(filtro: string): void {
-    //asigno el filtro al signal de filtroActual
-    this.filtroActual.set(filtro);
-
-    //si es diferente a todos
-    if (filtro !== 'todos') {
-      this.pedidosServices
-        .getPedidosByEmpresa(this.authentication.obtenerUsuarioSesion()!.empresa_id)
-        .subscribe((pedidos) => {
-          this.pedidos.set(pedidos.filter((pedido) => pedido.estado_fabricacion === filtro));
-        });
-    } else {
-      this.obtenerPedidos(this.authentication.obtenerUsuarioSesion()!.empresa_id);
-    }
   }
 
   //funcion para cargar los usuarios de una empresa
