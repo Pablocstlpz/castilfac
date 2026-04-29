@@ -1,22 +1,14 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { DecimalPipe, TitleCasePipe } from '@angular/common';
-import { NgClass } from '@angular/common';
+import { DecimalPipe, TitleCasePipe, NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Categorias } from '../../../services/categorias';
 import { Materiales } from '../../../services/materiales';
-import { PreciosEmpresas } from '../../../services/precios-empresas';
 import { Authentication } from '../../../services/authentication';
-import { Material } from '../../../interfaces/material';
+import { MaterialConPrecio } from '../../../interfaces/material';
 import { Categoria } from '../../../interfaces/categoria';
-import { PrecioEmpresa } from '../../../interfaces/precio-empresa';
-import { RouterLink } from '@angular/router';
 
-interface MaterialVista extends Material {
-  categoria_nombre: string;
-  precio_venta: number;
-  porcentaje_merma: number;
-}
 //ARREGLAR ENTERO BUSQUEDAS SQL
 @Component({
   selector: 'app-catalogo',
@@ -25,121 +17,90 @@ interface MaterialVista extends Material {
   styleUrl: './catalogo-y-precios.css',
 })
 export class CatalogoYPrecios {
-  private categoriasService = inject(Categorias);
-  private materialesService = inject(Materiales);
-  private preciosEmpresasService = inject(PreciosEmpresas);
-  private authentication = inject(Authentication);
+  private categoriasService = inject(Categorias); // Inyectamos el servicio Categorias para poder utilizar sus metodos
+  private materialesService = inject(Materiales); // Inyectamos el servicio Materiales para poder utilizar sus metodos
+  private authentication = inject(Authentication); // Inyectamos el servicio Authentication para poder utilizar sus metodos
 
-  private _materiales = signal<Material[]>([]);
-  public totalMateriales = computed(() => this._materiales().length);
+  //signal con todos los materiales ya enriquecidos que llegan del backend
+  private _materiales = signal<MaterialConPrecio[]>([]);
+
+  //signal con el total de materiales de la empresa
+  public totalMateriales = signal<number>(0);
+
+  //signal con las categorias disponibles para el filtro
   public categorias = signal<Categoria[]>([]);
-  private preciosEmpresa = signal<PrecioEmpresa[]>([]);
 
+  //signal con el texto de busqueda actual
   public busqueda = signal<string>('');
+
+  //signal con el filtro de categoria seleccionado
   public filtroCategoria = signal<string>('todas');
+
+  //signal para mostrar o no los materiales inactivos
   public mostrarInactivos = signal<boolean>(false);
 
-  public celdaEnEdicion = signal<string | null>(null);
-  public valorTemporalEdicion = signal<number>(0);
-
-  private materialesEnriquecidos = computed<MaterialVista[]>(() =>
-    this._materiales().map((m) => {
-      const cat = this.categorias().find((c) => c.id === m.categoria_id);
-      const precio = this.preciosEmpresa().find((p) => p.material_id === m.id);
-      return {
-        ...m,
-        categoria_nombre: cat?.nombre ?? '—',
-        precio_venta: precio?.precio_venta ?? m.precio_base,
-        porcentaje_merma: precio?.porcentaje_merma ?? m.porcentaje_merma_recomendado ?? 0,
-      };
-    }),
-  );
-
-  public materialesFiltrados = computed(() =>
-    this.materialesEnriquecidos().filter((m) => {
-      const q = this.busqueda().toLowerCase().trim();
-      const matchBusqueda =
-        !q ||
-        m.nombre.toLowerCase().includes(q) ||
-        (m.codigo_interno ?? '').toLowerCase().includes(q) ||
-        (m.proveedor ?? '').toLowerCase().includes(q);
-      const matchCategoria =
-        this.filtroCategoria() === 'todas' || m.categoria_id.toString() === this.filtroCategoria();
-      const matchActivo = this.mostrarInactivos() ? true : m.activo !== false && !m.deleted_at;
-      return matchBusqueda && matchCategoria && matchActivo;
-    }),
-  );
+  //signal con los materiales filtrados para mostrar en la tabla
+  public materialesFiltrados = signal<MaterialConPrecio[]>([]);
 
   ngOnInit(): void {
+    //obtengo el usuario de la sesion
     const usuario = this.authentication.obtenerUsuarioSesion();
+    //cargo las categorias para el filtro del select
     this.cargarCategorias();
-    this.cargarMateriales();
+    //si hay usuario cargo los materiales de su empresa ya enriquecidos
     if (usuario) {
-      this.cargarPreciosEmpresa(usuario.empresa_id);
+      this.cargarMateriales(usuario.empresa_id);
     }
   }
 
+  //funcion para cargar las categorias del select de filtrado
   cargarCategorias(): void {
-    this.categoriasService.getCategorias().subscribe({
-      next: (data) => this.categorias.set(data),
-      error: (err) => console.error('Error al cargar categorías', err),
+    this.categoriasService.getCategorias().subscribe((data) => {
+      this.categorias.set(data);
     });
   }
 
-  cargarMateriales(): void {
-    this.materialesService.getMateriales().subscribe({
-      next: (data) => this._materiales.set(data),
-      error: (err) => console.error('Error al cargar materiales', err),
+  //funcion para cargar los materiales ya enriquecidos con categoria y precio desde el backend
+  cargarMateriales(empresa_id: number): void {
+    this.materialesService.getMaterialesConPrecioEmpresa(empresa_id).subscribe((data) => {
+      this._materiales.set(data);
+      this.totalMateriales.set(data.length);
+      this.filtrarMateriales();
     });
   }
 
-  cargarPreciosEmpresa(empresa_id: number): void {
-    this.preciosEmpresasService.getPreciosEmpresa(empresa_id).subscribe({
-      next: (data) => this.preciosEmpresa.set(data),
-      error: (err) => console.error('Error al cargar precios', err),
-    });
-  }
-
-  iniciarEdicion(id: number, campo: string, valorActual: number): void {
-    this.celdaEnEdicion.set(`${id}-${campo}`);
-    this.valorTemporalEdicion.set(valorActual);
-  }
-
-  guardarEdicion(id: number, campo: string): void {
-    const nuevoValor = this.valorTemporalEdicion();
-    if (nuevoValor <= 0 || isNaN(nuevoValor)) {
-      this.celdaEnEdicion.set(null);
-      return;
-    }
-    this.preciosEmpresa.update((precios) =>
-      precios.map((p) => (p.material_id === id ? { ...p, [campo]: nuevoValor } : p)),
+  //funcion para filtrar los materiales segun los filtros activos
+  filtrarMateriales(): void {
+    const q = this.busqueda().toLowerCase().trim();
+    //filtro por busqueda, categoria y estado activo y los guardo en el signal
+    this.materialesFiltrados.set(
+      this._materiales().filter((m) => {
+        const matchBusqueda =
+          !q ||
+          m.nombre.toLowerCase().includes(q) ||
+          (m.codigo_interno ?? '').toLowerCase().includes(q) ||
+          (m.proveedor ?? '').toLowerCase().includes(q);
+        const matchCategoria =
+          this.filtroCategoria() === 'todas' ||
+          m.categoria_id.toString() === this.filtroCategoria();
+        const matchActivo = this.mostrarInactivos() ? true : m.activo !== false && !m.deleted_at;
+        return matchBusqueda && matchCategoria && matchActivo;
+      }),
     );
-    this.celdaEnEdicion.set(null);
   }
 
-  cancelarEdicion(): void {
-    this.celdaEnEdicion.set(null);
-  }
-
+  //funcion para activar o desactivar un material
   toggleActivo(id: number): void {
-    this.materialesService.toggleActivo(id).subscribe({
-      next: (materialActualizado) => {
-        this._materiales.update((lista) =>
-          lista.map((m) => (m.id === id ? { ...m, activo: materialActualizado.activo } : m)),
-        );
-      },
-      error: (err) => console.error('Error al cambiar estado del material', err),
+    this.materialesService.toggleActivo(id).subscribe((materialActualizado) => {
+      //actualizo el estado activo del material en el signal y vuelvo a filtrar
+      const lista = [...this._materiales()];
+      lista.forEach((m, index) => {
+        if (m.id === id) {
+          lista[index].activo = materialActualizado.activo;
+        }
+      });
+      this._materiales.set(lista);
+      this.filtrarMateriales();
     });
-  }
-
-  getIconoUnidad(unidad: string): string {
-    const iconos: Record<string, string> = {
-      metros_lineales: 'straighten',
-      metros_cuadrados: 'crop_square',
-      unidades: 'tag',
-      kilogramos: 'scale',
-      litros: 'water_drop',
-    };
-    return iconos[unidad] || 'category';
   }
 }

@@ -29,7 +29,7 @@
       <input
         type="text"
         [ngModel]="busqueda()"
-        (ngModelChange)="busqueda.set($event)"
+        (ngModelChange)="busqueda.set($event); filtrarMateriales()"
         placeholder="Buscar por código, nombre o proveedor..."
         class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
       />
@@ -37,10 +37,10 @@
 
     <select
       [ngModel]="filtroCategoria()"
-      (ngModelChange)="filtroCategoria.set($event)"
-      class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+      (ngModelChange)="filtroCategoria.set($event); filtrarMateriales()"
+      class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-8 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="todas">Todas las categorías</option>
+      <option value="todas">Todos</option>
       @for (cat of categorias(); track cat.id) {
         <option [value]="cat.id">{{ cat.nombre }}</option>
       }
@@ -50,7 +50,7 @@
       <input
         type="checkbox"
         [ngModel]="mostrarInactivos()"
-        (ngModelChange)="mostrarInactivos.set($event)"
+        (ngModelChange)="mostrarInactivos.set($event); filtrarMateriales()"
         class="rounded text-blue-600 focus:ring-blue-500 border-slate-300"
       />
       <span class="text-xs font-bold text-slate-600 uppercase">Ver Inactivos</span>
@@ -110,7 +110,7 @@
               <td class="px-4 py-3">
                 <div class="font-bold text-sm text-slate-900">{{ item.nombre }}</div>
                 <div class="text-[10px] uppercase font-bold text-blue-600 mt-0.5">
-                  {{ item.categoria_nombre }}
+                  {{ item?.categoria_nombre ?? '—' }}
                 </div>
               </td>
 
@@ -118,7 +118,19 @@
                 <div
                   class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-md inline-flex"
                 >
-                  <mat-icon class="text-[14px]">{{ getIconoUnidad(item.tipo_unidad) }}</mat-icon>
+                  @if (item.tipo_unidad === 'metros_lineales') {
+                    <mat-icon class="text-[14px]">straighten</mat-icon>
+                  } @else if (item.tipo_unidad === 'metros_cuadrados') {
+                    <mat-icon class="text-[14px]">crop_square</mat-icon>
+                  } @else if (item.tipo_unidad === 'unidades') {
+                    <mat-icon class="text-[14px]">tag</mat-icon>
+                  } @else if (item.tipo_unidad === 'kilogramos') {
+                    <mat-icon class="text-[14px]">scale</mat-icon>
+                  } @else if (item.tipo_unidad === 'litros') {
+                    <mat-icon class="text-[14px]">water_drop</mat-icon>
+                  } @else {
+                    <mat-icon class="text-[14px]">category</mat-icon>
+                  }
                   {{ item.tipo_unidad.replace('_', ' ') | titlecase }}
                 </div>
               </td>
@@ -128,35 +140,19 @@
               </td>
 
               <td class="px-4 py-3 text-right">
-                @if (celdaEnEdicion() === item.id + '-precio_venta') {
-                  <input
-                    type="number"
-                    [ngModel]="valorTemporalEdicion()"
-                    (ngModelChange)="valorTemporalEdicion.set($event)"
-                    (keyup.enter)="guardarEdicion(item.id, 'precio_venta')"
-                    (blur)="cancelarEdicion()"
-                    class="w-24 text-right px-2 py-1 border-2 border-blue-500 rounded text-sm font-bold bg-white"
-                    autofocus
-                  />
-                } @else {
-                  <div
-                    (click)="iniciarEdicion(item.id, 'precio_venta', item.precio_venta)"
-                    class="cursor-pointer border border-transparent hover:border-slate-300 hover:bg-white px-2 py-1 rounded text-sm font-bold inline-block transition-all"
-                    [ngClass]="
-                      item.precio_venta <= item.precio_base
-                        ? 'text-red-600 bg-red-50 hover:bg-red-100'
-                        : 'text-emerald-700'
-                    "
-                    title="Clic para editar"
-                  >
-                    {{ item.precio_venta | number: '1.2-2' }} €
-                    @if (item.precio_venta <= item.precio_base) {
-                      <mat-icon class="text-[12px] align-middle ml-1" title="Margen negativo o cero"
-                        >warning</mat-icon
-                      >
-                    }
-                  </div>
-                }
+                <span
+                  class="text-sm font-bold"
+                  [ngClass]="
+                    item.precio_venta <= item.precio_base ? 'text-red-600' : 'text-emerald-700'
+                  "
+                >
+                  {{ item.precio_venta | number: '1.2-2' }} €
+                  @if (item.precio_venta <= item.precio_base) {
+                    <mat-icon class="text-[12px] align-middle ml-1" title="Margen negativo o cero"
+                      >warning</mat-icon
+                    >
+                  }
+                </span>
               </td>
 
               <td class="px-4 py-3 text-center text-sm text-slate-600">
