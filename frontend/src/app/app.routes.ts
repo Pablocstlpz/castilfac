@@ -229,7 +229,7 @@ export const routes: Routes = [
       {
         path: 'formulario-usuario',
         loadComponent: () =>
-          import('./components/inicioadmin/formulario-usuario/formulario-usuario').then(
+          import('./components/inicioadmin/gestion-personal/formulario-usuario/formulario-usuario').then(
             (m) => m.FormularioUsuario,
           ),
       },
