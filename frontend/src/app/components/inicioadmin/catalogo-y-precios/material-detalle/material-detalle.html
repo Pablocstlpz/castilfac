@@ -9,16 +9,20 @@
         <mat-icon class="text-white">inventory_2</mat-icon>
       </div>
       <div>
-        <h1 class="text-2xl font-bold text-white m-0">Gestión de Material</h1>
-        <p class="text-indigo-100 text-sm mt-1">
-          Completa los datos para dar de alta o actualizar este material en el catálogo
-        </p>
+        @if (id) {
+          <h1 class="text-2xl font-bold text-white m-0">Editar Material</h1>
+          <p class="text-indigo-100 text-sm mt-1">Modifica los datos del material en el catálogo</p>
+        } @else {
+          <h1 class="text-2xl font-bold text-white m-0">Nuevo Material</h1>
+          <p class="text-indigo-100 text-sm mt-1">Completa los datos para dar de alta este material en el catálogo</p>
+        }
       </div>
     </div>
 
     <div class="p-8">
       <form [formGroup]="materialForm" (ngSubmit)="onSubmit()" class="space-y-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
           <div class="space-y-4">
             <h2
               class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2"
@@ -27,18 +31,15 @@
             </h2>
 
             <div class="grid grid-cols-1 gap-4">
+
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Nombre del Material</mat-label>
                 <span matTextPrefix><mat-icon class="text-slate-400 mr-2">label</mat-icon></span>
-                <input
-                  matInput
-                  formControlName="nombre"
-                  placeholder="Ej: Perfil Aluminio Blanco 60mm"
-                />
-                @if (nombre.errors?.['required'] && nombre.touched) {
+                <input matInput formControlName="nombre" placeholder="Ej: Perfil Aluminio Blanco 60mm" />
+                @if (materialForm.get('nombre')?.errors?.['required'] && materialForm.get('nombre')?.touched) {
                   <mat-error>El nombre es requerido</mat-error>
                 }
-                @if (nombre.errors?.['maxlength']) {
+                @if (materialForm.get('nombre')?.errors?.['maxlength']) {
                   <mat-error>Máximo 200 caracteres</mat-error>
                 }
               </mat-form-field>
@@ -48,33 +49,31 @@
                   <mat-label>Código Interno</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">tag</mat-icon></span>
                   <input matInput formControlName="codigo_interno" placeholder="Ej: PERF-BL-60" />
-                  @if (codigo_interno.errors?.['maxlength']) {
+                  @if (materialForm.get('codigo_interno')?.errors?.['maxlength']) {
                     <mat-error>Máximo 50 caracteres</mat-error>
                   }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Categoría ID</mat-label>
-                  <span matTextPrefix
-                    ><mat-icon class="text-slate-400 mr-2">category</mat-icon></span
-                  >
-                  <input
-                    matInput
-                    type="number"
-                    formControlName="categoria_id"
-                    placeholder="Ej: 1"
-                  />
-                  @if (categoria_id.errors?.['required'] && categoria_id.touched) {
-                    <mat-error>Requerido</mat-error>
+                  <mat-label>Categoría</mat-label>
+                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">category</mat-icon></span>
+                  <mat-select formControlName="categoria_id">
+                    @if (!id) {
+                      <mat-option [value]="null" disabled>Selecciona una categoría</mat-option>
+                    }
+                    @for (cat of categorias(); track cat.id) {
+                      <mat-option [value]="cat.id">{{ cat.nombre }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (materialForm.get('categoria_id')?.errors?.['required'] && materialForm.get('categoria_id')?.touched) {
+                    <mat-error>La categoría es requerida</mat-error>
                   }
                 </mat-form-field>
               </div>
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Descripción técnica</mat-label>
-                <span matTextPrefix
-                  ><mat-icon class="text-slate-400 mr-2">description</mat-icon></span
-                >
+                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">description</mat-icon></span>
                 <textarea
                   matInput
                   formControlName="descripcion"
@@ -97,6 +96,7 @@
                   ></div>
                 </label>
               </div>
+
             </div>
           </div>
 
@@ -113,32 +113,19 @@
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Precio Base Coste</mat-label>
                     <span matTextPrefix><mat-icon class="text-slate-400 mr-2">euro</mat-icon></span>
-                    <input
-                      matInput
-                      type="number"
-                      step="0.0001"
-                      formControlName="precio_base"
-                      placeholder="0.00"
-                    />
-                    @if (precio_base.errors?.['required'] && precio_base.touched) {
+                    <input matInput type="number" step="0.0001" formControlName="precio_base" placeholder="0.00" />
+                    @if (materialForm.get('precio_base')?.errors?.['required'] && materialForm.get('precio_base')?.touched) {
                       <mat-error>El precio es requerido</mat-error>
                     }
-                    @if (precio_base.errors?.['min']) {
+                    @if (materialForm.get('precio_base')?.errors?.['min']) {
                       <mat-error>No puede ser negativo</mat-error>
                     }
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Merma Rec. (%)</mat-label>
-                    <span matTextPrefix
-                      ><mat-icon class="text-slate-400 mr-2">percent</mat-icon></span
-                    >
-                    <input
-                      matInput
-                      type="number"
-                      formControlName="porcentaje_merma_recomendado"
-                      placeholder="10.00"
-                    />
+                    <span matTextPrefix><mat-icon class="text-slate-400 mr-2">percent</mat-icon></span>
+                    <input matInput type="number" formControlName="porcentaje_merma_recomendado" placeholder="10.00" />
                     @if (materialForm.get('porcentaje_merma_recomendado')?.errors?.['min']) {
                       <mat-error>Mínimo 0%</mat-error>
                     }
@@ -150,13 +137,13 @@
 
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>Tipo de Unidad de Medida</mat-label>
-                  <span matTextPrefix
-                    ><mat-icon class="text-slate-400 mr-2">straighten</mat-icon></span
-                  >
+                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">straighten</mat-icon></span>
                   <mat-select formControlName="tipo_unidad">
                     <mat-option value="metros_lineales">Metros Lineales (ml)</mat-option>
-                    <mat-option value="metros_cuadrados">Metros Cuadrados (m2)</mat-option>
-                    <mat-option value="unidad">Por Unidad (Ud)</mat-option>
+                    <mat-option value="metros_cuadrados">Metros Cuadrados (m²)</mat-option>
+                    <mat-option value="unidades">Por Unidad (Ud)</mat-option>
+                    <mat-option value="kilogramos">Kilogramos (kg)</mat-option>
+                    <mat-option value="litros">Litros (l)</mat-option>
                   </mat-select>
                   @if (materialForm.get('tipo_unidad')?.errors?.['required']) {
                     <mat-error>Selecciona una unidad</mat-error>
@@ -175,9 +162,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>Nombre Proveedor</mat-label>
-                  <span matTextPrefix
-                    ><mat-icon class="text-slate-400 mr-2">business</mat-icon></span
-                  >
+                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">business</mat-icon></span>
                   <input matInput formControlName="proveedor" placeholder="Ej: Aluminios del Sur" />
                   @if (materialForm.get('proveedor')?.errors?.['maxlength']) {
                     <mat-error>Máximo 150 caracteres</mat-error>
@@ -187,11 +172,7 @@
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>Ref. del Proveedor</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">badge</mat-icon></span>
-                  <input
-                    matInput
-                    formControlName="referencia_proveedor"
-                    placeholder="Ej: PROV-1234"
-                  />
+                  <input matInput formControlName="referencia_proveedor" placeholder="Ej: PROV-1234" />
                   @if (materialForm.get('referencia_proveedor')?.errors?.['maxlength']) {
                     <mat-error>Máximo 100 caracteres</mat-error>
                   }
@@ -199,6 +180,7 @@
               </div>
             </div>
           </div>
+
         </div>
 
         <div
@@ -221,10 +203,11 @@
               [disabled]="materialForm.invalid"
               class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
-              Guardar Registro
+              @if (id) { Guardar Cambios } @else { Crear Material }
             </button>
           </div>
         </div>
+
       </form>
     </div>
   </div>
