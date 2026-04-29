@@ -136,6 +136,36 @@ export const getPedidosByCliente = async (req, res) => {
   }
 };
 
+//OBTENER DATOS FINANCIEROS DE UNA EMPRESA (con filtro temporal opcional)
+export const getFinanzasByEmpresa = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rango } = req.query;
+
+    const filtroFecha =
+      rango === 'mes'
+        ? "AND DATE(p.fecha_creacion) >= DATE_FORMAT(NOW(), '%Y-%m-01')"
+        : rango === 'anio'
+          ? "AND DATE(p.fecha_creacion) >= DATE_FORMAT(NOW(), '%Y-01-01')"
+          : '';
+
+    const [pedidos] = await sequelize.query(
+      `
+            ${PEDIDOS_WITH_CLIENTE_SELECT}
+            WHERE p.empresa_id = ? AND p.estado_fabricacion != 'cancelado'
+            ${filtroFecha}
+            ORDER BY p.id DESC
+            `,
+      { replacements: [id] },
+    );
+
+    res.status(200).json(pedidos);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error al obtener las finanzas de esta empresa' });
+  }
+};
+
 //BUSCAR PEDIDOS POR EMPRESA
 export const getPedidosByEmpresa = async (req, res) => {
   try {

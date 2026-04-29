@@ -9,12 +9,14 @@ import {
   marcarComoFabricado,
   getPedidosHistorialByOperario,
   getPedidoById,
+  getFinanzasByEmpresa,
 } from "../controllers/pedidos.controller.js";
 
 const router = Router();
 
 // las rutas especificas van antes que /pedidos/:id para que express no las capture como id
 router.get("/pedidos", getPedidos);
+router.get("/pedidos/finanzas/empresa/:id", getFinanzasByEmpresa);
 router.get("/pedidos/empresa/:id", getPedidosByEmpresa);
 router.get("/pedidos/operario/:id", getPedidosByOperario);
 router.get("/pedidos/cliente/:id", getPedidosByCliente);
