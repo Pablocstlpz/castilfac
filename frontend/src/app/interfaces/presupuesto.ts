@@ -1,8 +1,29 @@
+export interface MaterialDesglose {
+  id: number;
+  cantidad: number;
+  precio_unitario_aplicado: number;
+  Material: {
+    id: number;
+    nombre: string;
+    codigo_interno: string;
+    tipo_unidad: string;
+  } | null;
+}
+
+export interface ElementoPresupuesto {
+  id: number;
+  nombre: string;
+  cantidad: number;
+  precio_final: number;
+  materiales_desglose: MaterialDesglose[];
+}
+
 export interface Presupuesto {
   id: number;
   empresa_id: number;
   numero_presupuesto: string;
   cliente_id: number;
+  cliente_nombre: string;
   usuario_id: number;
   version?: number;
   coste_materiales?: number;
@@ -23,4 +44,5 @@ export interface Presupuesto {
   notas_internas?: string | null;
   notas_cliente?: string | null;
   deleted_at?: string | null;
+  elementos: ElementoPresupuesto[];
 }
