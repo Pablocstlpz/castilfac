@@ -34,6 +34,24 @@ export class Materiales {
       .pipe(catchError(this.handleError));
   }
 
+  addMaterial(material: Omit<Material, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'deleted_at'>): Observable<Material> {
+    return this.http
+      .post<Material>(`${this.URL}/materiales`, material, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateMaterial(material: Material): Observable<Material> {
+    return this.http
+      .put<Material>(`${this.URL}/materiales/${material.id}`, material, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteMaterial(id: number): Observable<{ message: string }> {
+    return this.http
+      .delete<{ message: string }>(`${this.URL}/materiales/${id}`, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
   toggleActivo(id: number): Observable<Material> {
     return this.http
       .patch<Material>(`${this.URL}/materiales/${id}/activo`, {}, this.httpOptions)
