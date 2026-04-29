@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/enviroments';
-import { Material } from '../interfaces/material';
+import { Material, MaterialConPrecio } from '../interfaces/material';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +19,13 @@ export class Materiales {
   };
 
   private http = inject(HttpClient);
+
+  //obtener todos los materiales enriquecidos con categoria y precio de empresa
+  getMaterialesConPrecioEmpresa(empresa_id: number): Observable<MaterialConPrecio[]> {
+    return this.http
+      .get<MaterialConPrecio[]>(`${this.URL}/materiales/empresa/${empresa_id}`)
+      .pipe(catchError(this.handleError));
+  }
 
   //obtener todos los materiales
   getMateriales(): Observable<Material[]> {
