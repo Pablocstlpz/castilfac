@@ -3,6 +3,7 @@
 import { Router } from "express";
 import {
   obtenerMateriales,
+  obtenerMaterialesConPrecioEmpresa,
   obtenerMaterialPorId,
   toggleActivoMaterial,
   crearMaterial,
@@ -12,6 +13,7 @@ import {
 
 const router = Router();
 
+router.get("/materiales/empresa/:empresa_id", obtenerMaterialesConPrecioEmpresa);
 router.get("/materiales", obtenerMateriales);
 router.get("/materiales/:id", obtenerMaterialPorId);
 router.post("/materiales", crearMaterial);
