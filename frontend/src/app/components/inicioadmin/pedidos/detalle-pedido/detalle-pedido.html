@@ -228,15 +228,23 @@
               <input
                 type="number"
                 [(ngModel)]="nuevoPago"
-                placeholder="Añadir cobro..."
-                class="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="Importe..."
+                class="w-28 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
               />
               <button
                 (click)="registrarPago()"
                 [disabled]="nuevoPago <= 0"
-                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold rounded-lg transition-colors"
+                class="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold rounded-lg transition-colors"
               >
                 Cobrar
+              </button>
+              <button
+                (click)="registrarCobroTotal()"
+                [disabled]="yaLiquidado()"
+                class="px-3 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
+                title="Registrar el importe pendiente completo"
+              >
+                Liquidar
               </button>
             </div>
           </div>

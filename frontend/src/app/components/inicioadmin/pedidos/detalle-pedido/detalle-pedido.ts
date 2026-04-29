@@ -177,6 +177,29 @@ export class DetallePedido implements OnInit {
     });
   }
 
+  registrarCobroTotal(): void {
+    const p = this.pedido();
+    if (!p || this.yaLiquidado()) return;
+
+    const acordado = Number(p.importe_acordado);
+    const pedidoActualizado = { ...p, importe_pagado: acordado, importe_acordado: acordado };
+    this.pedido.set(pedidoActualizado);
+
+    this.pedidosService.updatePedido(pedidoActualizado).subscribe({
+      next: (response) => {
+        console.log(response.message);
+        this.mostrarExito('Pedido liquidado correctamente');
+      },
+      error: (err) => console.log(err),
+    });
+  }
+
+  yaLiquidado(): boolean {
+    const p = this.pedido();
+    if (!p) return true;
+    return Number(p.importe_pagado) >= Number(p.importe_acordado);
+  }
+
   guardarNotas(): void {
     const p = this.pedido();
     if (!p) return;
