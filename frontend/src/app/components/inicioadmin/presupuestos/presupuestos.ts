@@ -99,4 +99,8 @@ export class Presupuestos {
     const cliente = this.clientes().find((c) => c.id == id);
     return cliente?.tipo_cliente ?? '';
   }
+
+  verDetalle(id: number): void {
+    this.router.navigate(['/inicioadmin/presupuestos/detalle-presupuesto', id]);
+  }
 }

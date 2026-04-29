@@ -96,7 +96,7 @@
       (ngModelChange)="filtroEstado.set($event)"
       class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="todos">Todos los estados</option>
+      <option value="todos">Todos</option>
       <option value="borrador">Borrador</option>
       <option value="enviado">Enviado</option>
       <option value="aprobado">Aprobado</option>
@@ -154,7 +154,9 @@
                 <div class="text-sm font-medium text-slate-800">
                   {{ getNombreCliente(p.cliente_id) }}
                 </div>
-                <div class="text-xs text-slate-500 capitalize">{{ getTipoCliente(p.cliente_id) }}</div>
+                <div class="text-xs text-slate-500 capitalize">
+                  {{ getTipoCliente(p.cliente_id) }}
+                </div>
               </td>
 
               <td class="whitespace-nowrap px-3 py-4">
@@ -192,9 +194,7 @@
                 </span>
               </td>
 
-              <td
-                class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium"
-              >
+              <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
                 <div
                   class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
@@ -216,6 +216,7 @@
                     </button>
                   }
                   <button
+                    (click)="verDetalle(p.id)"
                     class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
                     title="Ver detalles"
                   >
@@ -242,9 +243,7 @@
       </table>
     </div>
 
-    <div
-      class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between"
-    >
+    <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
       <span class="text-sm text-slate-500">
         Mostrando
         <span class="font-medium text-slate-900">{{ presupuestosFiltrados().length }}</span> de
