@@ -16,9 +16,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { Usuario } from '../../../interfaces/usuario';
-import { UsuariosServices } from '../../../services/usuarios';
-import { Authentication } from '../../../services/authentication';
+import { Usuario } from '../../../../interfaces/usuario';
+import { UsuariosServices } from '../../../../services/usuarios';
+import { Authentication } from '../../../../services/authentication';
 
 @Component({
   selector: 'app-formulario-usuario',
@@ -45,7 +45,7 @@ export class FormularioUsuario {
   private authentication = inject(Authentication); // Inyectamos el servicio Authentication para poder gestionar la autenticación del usuario, como obtener el usuario en sesión o cerrar sesión. Esto es importante para asegurarnos de que solo los usuarios autorizados puedan acceder a este formulario y realizar acciones de gestión de usuarios.
   private snackBar = inject(MatSnackBar); // Inyectamos el servicio MatSnackBar para mostrar notificaciones de éxito o error al crear o actualizar un usuario. Esto mejora la experiencia del usuario al proporcionar retroalimentación inmediata sobre las acciones realizadas.
   private activatedRoute = inject(ActivatedRoute); // Inyectamos el servicio ActivatedRoute para poder obtener los parámetros de la URL
-  private id!: number; // Variable para almacenar el ID del usuario que se va a editar, si es que se proporciona en la URL. Si no se proporciona un ID, asumimos que estamos creando un nuevo usuario.
+  public id!: number; // Variable para almacenar el ID del usuario que se va a editar, si es que se proporciona en la URL. Si no se proporciona un ID, asumimos que estamos creando un nuevo usuario.
 
   constructor(private fb: FormBuilder) {
     this.userForm = this.fb.group({
