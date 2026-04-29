@@ -89,6 +89,13 @@ export class PedidosServices {
       .pipe(catchError(this.handleError));
   }
 
+  //OBTENER DATOS FINANCIEROS DE UNA EMPRESA CON FILTRO TEMPORAL
+  getFinanzasPorEmpresa(id: number, rango: 'mes' | 'anio' | 'global'): Observable<Pedido[]> {
+    return this.http
+      .get<Pedido[]>(`${this.URL}/pedidos/finanzas/empresa/${id}?rango=${rango}`)
+      .pipe(catchError(this.handleError));
+  }
+
   //OBTENER TODOS LOS PEDIDOS POR UN OPERARIO
   getPedidosHistorialByOperario(id: number): Observable<Pedido[]> {
     return this.http.get<Pedido[]>(`${this.URL}/pedidos/historial/operario/${id}`).pipe(
