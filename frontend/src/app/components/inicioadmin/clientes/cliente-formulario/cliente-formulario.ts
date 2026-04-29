@@ -7,7 +7,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatIcon } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatOptionModule } from '@angular/material/core';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Cliente } from '../../../../interfaces/cliente';
 import { ClientesServices } from '../../../../services/clientes';
@@ -15,19 +21,29 @@ import { Authentication } from '../../../../services/authentication';
 
 @Component({
   selector: 'app-cliente-formulario',
-  imports: [MatIcon, ReactiveFormsModule, MatSnackBarModule],
+  imports: [
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatOptionModule,
+    MatRadioModule,
+    MatSelectModule,
+    MatSnackBarModule,
+  ],
   templateUrl: './cliente-formulario.html',
   styleUrl: './cliente-formulario.css',
 })
 export class ClienteFormulario {
   public clienteForm!: FormGroup;
+  public id!: number;
 
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private clientesService = inject(ClientesServices);
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
-  private id!: number;
 
   constructor(private fb: FormBuilder) {
     this.clienteForm = this.fb.group({
