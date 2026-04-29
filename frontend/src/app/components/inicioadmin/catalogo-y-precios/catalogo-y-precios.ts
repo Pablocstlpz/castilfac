@@ -10,16 +10,17 @@ import { Authentication } from '../../../services/authentication';
 import { Material } from '../../../interfaces/material';
 import { Categoria } from '../../../interfaces/categoria';
 import { PrecioEmpresa } from '../../../interfaces/precio-empresa';
+import { RouterLink } from '@angular/router';
 
 interface MaterialVista extends Material {
   categoria_nombre: string;
   precio_venta: number;
   porcentaje_merma: number;
 }
-
+//ARREGLAR ENTERO BUSQUEDAS SQL
 @Component({
   selector: 'app-catalogo',
-  imports: [FormsModule, MatIconModule, DecimalPipe, TitleCasePipe, NgClass],
+  imports: [FormsModule, MatIconModule, DecimalPipe, TitleCasePipe, NgClass, RouterLink],
   templateUrl: './catalogo-y-precios.html',
   styleUrl: './catalogo-y-precios.css',
 })
@@ -63,8 +64,7 @@ export class CatalogoYPrecios {
         (m.codigo_interno ?? '').toLowerCase().includes(q) ||
         (m.proveedor ?? '').toLowerCase().includes(q);
       const matchCategoria =
-        this.filtroCategoria() === 'todas' ||
-        m.categoria_id.toString() === this.filtroCategoria();
+        this.filtroCategoria() === 'todas' || m.categoria_id.toString() === this.filtroCategoria();
       const matchActivo = this.mostrarInactivos() ? true : m.activo !== false && !m.deleted_at;
       return matchBusqueda && matchCategoria && matchActivo;
     }),
