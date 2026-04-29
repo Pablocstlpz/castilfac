@@ -161,6 +161,13 @@ export const routes: Routes = [
           import('./components/inicioadmin/presupuestos/presupuestos').then((m) => m.Presupuestos),
       },
       {
+        path: 'presupuestos/detalle-presupuesto/:id',
+        loadComponent: () =>
+          import('./components/inicioadmin/presupuestos/presupuesto-detalle/presupuesto-detalle').then(
+            (m) => m.PresupuestoDetalle,
+          ),
+      },
+      {
         path: 'pedidos',
         loadComponent: () =>
           import('./components/inicioadmin/pedidos/pedidos').then((m) => m.Pedidos),
@@ -199,6 +206,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'catalogo-y-precios/material/nuevo',
+        loadComponent: () =>
+          import('./components/inicioadmin/catalogo-y-precios/material-detalle/material-detalle').then(
+            (m) => m.MaterialDetalle,
+          ),
+      },
+      {
+        path: 'catalogo-y-precios/material/editar/:id',
+        loadComponent: () =>
+          import('./components/inicioadmin/catalogo-y-precios/material-detalle/material-detalle').then(
+            (m) => m.MaterialDetalle,
+          ),
+      },
+      {
         path: 'gestion-personal',
         loadComponent: () =>
           import('./components/inicioadmin/gestion-personal/gestion-personal').then(
@@ -211,6 +232,11 @@ export const routes: Routes = [
           import('./components/inicioadmin/formulario-usuario/formulario-usuario').then(
             (m) => m.FormularioUsuario,
           ),
+      },
+      {
+        path: 'finanzas',
+        loadComponent: () =>
+          import('./components/inicioadmin/finanzas/finanzas').then((m) => m.Finanzas),
       },
     ],
   },
