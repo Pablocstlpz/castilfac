@@ -1,5 +1,43 @@
 "use strict";
 import { Material } from "../models/material.model.js";
+import { Categoria } from "../models/categoria.model.js";
+import { PrecioEmpresa } from "../models/precioEmpresa.model.js";
+
+export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
+  try {
+    const { empresa_id } = req.params;
+
+    //obtengo materiales, categorias y precios de empresa en paralelo
+    const [materiales, categorias, preciosEmpresa] = await Promise.all([
+      Material.findAll(),
+      Categoria.findAll(),
+      PrecioEmpresa.findAll({ where: { empresa_id } }),
+    ]);
+
+    //si no hay materiales devuelvo 404
+    if (!materiales || materiales.length === 0) {
+      return res.status(404).json({ error: "No se encontraron materiales" });
+    }
+
+    //enriquezco cada material con su categoria y precio de empresa
+    const resultado = materiales.map((m) => {
+      const mPlano = m.toJSON();
+      const cat = categorias.find((c) => c.id === mPlano.categoria_id);
+      const precio = preciosEmpresa.find((p) => p.material_id === mPlano.id);
+      return {
+        ...mPlano,
+        categoria_nombre: cat ? cat.nombre : "—",
+        precio_venta: precio ? precio.precio_venta : mPlano.precio_base,
+        porcentaje_merma: precio ? precio.porcentaje_merma : (mPlano.porcentaje_merma_recomendado ?? 0),
+      };
+    });
+
+    res.status(200).json(resultado);
+  } catch (error) {
+    console.error("Error al obtener materiales con precio de empresa:", error);
+    res.status(500).json({ error: "Error al obtener materiales con precio de empresa" });
+  }
+};
 
 export const obtenerMateriales = async (req, res) => {
   try {
