@@ -13,12 +13,6 @@
       >
         <mat-icon class="text-sm">add</mat-icon> Nuevo Presupuesto
       </button>
-      <button class="text-slate-400 hover:text-blue-600 transition-colors relative">
-        <mat-icon>notifications</mat-icon>
-        <span
-          class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"
-        ></span>
-      </button>
     </div>
   </header>
 
@@ -114,7 +108,8 @@
 
       <div
         class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
-      >
+        routerLink="/inicioadmin/catalogo-y-precios"
+        >
         <div class="flex items-center gap-4">
           <div
             class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-600 transition-colors"
@@ -123,9 +118,9 @@
           </div>
           <div>
             <h4 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">
-              Actualizar Tarifas
+              Actualizar Precios
             </h4>
-            <p class="text-xs text-slate-500 mt-0.5">Modificar coste del aluminio</p>
+            <p class="text-xs text-slate-500 mt-0.5">Modificar precios de los materiales</p>
           </div>
         </div>
       </div>
