@@ -12,7 +12,13 @@ export interface Material {
   atributos_extra?: string | null;
   imagen_url?: string | null;
   activo?: boolean;
-  fecha_creacion: string; // ISO date string
-  fecha_actualizacion: string; // ISO date string
+  fecha_creacion: string;
+  fecha_actualizacion: string;
   deleted_at?: string | null;
+}
+
+export interface MaterialConPrecio extends Material {
+  categoria_nombre: string;
+  precio_venta: number;
+  porcentaje_merma: number;
 }
