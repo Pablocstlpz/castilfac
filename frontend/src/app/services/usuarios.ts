@@ -71,8 +71,9 @@ export class UsuariosServices {
     );
   }
 
-  getUsuarioCorreoContraseña(correo: string, contraseña: string): Observable<{ message: string, usuario: Usuario }> {
-    return this.http.post<{ message: string, usuario: Usuario }>(`${this.URL}/usuarios/login`, { correo, contraseña }, this.httpOptions).pipe(
+  // El backend devuelve el objeto Usuario directamente (sin wrapper), por eso el tipo es Observable<Usuario>
+  getUsuarioCorreoContraseña(correo: string, contraseña: string): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.URL}/usuarios/login`, { correo, contraseña }, this.httpOptions).pipe(
       catchError(this.handleError)
     );
   }
