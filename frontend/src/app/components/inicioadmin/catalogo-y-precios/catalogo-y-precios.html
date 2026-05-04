@@ -58,7 +58,7 @@
   </div>
 
   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="overflow-y-auto max-h-[60vh]">
+    <div class="overflow-y-auto max-h-[48vh]">
       <table class="min-w-full divide-y divide-slate-200 text-left whitespace-nowrap">
         <thead class="bg-slate-50 sticky top-0 z-10">
           <tr>
@@ -116,7 +116,7 @@
 
               <td class="px-4 py-3">
                 <div
-                  class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-md inline-flex"
+                  class="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-md"
                 >
                   @if (item.tipo_unidad === 'metros_lineales') {
                     <mat-icon class="text-[14px]">straighten</mat-icon>
@@ -140,19 +140,62 @@
               </td>
 
               <td class="px-4 py-3 text-right">
-                <span
-                  class="text-sm font-bold"
-                  [ngClass]="
-                    item.precio_venta <= item.precio_base ? 'text-red-600' : 'text-emerald-700'
-                  "
-                >
-                  {{ item.precio_venta | number: '1.2-2' }} €
-                  @if (item.precio_venta <= item.precio_base) {
-                    <mat-icon class="text-[12px] align-middle ml-1" title="Margen negativo o cero"
-                      >warning</mat-icon
+                @if (materialEditandoId() === item.id) {
+                  <!-- Modo edición en línea: muestra input con botones de guardar y cancelar -->
+                  <div class="flex items-center justify-end gap-1">
+                    <input
+                      type="number"
+                      [ngModel]="precioEnEdicion()"
+                      (ngModelChange)="precioEnEdicion.set(+$event)"
+                      min="0.01"
+                      step="0.01"
+                      class="w-24 text-right border border-blue-400 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      (click)="guardarNuevoPvp(item, precioEnEdicion())"
+                      class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded"
+                      title="Guardar precio"
+                      type="button"
                     >
-                  }
-                </span>
+                      <mat-icon class="text-sm">check</mat-icon>
+                    </button>
+                    <button
+                      (click)="cancelarEdicionPvp()"
+                      class="p-1 text-red-500 hover:text-red-600 hover:bg-red-50 rounded"
+                      title="Cancelar edición"
+                      type="button"
+                    >
+                      <mat-icon class="text-sm">close</mat-icon>
+                    </button>
+                  </div>
+                } @else {
+                  <!-- Modo visualización: muestra precio con icono de edición al pasar el ratón -->
+                  <div class="flex items-center justify-end gap-1">
+                    <span
+                      class="text-sm font-bold"
+                      [ngClass]="
+                        item.precio_venta <= item.precio_base ? 'text-red-600' : 'text-emerald-700'
+                      "
+                    >
+                      {{ item.precio_venta | number: '1.2-2' }} €
+                      @if (item.precio_venta <= item.precio_base) {
+                        <mat-icon
+                          class="text-[12px] align-middle ml-1"
+                          title="Margen negativo o cero"
+                          >warning</mat-icon
+                        >
+                      }
+                    </span>
+                    <button
+                      (click)="activarEdicionPvp(item)"
+                      class="p-1 text-slate-400 hover:text-blue-600 rounded hover:bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Editar precio PVP"
+                      type="button"
+                    >
+                      <mat-icon class="text-[14px]">edit</mat-icon>
+                    </button>
+                  </div>
+                }
               </td>
 
               <td class="px-4 py-3 text-center text-sm text-slate-600">
@@ -184,6 +227,10 @@
                   <button
                     class="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-blue-50"
                     title="Ver Historial"
+                    [routerLink]="[
+                      '/inicioadmin/catalogo-y-precios/material/historial-precios',
+                      item.id,
+                    ]"
                   >
                     <mat-icon class="text-sm">history</mat-icon>
                   </button>
