@@ -33,7 +33,6 @@ import { Authentication } from '../../../../services/authentication';
     MatSnackBarModule,
   ],
   templateUrl: './formulario-usuario.html',
-  styleUrl: './formulario-usuario.css',
 })
 export class FormularioUsuario {
   public userForm!: FormGroup;
@@ -53,6 +52,7 @@ export class FormularioUsuario {
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      rol: ['operario', [Validators.required]],
     });
   }
 
@@ -78,6 +78,7 @@ export class FormularioUsuario {
             this.userForm.controls['nombre'].setValue(response.nombre);
             this.userForm.controls['email'].setValue(response.email);
             this.userForm.controls['password'].setValue(response.password);
+            this.userForm.controls['rol'].setValue(response.rol ?? 'operario');
           },
         });
       }
@@ -93,6 +94,9 @@ export class FormularioUsuario {
   }
   get password() {
     return this.userForm.get('password') as FormControl;
+  }
+  get rol() {
+    return this.userForm.get('rol') as FormControl;
   }
 
   onSubmit(): void {
@@ -114,7 +118,7 @@ export class FormularioUsuario {
       password: this.userForm.value.password,
       //llamo a la funcion de autentificacion que devuelve el usuario y cojo el empresa_id
       empresa_id: usuarioSesion.empresa_id,
-      rol: 'operario', // Asignamos un valor fijo para el rol del usuario, ya que en este formulario no se está gestionando la selección del rol del usuario. En un escenario real, este valor debería ser dinámico y permitir seleccionar entre diferentes roles como 'admin' u 'operario'.
+      rol: this.userForm.value.rol, // Asignamos un valor fijo para el rol del usuario, ya que en este formulario no se está gestionando la selección del rol del usuario. En un escenario real, este valor debería ser dinámico y permitir seleccionar entre diferentes roles como 'admin' u 'operario'.
       activo: true, // Asignamos un valor fijo para indicar que el usuario está activo, ya que en este formulario no se está gestionando la activación o desactivación del usuario. En un escenario real, este valor podría ser dinámico y permitir activar o desactivar el usuario según sea necesario.
       fecha_creacion: new Date(), // Asignamos la fecha actual como fecha de creación del usuario, ya que en este formulario no se está gestionando la fecha de creación. En un escenario real, este valor podría ser generado automáticamente en el backend al crear el usuario.
       fecha_actualizacion: new Date(), // Asignamos la fecha actual como fecha de actualización del usuario, ya que en este formulario no se está gestionando la fecha de actualización. En un escenario real, este valor podría ser generado automáticamente en el backend al actualizar el usuario.
@@ -166,13 +170,32 @@ export class FormularioUsuario {
         this.userForm.reset();
         this.router.navigate(['/inicioadmin/gestion-personal']);
       },
-      error: (error) => {
+      error: (error: unknown) => {
         console.error('Error al actualizar usuario:', error);
+
+        const mensaje =
+          error instanceof Error &&
+          error.message.includes('sin administradores')
+            ? 'No se puede dejar la empresa sin administradores. Debe haber al menos un usuario con rol administrador.'
+            : error instanceof Error && error.message
+              ? error.message
+              : 'No se ha podido actualizar el usuario';
+
+        this.snackBar.open(mensaje, 'Cerrar', {
+          duration: 5000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['snack-error'],
+        });
       },
     });
   }
 
   onReset(): void {
     this.userForm.reset();
+  }
+
+  volver(): void {
+    this.router.navigate(['/inicioadmin/gestion-personal']);
   }
 }
