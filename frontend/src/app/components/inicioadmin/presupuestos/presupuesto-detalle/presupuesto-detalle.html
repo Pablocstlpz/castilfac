@@ -1,260 +1,307 @@
-<!-- <div class="flex-1 bg-slate-50 min-h-screen p-4 sm:p-8 font-sans">
+<div class="flex-1 bg-slate-50 min-h-screen p-4 lg:p-6 font-sans">
   @if (presupuesto(); as pres) {
-    <div
-      class="max-w-7xl mx-auto mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4"
-    >
-      <div class="flex items-center gap-4">
-        <button
-          (click)="volver()"
-          class="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm"
-        >
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-        <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">
-              {{ pres.numero_presupuesto }}
-            </h1>
-            <span
-              class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter"
-              >v.{{ pres.version }}</span
-            >
-
-            <span
-              [class]="
-                'px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-widest ' +
-                getEstadoColor(pres.estado)
-              "
-            >
-              {{ pres.estado }}
-            </span>
-          </div>
-          <p class="text-sm text-slate-500 font-medium mt-1">
-            Cliente: <span class="text-slate-800">{{ pres.cliente_nombre }}</span> | Creado
-            el {{ pres.fecha_creacion | date: 'dd/MM/yyyy' }}
-          </p>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-        <button
-          class="flex-1 lg:flex-none px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-        >
-          <mat-icon class="text-lg">picture_as_pdf</mat-icon> Exportar PDF
-        </button>
-        <button
-          class="flex-1 lg:flex-none px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-        >
-          <mat-icon class="text-lg">edit</mat-icon> Editar
-        </button>
-        <button
-          class="flex-1 lg:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 shadow-md shadow-emerald-100 transition-all flex items-center justify-center gap-2"
-        >
-          <mat-icon class="text-lg">check_circle</mat-icon> Convertir a Pedido
-        </button>
-      </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-2 space-y-6">
-        <h2
-          class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-2"
-        >
-          <mat-icon class="text-sm">window</mat-icon> Configuración de Elementos
-        </h2>
-
-        @for (elemento of pres.elementos; track elemento.id) {
-          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div
-              class="p-6 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center"
-            >
-              <div>
-                <h3 class="text-base font-black text-slate-800">{{ elemento.nombre }}</h3>
-                <p class="text-xs text-slate-500 italic">
-                  Unidades a fabricar:
-                  <span class="font-bold text-slate-700">{{ elemento.cantidad }}</span>
-                </p>
-              </div>
-              <div class="text-right">
-                <span class="text-xs text-slate-400 block uppercase font-bold"
-                  >Subtotal Elemento</span
-                >
-                <span class="text-lg font-black text-slate-800"
-                  >{{ elemento.precio_final || 0 | number: '1.2-2' }} €</span
-                >
-              </div>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-left">
-                <thead class="bg-white">
-                  <tr>
-                    <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">
-                      Material / Código
-                    </th>
-                    <th
-                      class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase text-right"
-                    >
-                      Cantidad
-                    </th>
-                    <th
-                      class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase text-right"
-                    >
-                      Precio Un.
-                    </th>
-                    <th
-                      class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase text-right"
-                    >
-                      Subtotal
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                  @for (mat of elemento.materiales_desglose; track mat.id) {
-                    <tr class="hover:bg-slate-50 transition-all">
-                      <td class="px-6 py-4">
-                        <p class="text-sm font-bold text-slate-700">{{ mat.Material?.nombre }}</p>
-                        <p class="text-[10px] font-mono text-slate-400">
-                          {{ mat.Material?.codigo_interno }}
-                        </p>
-                      </td>
-                      <td class="px-6 py-4 text-sm font-medium text-slate-600 text-right">
-                        {{ mat.cantidad }}
-                        <span class="text-[10px] text-slate-400 uppercase">{{
-                          mat.Material?.tipo_unidad
-                        }}</span>
-                      </td>
-                      <td class="px-6 py-4 text-sm font-medium text-slate-600 text-right">
-                        {{ mat.precio_unitario_aplicado | number: '1.2-2' }}€
-                      </td>
-                      <td class="px-6 py-4 text-sm font-black text-slate-800 text-right">
-                        {{ mat.cantidad * mat.precio_unitario_aplicado | number: '1.2-2' }}€
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        }
-      </div>
-
-      <div class="space-y-6">
-        <h2
-          class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-2"
-        >
-          <mat-icon class="text-sm">analytics</mat-icon> Análisis de Costes
-        </h2>
-
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
-          <div class="space-y-4">
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-slate-500">Coste Materiales</span>
-              <span class="font-bold text-slate-800"
-                >{{ pres.coste_materiales | number: '1.2-2' }} €</span
+    <!-- CONTENEDOR PRINCIPAL MÁS ANCHO -->
+    <div class="max-w-[1400px] mx-auto">
+      <!-- CABECERA SUPERIOR (Más compacta) -->
+      <div
+        class="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200"
+      >
+        <div class="flex items-center gap-4">
+          <button
+            (click)="volver()"
+            class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+          >
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div>
+            <div class="flex items-center gap-3">
+              <h1
+                class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight m-0 leading-none"
               >
-            </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-slate-500">Mano de Obra</span>
-              <span class="font-bold text-slate-800"
-                >{{ pres.coste_mano_obra | number: '1.2-2' }} €</span
+                {{ pres.numero_presupuesto }}
+              </h1>
+              <span
+                class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter"
               >
-            </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-slate-500">Otros Costes</span>
-              <span class="font-bold text-slate-800"
-                >{{ pres.otros_costes | number: '1.2-2' }} €</span
-              >
-            </div>
-            @if (pres.detalle_otros_costes) {
-              <p class="text-[10px] text-slate-400 italic bg-slate-50 p-2 rounded-lg">
-                Info otros: {{ pres.detalle_otros_costes }}
-              </p>
-            }
-            <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
-              <span class="text-xs font-black text-slate-400 uppercase"
-                >Coste Total Producción</span
-              >
-              <span class="text-base font-black text-slate-900"
-                >{{
-                  (pres.coste_materiales || 0) +
-                    (pres.coste_mano_obra || 0) +
-                    (pres.otros_costes || 0) | number: '1.2-2'
-                }}
-                €</span
-              >
-            </div>
-          </div>
+                v.{{ pres.version }}
+              </span>
 
-          <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-indigo-600 uppercase tracking-tighter"
-                >Beneficio Industrial</span
+              <!-- NGCLASS PARA EL ESTADO -->
+              <span
+                class="px-2.5 py-0.5 rounded-md text-[10px] font-black border uppercase tracking-widest"
+                [ngClass]="{
+                  'bg-slate-100 text-slate-600 border-slate-300': pres.estado === 'borrador',
+                  'bg-blue-100 text-blue-700 border-blue-300': pres.estado === 'enviado',
+                  'bg-emerald-100 text-emerald-700 border-emerald-300':
+                    pres.estado === 'aprobado' || pres.estado === 'aceptado',
+                  'bg-red-100 text-red-700 border-red-300':
+                    pres.estado === 'rechazado' || pres.estado === 'anulado',
+                  'bg-purple-100 text-purple-700 border-purple-300': pres.estado === 'facturado',
+                }"
               >
-              <span class="text-xs font-black text-indigo-700"
-                >{{ pres.porcentaje_beneficio }}%</span
-              >
+                {{ pres.estado }}
+              </span>
             </div>
-            <div class="w-full bg-indigo-200 rounded-full h-1.5 mb-2">
-              <div
-                class="bg-indigo-600 h-1.5 rounded-full"
-                [style.width.%]="pres.porcentaje_beneficio"
-              ></div>
-            </div>
-            <p class="text-[10px] text-indigo-500 leading-tight">
-              Este porcentaje se calcula sobre el coste total de producción.
+            <p class="text-xs text-slate-500 font-medium mt-1.5">
+              Cliente: <span class="text-slate-800 font-bold">{{ pres.cliente_nombre }}</span> |
+              Creado el {{ pres.fecha_creacion | date: 'dd/MM/yyyy' }}
             </p>
           </div>
+        </div>
 
-          <div class="space-y-3 pt-2">
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-slate-500 italic">Precio antes de descuento</span>
-              <span class="font-bold text-slate-400 line-through"
-                >{{ pres.precio_sin_descuento | number: '1.2-2' }} €</span
-              >
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-bold text-red-500 uppercase"
-                >Descuento Aplicado ({{ pres.descuento_aplicado }}%)</span
-              >
-              <span class="text-sm font-bold text-red-600"
-                >-
-                {{
-                  (pres.precio_sin_descuento || 0) - (pres.precio_final || 0) | number: '1.2-2'
-                }}
-                €</span
-              >
-            </div>
+        <div class="flex flex-wrap gap-2 w-full xl:w-auto">
+          <button
+            class="flex-1 xl:flex-none px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">picture_as_pdf</mat-icon> Exportar PDF
+          </button>
+          <button
+            (click)="editarPresupuesto()"
+            class="flex-1 xl:flex-none px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">edit</mat-icon> Editar
+          </button>
+          <button
+            (click)="convertirAPedido()"
+            class="flex-1 xl:flex-none px-4 py-1.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 shadow-md shadow-emerald-100 transition-all flex items-center justify-center gap-1.5"
+          >
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">check_circle</mat-icon> Convertir a
+            Pedido
+          </button>
+        </div>
+      </div>
 
-            <div class="bg-slate-900 rounded-2xl p-5 text-white mt-4 shadow-lg shadow-slate-200">
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                Precio Final Presupuestado
-              </p>
-              <div class="flex items-baseline gap-2">
-                <span class="text-3xl font-black">{{
-                  pres.precio_final | number: '1.2-2'
-                }}</span>
-                <span class="text-lg font-bold text-slate-400">€</span>
+      <!-- GRID PRINCIPAL -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <!-- COLUMNA IZQUIERDA (ELEMENTOS Y NOTAS) - Ocupa 8 columnas de 12 -->
+        <div class="xl:col-span-8 space-y-5">
+          <h2
+            class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1"
+          >
+            <mat-icon class="text-sm w-4 h-4">window</mat-icon> Configuración de Elementos
+          </h2>
+
+          @for (elemento of pres.elementos; track elemento.id) {
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <!-- Cabecera del elemento más ajustada -->
+              <div
+                class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center"
+              >
+                <div>
+                  <h3 class="text-sm font-black text-slate-800">{{ elemento.nombre }}</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Unidades a fabricar:
+                    <span class="font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{{
+                      elemento.cantidad
+                    }}</span>
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider"
+                    >Subtotal Elemento</span
+                  >
+                  <span class="text-lg font-black text-slate-800"
+                    >{{ elemento.precio_final || 0 | number: '1.2-2' }} €</span
+                  >
+                </div>
+              </div>
+
+              <!-- Tabla de materiales súper compacta -->
+              <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead class="bg-white border-b border-slate-100">
+                    <tr>
+                      <th class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase">
+                        Material / Código
+                      </th>
+                      <th
+                        class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase text-right"
+                      >
+                        Cantidad
+                      </th>
+                      <th
+                        class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase text-right"
+                      >
+                        Precio Un.
+                      </th>
+                      <th
+                        class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase text-right"
+                      >
+                        Subtotal
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50">
+                    @for (mat of elemento.materiales_desglose; track mat.id) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-2.5">
+                          <p class="text-[13px] font-bold text-slate-700 leading-tight">
+                            {{ mat.Material?.nombre }}
+                          </p>
+                          <p class="text-[10px] font-mono text-slate-400 mt-0.5">
+                            {{ mat.Material?.codigo_interno }}
+                          </p>
+                        </td>
+                        <td class="px-5 py-2.5 text-[13px] font-medium text-slate-600 text-right">
+                          {{ mat.cantidad }}
+                          <span class="text-[9px] text-slate-400 uppercase ml-0.5">{{
+                            mat.Material?.tipo_unidad
+                          }}</span>
+                        </td>
+                        <td class="px-5 py-2.5 text-[13px] font-medium text-slate-600 text-right">
+                          {{ mat.precio_unitario_aplicado | number: '1.2-2' }}€
+                        </td>
+                        <td class="px-5 py-2.5 text-[13px] font-black text-slate-800 text-right">
+                          {{ mat.cantidad * mat.precio_unitario_aplicado | number: '1.2-2' }}€
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
             </div>
+          }
+
+          <!-- Movido aquí: Notas para el cliente (No estorba a los números de la derecha) -->
+          <div class="bg-amber-50/50 rounded-2xl border border-amber-200/60 p-5 mt-6">
+            <h3
+              class="text-xs font-black text-amber-800 uppercase tracking-widest mb-2 flex items-center gap-1.5"
+            >
+              <mat-icon class="text-sm w-4 h-4">sticky_note_2</mat-icon> Notas para el Cliente
+            </h3>
+            <p class="text-[13px] text-amber-900 leading-relaxed italic">
+              {{
+                pres.notas_cliente ||
+                  'No hay notas adicionales para el cliente especificadas en este presupuesto.'
+              }}
+            </p>
           </div>
         </div>
 
-        <div class="bg-amber-50 rounded-3xl border border-amber-200 p-6">
-          <h3
-            class="text-xs font-black text-amber-800 uppercase tracking-widest mb-4 flex items-center gap-2"
+        <!-- COLUMNA DERECHA (ANÁLISIS DE COSTES) - STICKY PARA NO DESAPARECER -->
+        <!-- Ocupa 4 columnas. 'sticky top-6 h-fit' es la clave de todo el diseño -->
+        <div class="xl:col-span-4 space-y-5 sticky top-6 h-fit">
+          <h2
+            class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1"
           >
-            <mat-icon class="text-sm">sticky_note_2</mat-icon> Notas para el Cliente
-          </h3>
-          <p class="text-xs text-amber-900 leading-relaxed italic">
-            {{ pres.notas_cliente || 'No hay notas adicionales para el cliente.' }}
-          </p>
+            <mat-icon class="text-sm w-4 h-4">analytics</mat-icon> Análisis de Costes
+          </h2>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <!-- Lista de Costes Compacta -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center text-[13px]">
+                <span class="text-slate-500">Coste Materiales</span>
+                <span class="font-bold text-slate-700"
+                  >{{ pres.coste_materiales | number: '1.2-2' }} €</span
+                >
+              </div>
+              <div class="flex justify-between items-center text-[13px]">
+                <span class="text-slate-500">Mano de Obra</span>
+                <span class="font-bold text-slate-700"
+                  >{{ pres.coste_mano_obra | number: '1.2-2' }} €</span
+                >
+              </div>
+              <div class="flex justify-between items-center text-[13px]">
+                <span class="text-slate-500">Otros Costes</span>
+                <span class="font-bold text-slate-700"
+                  >{{ pres.otros_costes | number: '1.2-2' }} €</span
+                >
+              </div>
+
+              @if (pres.detalle_otros_costes) {
+                <p
+                  class="text-[10px] text-slate-400 italic bg-slate-50 p-1.5 rounded mt-1 border border-slate-100"
+                >
+                  Ref: {{ pres.detalle_otros_costes }}
+                </p>
+              }
+
+              <div class="pt-3 mt-3 border-t border-slate-100 flex justify-between items-center">
+                <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider"
+                  >Total Producción</span
+                >
+                <span class="text-sm font-black text-slate-900">
+                  {{
+                    (pres.coste_materiales || 0) +
+                      (pres.coste_mano_obra || 0) +
+                      (pres.otros_costes || 0) | number: '1.2-2'
+                  }}
+                  €
+                </span>
+              </div>
+            </div>
+
+            <!-- Beneficio Industrial (Padding reducido) -->
+            <div class="bg-indigo-50/50 rounded-xl p-3 border border-indigo-100 mt-4">
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-tight"
+                  >Beneficio Industrial</span
+                >
+                <span class="text-xs font-black text-indigo-700"
+                  >{{ pres.porcentaje_beneficio }}%</span
+                >
+              </div>
+              <div class="w-full bg-indigo-200/50 rounded-full h-1.5 mb-1.5">
+                <div
+                  class="bg-indigo-600 h-1.5 rounded-full"
+                  [style.width.%]="pres.porcentaje_beneficio"
+                ></div>
+              </div>
+              <p class="text-[9px] text-indigo-400 leading-tight">
+                Calculado sobre el total de producción.
+              </p>
+            </div>
+
+            <!-- Precios y Descuentos -->
+            <div class="space-y-2 mt-5">
+              <div class="flex justify-between items-center text-[13px]">
+                <span class="text-slate-500 italic">Subtotal antes de desc.</span>
+                <span class="font-bold text-slate-400 line-through"
+                  >{{ pres.precio_sin_descuento | number: '1.2-2' }} €</span
+                >
+              </div>
+              <div class="flex justify-between items-center bg-red-50 px-2 py-1.5 rounded-md">
+                <span class="text-[11px] font-bold text-red-500 uppercase"
+                  >Desc. ({{ pres.descuento_aplicado }}%)</span
+                >
+                <span class="text-[13px] font-black text-red-600">
+                  -
+                  {{
+                    (pres.precio_sin_descuento || 0) - (pres.precio_final || 0) | number: '1.2-2'
+                  }}
+                  €
+                </span>
+              </div>
+
+              <!-- Precio Final destadado -->
+              <div
+                class="bg-slate-900 rounded-xl p-4 text-white mt-4 shadow-md flex flex-col items-center justify-center border-b-4 border-slate-700"
+              >
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">
+                  Precio Final
+                </p>
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-3xl font-black tracking-tight">{{
+                    pres.precio_final | number: '1.2-2'
+                  }}</span>
+                  <span class="text-base font-bold text-slate-400">€</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   } @else {
-    <div class="flex items-center justify-center h-64">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    <!-- Spinner de carga -->
+    <div class="flex items-center justify-center min-h-[50vh]">
+      <div class="flex flex-col items-center gap-3">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Cargando presupuesto...
+        </p>
+      </div>
     </div>
   }
-</div> -->
+</div>
