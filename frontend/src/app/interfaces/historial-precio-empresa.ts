@@ -6,6 +6,5 @@ export interface HistorialPrecioEmpresa {
   precio_anterior?: number | null;
   precio_nuevo: number;
   usuario_id?: number | null;
-  motivo?: string | null;
   fecha_registro?: string;
 }
