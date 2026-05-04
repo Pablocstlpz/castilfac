@@ -162,6 +162,7 @@ export const createUsuario = async (req, res) => {
     res.status(500).json({ message: "Error al crear el usuario" });
   }
 };
+
 export const updateUsuario = async (req, res) => {
   try {
     //recojo el id que se pasa por la URL
@@ -189,16 +190,6 @@ export const updateUsuario = async (req, res) => {
         .json({ message: "El email debe ser un email valido" });
     }
 
-    const passwordNueva =
-      typeof password === "string" && password.trim().length > 0
-        ? password.trim()
-        : null;
-    if (passwordNueva && passwordNueva.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "La contraseña debe tener al menos 8 caracteres" });
-    }
-
     //esto me ha ayudado la ia, ya que si no siempre me fallaba porque el email es el mismo y no se actualizaba
     // comprobar que el email no está usado por OTRO usuario distinto
     const existeUsuario = await Usuario.findOne({
@@ -213,7 +204,7 @@ export const updateUsuario = async (req, res) => {
       where: { email: email },
     });
 
-    //valido que la empresa exista
+    //valido que el email no este registrado en la empresa
     if (existeEmpresa) {
       return res
         .status(400)
@@ -241,20 +232,84 @@ export const updateUsuario = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const datosActualizar = {
+    //no permitir que la empresa se quede sin ningún usuario con rol admin
+    const empresaOrigenId = usuarioExiste.empresa_id;
+    const empresaDestinoId = empresa_id;
+    const cambiaEmpresa =
+      String(empresaOrigenId) !== String(empresaDestinoId);
+
+    if (cambiaEmpresa && usuarioExiste.rol === "admin") {
+      const otrosAdminsEmpresaOrigen = await Usuario.count({
+        where: {
+          empresa_id: empresaOrigenId,
+          rol: "admin",
+          id: { [Op.ne]: id },
+        },
+      });
+
+      if (otrosAdminsEmpresaOrigen === 0) {
+        return res
+          .status(400)
+          .json({
+            message: "No se puede dejar la empresa sin administradores",
+          });
+      }
+    }
+
+    if (rol !== "admin") {
+      const otrosAdminsEmpresaDestino = await Usuario.count({
+        where: {
+          empresa_id: empresaDestinoId,
+          rol: "admin",
+          id: { [Op.ne]: id },
+        },
+      });
+
+      if (otrosAdminsEmpresaDestino === 0) {
+        return res
+          .status(400)
+          .json({
+            message: "No se puede dejar la empresa sin administradores",
+          });
+      }
+    }
+
+    //si viene contraseña en el body la preparo; si viene vacía o no viene, no se toca password en BD
+    const passwordNueva = password ? password.trim() : "";
+
+    if (passwordNueva.length > 0) {
+      const regexPasswordFuerte =
+        /^(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+      if (!regexPasswordFuerte.test(passwordNueva)) {
+        return res.status(400).json({
+          message:
+            "La contraseña debe tener al menos 8 caracteres, una mayúscula, números y un carácter especial",
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(passwordNueva, 10);
+
+      //actualizo el usuario incluyendo la nueva contraseña
+      const usuario = await usuarioExiste.update({
+        empresa_id: empresa_id,
+        nombre: nombre,
+        email: email,
+        rol: rol,
+        password: hashedPassword,
+      });
+
+      return res.status(200).json({
+        message: "Usuario actualizado correctamente",
+        usuario: usuario,
+      });
+    }
+
+    //actualizo el usuario sin tocar la contraseña (se deja la que ya estaba en BD)
+    const usuario = await usuarioExiste.update({
       empresa_id: empresa_id,
       nombre: nombre,
       email: email,
       rol: rol,
-    };
-
-    if (passwordNueva) {
-      datosActualizar.password = await bcrypt.hash(passwordNueva, 10);
-    }
-
-    //actualizo el usuario
-    const usuario = await Usuario.update(datosActualizar, {
-      where: { id: id },
     });
 
     //devuelvo un mensaje de exito y el usuario actualizado
@@ -287,6 +342,24 @@ export const deleteUsuario = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    if (usuario.rol === "admin") {
+      const otrosAdmins = await Usuario.count({
+        where: {
+          empresa_id: usuario.empresa_id,
+          rol: "admin",
+          id: { [Op.ne]: usuario.id },
+        },
+      });
+
+      if (otrosAdmins === 0) {
+        return res
+          .status(400)
+          .json({
+            message: "No se puede dejar la empresa sin administradores",
+          });
+      }
+    }
+
     //elimino el usuario
     await usuario.destroy();
 
@@ -315,6 +388,24 @@ export const deleteUsuarioCorreo = async (req, res) => {
     //valido que el usuario exista
     if (!usuario) {
       return res.status(404).json({ message: "El correo no esta registrado" });
+    }
+
+    if (usuario.rol === "admin") {
+      const otrosAdmins = await Usuario.count({
+        where: {
+          empresa_id: usuario.empresa_id,
+          rol: "admin",
+          id: { [Op.ne]: usuario.id },
+        },
+      });
+
+      if (otrosAdmins === 0) {
+        return res
+          .status(400)
+          .json({
+            message: "No se puede dejar la empresa sin administradores",
+          });
+      }
     }
 
     //elimino el usuario
