@@ -9,7 +9,7 @@ import { Material, MaterialConPrecio } from '../interfaces/material';
   providedIn: 'root',
 })
 export class Materiales {
-  private URL = environment.apiUrl
+  private URL = environment.apiUrl;
 
   private httpOptions = {
     headers: new HttpHeaders({
@@ -41,7 +41,9 @@ export class Materiales {
       .pipe(catchError(this.handleError));
   }
 
-  addMaterial(material: Omit<Material, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'deleted_at'>): Observable<Material> {
+  addMaterial(
+    material: Omit<Material, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'deleted_at'>,
+  ): Observable<Material> {
     return this.http
       .post<Material>(`${this.URL}/materiales`, material, this.httpOptions)
       .pipe(catchError(this.handleError));
@@ -62,6 +64,21 @@ export class Materiales {
   toggleActivo(id: number): Observable<Material> {
     return this.http
       .patch<Material>(`${this.URL}/materiales/${id}/activo`, {}, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
+  actualizarPvpEmpresa(
+    material_id: number,
+    empresa_id: number,
+    usuario_id: number,
+    nuevo_precio: number,
+  ): Observable<{ message: string; precio_anterior: number; precio_nuevo: number }> {
+    return this.http
+      .put<{
+        message: string;
+        precio_anterior: number;
+        precio_nuevo: number;
+      }>(`${this.URL}/precios/actualizar`, { material_id, empresa_id, usuario_id, nuevo_precio }, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
