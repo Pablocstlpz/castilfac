@@ -220,6 +220,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'catalogo-y-precios/material/historial-precios/:id',
+        loadComponent: () =>
+          import('./components/inicioadmin/catalogo-y-precios/historial-precio/historial-precio').then(
+            (m) => m.HistorialPrecio,
+          ),
+      },
+      {
         path: 'gestion-personal',
         loadComponent: () =>
           import('./components/inicioadmin/gestion-personal/gestion-personal').then(
