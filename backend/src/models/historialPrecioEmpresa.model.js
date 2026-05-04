@@ -35,11 +35,6 @@ export const HistorialPrecioEmpresa = sequelize.define(
       allowNull: true,
       defaultValue: null,
     },
-    motivo: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      defaultValue: null,
-    },
     fecha_registro: {
       type: DataTypes.DATE,
       allowNull: false,
