@@ -131,14 +131,14 @@ export class MaterialDetalle {
     };
     //si no hay id es una creacion, si hay id es una actualizacion
     if (!this.id) {
-      this.anadirMaterial(materialData);
+      this.crearMaterial(materialData);
     } else {
       this.actualizarMaterial(materialData);
     }
   }
 
-  //funcion para añadir un nuevo material
-  anadirMaterial(material: Material): void {
+  //funcion para crear un nuevo material
+  crearMaterial(material: Material): void {
     this.materialesService.addMaterial(material).subscribe({
       next: () => {
         this.snackBar.open('Material creado correctamente', 'Cerrar', {
