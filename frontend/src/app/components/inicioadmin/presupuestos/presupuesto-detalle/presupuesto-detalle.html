@@ -1,8 +1,8 @@
-<div class="flex-1 bg-slate-50 min-h-screen p-4 lg:p-6 font-sans">
+<div class="flex-1 bg-slate-50 h-screen overflow-y-auto p-4 lg:p-6 font-sans">
   @if (presupuesto(); as pres) {
-    <!-- CONTENEDOR PRINCIPAL MÁS ANCHO -->
-    <div class="max-w-[1400px] mx-auto">
-      <!-- CABECERA SUPERIOR (Más compacta) -->
+    <!-- Contenedor con padding inferior extra (pb-20) para evitar que el footer tape las notas -->
+    <div class="max-w-[1400px] mx-auto pb-20">
+      <!-- CABECERA -->
       <div
         class="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200"
       >
@@ -26,7 +26,6 @@
                 v.{{ pres.version }}
               </span>
 
-              <!-- NGCLASS PARA EL ESTADO -->
               <span
                 class="px-2.5 py-0.5 rounded-md text-[10px] font-black border uppercase tracking-widest"
                 [ngClass]="{
@@ -51,6 +50,7 @@
 
         <div class="flex flex-wrap gap-2 w-full xl:w-auto">
           <button
+            (click)="exportarPDF()"
             class="flex-1 xl:flex-none px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 shadow-sm"
           >
             <mat-icon class="text-[18px] w-[18px] h-[18px]">picture_as_pdf</mat-icon> Exportar PDF
@@ -73,7 +73,7 @@
 
       <!-- GRID PRINCIPAL -->
       <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <!-- COLUMNA IZQUIERDA (ELEMENTOS Y NOTAS) - Ocupa 8 columnas de 12 -->
+        <!-- COLUMNA IZQUIERDA -->
         <div class="xl:col-span-8 space-y-5">
           <h2
             class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1"
@@ -83,7 +83,6 @@
 
           @for (elemento of pres.elementos; track elemento.id) {
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <!-- Cabecera del elemento más ajustada -->
               <div
                 class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center"
               >
@@ -96,17 +95,36 @@
                     }}</span>
                   </p>
                 </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider"
-                    >Subtotal Elemento</span
-                  >
-                  <span class="text-lg font-black text-slate-800"
-                    >{{ elemento.precio_final || 0 | number: '1.2-2' }} €</span
-                  >
+
+                <!-- AQUÍ AÑADIMOS EL COSTE UNITARIO AL LADO DEL SUBTOTAL -->
+                <div class="flex items-center gap-6 text-right">
+                  <!-- Coste de 1 sola unidad -->
+                  <div class="hidden sm:block border-r border-slate-200 pr-6">
+                    <span
+                      class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider"
+                      >Coste 1 Ud.</span
+                    >
+                    <span class="text-sm font-bold text-slate-500">
+                      {{
+                        (elemento.precio_final || 0) / (elemento.cantidad || 1) | number: '1.2-2'
+                      }}
+                      €
+                    </span>
+                  </div>
+
+                  <!-- Subtotal de todas las unidades -->
+                  <div>
+                    <span
+                      class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider"
+                      >Subtotal (x{{ elemento.cantidad }})</span
+                    >
+                    <span class="text-lg font-black text-slate-800"
+                      >{{ elemento.precio_final || 0 | number: '1.2-2' }} €</span
+                    >
+                  </div>
                 </div>
               </div>
 
-              <!-- Tabla de materiales súper compacta -->
               <div class="overflow-x-auto">
                 <table class="w-full text-left">
                   <thead class="bg-white border-b border-slate-100">
@@ -162,24 +180,20 @@
             </div>
           }
 
-          <!-- Movido aquí: Notas para el cliente (No estorba a los números de la derecha) -->
-          <div class="bg-amber-50/50 rounded-2xl border border-amber-200/60 p-5 mt-6">
+          <!-- NOTAS PARA EL CLIENTE -->
+          <div class="bg-amber-50/50 rounded-2xl border border-amber-200/60 p-5">
             <h3
               class="text-xs font-black text-amber-800 uppercase tracking-widest mb-2 flex items-center gap-1.5"
             >
               <mat-icon class="text-sm w-4 h-4">sticky_note_2</mat-icon> Notas para el Cliente
             </h3>
-            <p class="text-[13px] text-amber-900 leading-relaxed italic">
-              {{
-                pres.notas_cliente ||
-                  'No hay notas adicionales para el cliente especificadas en este presupuesto.'
-              }}
+            <p class="text-[13px] text-amber-900 leading-relaxed italic m-0">
+              {{ pres.notas_cliente || 'No hay notas adicionales para el cliente.' }}
             </p>
           </div>
         </div>
 
-        <!-- COLUMNA DERECHA (ANÁLISIS DE COSTES) - STICKY PARA NO DESAPARECER -->
-        <!-- Ocupa 4 columnas. 'sticky top-6 h-fit' es la clave de todo el diseño -->
+        <!-- COLUMNA DERECHA -->
         <div class="xl:col-span-4 space-y-5 sticky top-6 h-fit">
           <h2
             class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1"
@@ -188,7 +202,6 @@
           </h2>
 
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <!-- Lista de Costes Compacta -->
             <div class="space-y-2">
               <div class="flex justify-between items-center text-[13px]">
                 <span class="text-slate-500">Coste Materiales</span>
@@ -222,17 +235,11 @@
                   >Total Producción</span
                 >
                 <span class="text-sm font-black text-slate-900">
-                  {{
-                    (pres.coste_materiales || 0) +
-                      (pres.coste_mano_obra || 0) +
-                      (pres.otros_costes || 0) | number: '1.2-2'
-                  }}
-                  €
+                  {{ calcularTotalProduccion(pres) | number: '1.2-2' }} €
                 </span>
               </div>
             </div>
 
-            <!-- Beneficio Industrial (Padding reducido) -->
             <div class="bg-indigo-50/50 rounded-xl p-3 border border-indigo-100 mt-4">
               <div class="flex justify-between items-center mb-1.5">
                 <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-tight"
@@ -248,12 +255,11 @@
                   [style.width.%]="pres.porcentaje_beneficio"
                 ></div>
               </div>
-              <p class="text-[9px] text-indigo-400 leading-tight">
+              <p class="text-[9px] text-indigo-400 leading-tight m-0">
                 Calculado sobre el total de producción.
               </p>
             </div>
 
-            <!-- Precios y Descuentos -->
             <div class="space-y-2 mt-5">
               <div class="flex justify-between items-center text-[13px]">
                 <span class="text-slate-500 italic">Subtotal antes de desc.</span>
@@ -266,15 +272,10 @@
                   >Desc. ({{ pres.descuento_aplicado }}%)</span
                 >
                 <span class="text-[13px] font-black text-red-600">
-                  -
-                  {{
-                    (pres.precio_sin_descuento || 0) - (pres.precio_final || 0) | number: '1.2-2'
-                  }}
-                  €
+                  - {{ calcularDescuentoTotal(pres) | number: '1.2-2' }} €
                 </span>
               </div>
 
-              <!-- Precio Final destadado -->
               <div
                 class="bg-slate-900 rounded-xl p-4 text-white mt-4 shadow-md flex flex-col items-center justify-center border-b-4 border-slate-700"
               >
@@ -290,11 +291,22 @@
               </div>
             </div>
           </div>
+
+          <!-- NOTAS INTERNAS (SOLO ADMIN) -->
+          <div class="bg-slate-100 rounded-2xl border border-slate-200 p-5">
+            <h3
+              class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"
+            >
+              <mat-icon class="text-sm w-4 h-4">lock</mat-icon> Notas Internas
+            </h3>
+            <p class="text-[12px] text-slate-600 leading-relaxed m-0">
+              {{ pres.notas_internas || 'No hay notas internas registradas.' }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
   } @else {
-    <!-- Spinner de carga -->
     <div class="flex items-center justify-center min-h-[50vh]">
       <div class="flex flex-col items-center gap-3">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
