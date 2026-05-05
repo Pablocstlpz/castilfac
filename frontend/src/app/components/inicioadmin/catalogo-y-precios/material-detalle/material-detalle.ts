@@ -128,6 +128,7 @@ export class MaterialDetalle {
       id: this.id ?? 0,
       fecha_creacion: new Date().toISOString(),
       fecha_actualizacion: new Date().toISOString(),
+      usuario_id: usuario.id,
     };
     //si no hay id es una creacion, si hay id es una actualizacion
     if (!this.id) {
