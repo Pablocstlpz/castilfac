@@ -1,19 +1,20 @@
 <div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 min-h-full font-sans flex justify-center items-start">
-  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mt-8">
+  <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mt-8">
 
-    <div class="bg-blue-600 px-8 py-6 flex flex-col items-center justify-center text-center">
-      <div class="bg-white/20 p-4 rounded-full flex items-center justify-center mb-3">
-        <mat-icon class="text-white h-[30px] w-[30px] text-[30px] leading-[30px]">person_add</mat-icon>
+    <!-- Header horizontal -->
+    <div class="bg-blue-600 px-8 py-5 flex flex-row items-center gap-4">
+      <div class="bg-white/20 p-3 rounded-full flex items-center justify-center shrink-0">
+        <mat-icon class="text-white h-[26px] w-[26px] text-[26px] leading-[26px]">person_add</mat-icon>
       </div>
       <div>
-        <h1 class="text-2xl font-bold text-white m-0 tracking-tight">
+        <h1 class="text-xl font-bold text-white m-0 tracking-tight">
           {{ id ? 'Editar Usuario' : 'Nuevo Usuario' }}
         </h1>
-        <p class="text-blue-100 text-sm mt-1">Completa los datos para gestionar un usuario en el sistema</p>
+        <p class="text-blue-100 text-sm mt-0.5">Completa los datos para gestionar un usuario en el sistema</p>
       </div>
     </div>
 
-    <div class="px-8 pt-8 pb-0">
+    <div class="px-8 pt-6 pb-0">
       <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-4">
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">
 
@@ -84,41 +85,39 @@
         </div>
 
         <footer
-          class="-mx-8 mt-8 border-t border-slate-200/90 bg-linear-to-b from-slate-50 to-slate-100/70 px-8 py-8"
+          class="-mx-8 mt-6 border-t border-slate-200/90 bg-linear-to-b from-slate-50 to-slate-100/70 px-8 py-6"
           role="group"
           aria-label="Acciones del formulario"
         >
-          <div class="flex w-full flex-col gap-4">
-            <div class="flex gap-3">
-              <button
-                mat-stroked-button
-                type="button"
-                (click)="volver()"
-                class="rounded-xl! flex min-h-12 flex-1 items-center justify-center gap-2 bg-white px-4 text-slate-700 hover:bg-slate-50"
-              >
-                <mat-icon class="text-slate-500 h-[22px] w-[22px] text-[22px] leading-[22px]">arrow_back</mat-icon>
-                <span>Volver</span>
-              </button>
+          <div class="flex gap-3">
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="volver()"
+              class="rounded-xl! flex min-h-11 flex-1 items-center justify-center gap-2 bg-white px-4 text-slate-700 hover:bg-slate-50"
+            >
+              <mat-icon class="text-slate-500 h-5 w-5 text-[20px] leading-5">arrow_back</mat-icon>
+              <span>Volver</span>
+            </button>
 
-              <button
-                mat-stroked-button
-                type="button"
-                (click)="onReset()"
-                class="rounded-xl! flex min-h-12 flex-1 items-center justify-center bg-white px-4 text-slate-600 hover:bg-slate-50"
-              >
-                Limpiar
-              </button>
-            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="onReset()"
+              class="rounded-xl! flex min-h-11 flex-1 items-center justify-center bg-white px-4 text-slate-600 hover:bg-slate-50"
+            >
+              Limpiar
+            </button>
 
             <button
               mat-flat-button
               color="primary"
               type="submit"
               [disabled]="userForm.invalid"
-              class="rounded-xl! flex min-h-13 w-full items-center justify-center gap-2 text-base font-semibold shadow-md shadow-blue-900/15 transition-shadow hover:shadow-lg hover:shadow-blue-900/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              class="rounded-xl! flex min-h-11 flex-2 items-center justify-center gap-2 font-semibold shadow-md shadow-blue-900/15 transition-shadow hover:shadow-lg hover:shadow-blue-900/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
             >
-              <mat-icon class="h-[22px] w-[22px] text-[22px] leading-[22px]">save</mat-icon>
-              <span>{{ id ? 'Actualizar usuario' : 'Guardar usuario' }}</span>
+              <mat-icon class="h-5 w-5 text-[20px] leading-5">save</mat-icon>
+              <span>{{ id ? 'Actualizar' : 'Guardar' }}</span>
             </button>
           </div>
         </footer>
