@@ -1,5 +1,6 @@
 "use strict";
 import { PrecioEmpresa } from "../models/precioEmpresa.model.js";
+import { HistorialPrecioEmpresa } from "../models/historialPrecioEmpresa.model.js";
 import { Material } from "../models/material.model.js";
 import { sequelize } from "../data/db.js";
 
@@ -51,12 +52,19 @@ export const actualizarPrecioPvp = async (req, res) => {
       transaction: transaccion,
     });
 
+    // Guardo el precio anterior antes de sobreescribirlo, para dejarlo en el historial
+    // Si es la primera vez que se fija el precio, no había valor previo y lo dejamos en null
+    const precioAnterior = precioExistente ? precioExistente.precio_venta : null;
+
+    let registroPrecioEmpresa;
+
     if (precioExistente) {
-      // Actualizo el registro con el nuevo precio y el usuario que hace la modificación
+      // Actualizo el registro existente con el nuevo precio y el usuario que hace la modificación
       await precioExistente.update(
         { precio_venta: nuevo_precio, usuario_id: usuario_id },
         { transaction: transaccion },
       );
+      registroPrecioEmpresa = precioExistente;
     } else {
       // Si no existe ningún registro previo, busco el material para confirmar que existe
       const materialEncontrado = await Material.findByPk(material_id, {
@@ -69,7 +77,7 @@ export const actualizarPrecioPvp = async (req, res) => {
       }
 
       // Creo el nuevo registro de precio de empresa con el precio que el usuario ha introducido
-      await PrecioEmpresa.create(
+      registroPrecioEmpresa = await PrecioEmpresa.create(
         {
           empresa_id: empresa_id,
           material_id: material_id,
@@ -80,8 +88,19 @@ export const actualizarPrecioPvp = async (req, res) => {
       );
     }
 
-    // El trigger trg_precio_empresa_update en la base de datos se encarga automáticamente
-    // de insertar el registro en historial_precios_empresa tras el UPDATE en precios_empresa
+    // Registramos el cambio de precio en el historial de forma explícita desde el controller,
+    // independientemente de si fue una creación o una actualización del registro de precio empresa
+    await HistorialPrecioEmpresa.create(
+      {
+        precio_empresa_id: registroPrecioEmpresa.id,
+        empresa_id: empresa_id,
+        material_id: material_id,
+        precio_anterior: precioAnterior,
+        precio_nuevo: nuevo_precio,
+        usuario_id: usuario_id,
+      },
+      { transaction: transaccion },
+    );
 
     // Todo ha ido bien, confirmo la transacción para que el cambio quede guardado
     await transaccion.commit();
