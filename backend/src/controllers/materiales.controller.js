@@ -2,6 +2,8 @@
 import { Material } from "../models/material.model.js";
 import { Categoria } from "../models/categoria.model.js";
 import { PrecioEmpresa } from "../models/precioEmpresa.model.js";
+import { HistorialPrecioBase } from "../models/historialPrecioBase.model.js";
+import { sequelize } from "../data/db.js";
 
 export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
   try {
@@ -92,6 +94,10 @@ export const toggleActivoMaterial = async (req, res) => {
 };
 
 export const crearMaterial = async (req, res) => {
+  // Iniciamos una transacción para garantizar que el material y su registro inicial
+  // en el historial se crean juntos, o ninguno si algo falla en el proceso
+  const transaccion = await sequelize.transaction();
+
   try {
     const {
       categoria_id,
@@ -105,24 +111,52 @@ export const crearMaterial = async (req, res) => {
       referencia_proveedor,
       atributos_extra,
       imagen_url,
+      usuario_id,
     } = req.body;
 
-    const material = await Material.create({
-      categoria_id,
-      codigo_interno,
-      nombre,
-      descripcion,
-      tipo_unidad,
-      precio_base,
-      porcentaje_merma_recomendado,
-      proveedor,
-      referencia_proveedor,
-      atributos_extra,
-      imagen_url,
+    // Guardamos el id del usuario que está creando el material para registrarlo en el historial
+    const idUsuarioCreador = usuario_id ?? null;
+
+    // PASO 1: Creamos el nuevo material dentro de la transacción
+    const nuevoMaterial = await Material.create(
+      {
+        categoria_id,
+        codigo_interno,
+        nombre,
+        descripcion,
+        tipo_unidad,
+        precio_base,
+        porcentaje_merma_recomendado,
+        proveedor,
+        referencia_proveedor,
+        atributos_extra,
+        imagen_url,
+      },
+      { transaction: transaccion },
+    );
+
+    // PASO 2: Construimos los datos del registro inicial de historial de precio base
+    // precio_anterior es 0 porque el material acaba de nacer y no tenía precio previo
+    const datosHistorialInicial = {
+      material_id: nuevoMaterial.id,
+      precio_anterior: 0,
+      precio_nuevo: precio_base,
+      usuario_admin_id: idUsuarioCreador,
+      motivo: "Registro inicial del material",
+    };
+
+    // PASO 3: Insertamos el registro inicial en el historial de precios base
+    await HistorialPrecioBase.create(datosHistorialInicial, {
+      transaction: transaccion,
     });
 
-    res.status(201).json(material);
+    // Todo ha salido bien, confirmamos la transacción para persistir ambos registros
+    await transaccion.commit();
+
+    res.status(201).json(nuevoMaterial);
   } catch (error) {
+    // Si cualquiera de los dos pasos falla, revertimos todo para no dejar datos inconsistentes
+    await transaccion.rollback();
     console.error("Error al crear material:", error);
     res.status(500).json({ error: "Error al crear material" });
   }
