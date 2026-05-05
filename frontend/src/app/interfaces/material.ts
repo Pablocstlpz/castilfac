@@ -15,6 +15,7 @@ export interface Material {
   fecha_creacion: string;
   fecha_actualizacion: string;
   deleted_at?: string | null;
+  usuario_id?: number | null;
 }
 
 export interface MaterialConPrecio extends Material {
