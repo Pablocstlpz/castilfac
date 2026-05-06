@@ -1,1 +1,49 @@
-<p>verificacion-exito works!</p>
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 font-sans relative overflow-hidden">
+  
+  <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-600/5 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl"></div>
+
+  <div class="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-10 text-center relative z-10 animate-in zoom-in-95 duration-500">
+    
+    <div class="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 relative">
+      <div class="absolute inset-0 border-4 border-emerald-100 rounded-full animate-ping opacity-20"></div>
+      <mat-icon class="text-[56px] w-[56px] h-[56px]">verified_user</mat-icon>
+    </div>
+
+    <h1 class="text-2xl font-black text-slate-900 mb-3 tracking-tight">
+      ¡Cuenta verificada!
+    </h1>
+    
+    <p class="text-sm text-slate-500 mb-8 leading-relaxed">
+      Tu dirección de correo ha sido confirmada con éxito. Ya tienes acceso completo a todas las herramientas del sistema.
+    </p>
+
+    <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-5 mb-8 flex items-center gap-4 text-left">
+      <div class="bg-white p-2.5 rounded-xl shadow-sm text-indigo-600">
+        <mat-icon class="text-[24px] w-[24px] h-[24px]">rocket_launch</mat-icon>
+      </div>
+      <div>
+        <p class="text-[11px] font-black text-indigo-900 uppercase tracking-widest">Listo para empezar</p>
+        <p class="text-xs font-bold text-indigo-800 leading-tight">Tu panel de administración te espera.</p>
+      </div>
+    </div>
+
+    <button 
+      (click)="irAlLogin()" 
+      class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg shadow-slate-900/20 hover:bg-slate-800 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+    >
+      Acceder a mi cuenta
+      <mat-icon class="text-[18px]">arrow_forward</mat-icon>
+    </button>
+
+    <div class="mt-10 flex flex-col items-center gap-2">
+      <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden max-w-[150px]">
+        <div class="bg-indigo-600 h-full animate-progress-timer"></div>
+      </div>
+      <p class="text-[10px] text-slate-400 font-medium italic">
+        Redirigiendo automáticamente en unos segundos...
+      </p>
+    </div>
+
+  </div>
+</div>
