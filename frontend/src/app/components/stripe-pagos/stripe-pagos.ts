@@ -1,8 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Authentication } from '../../services/authentication';
+import { environment } from '../../../environments/enviroments';
 
 @Component({
   selector: 'app-stripe-pagos',
@@ -11,41 +14,56 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   templateUrl: './stripe-pagos.html',
   styleUrl: './stripe-pagos.css',
 })
-export class StripePagos {
+export class StripePagos implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private location = inject(Location);
   private snackBar = inject(MatSnackBar);
+  private http = inject(HttpClient);
+  private auth = inject(Authentication);
 
-  public presupuesto = signal<any>(null);
   public procesando = signal<boolean>(false);
+  public pagoExitoso = signal<boolean>(false);
+  private empresa_id: number | null = null;
 
   ngOnInit() {
-    // Aquí cargarías el presupuesto real por ID
-    this.route.params.subscribe((params) => {
-      // Llamada a tu servicio: this.presupuestosService.getById(params['id'])...
-      // De momento lo simulamos para el diseño
-      this.presupuesto.set({
-        numero_presupuesto: 'PRES-202407-0006',
-        cliente_nombre: 'Emilio Lara Prieto',
-        precio_final: 8001.46,
-      });
+    const usuario = this.auth.obtenerUsuarioSesion();
+    if (usuario) {
+      this.empresa_id = usuario.empresa_id;
+    }
+
+    // Detectar retorno exitoso desde Stripe
+    this.route.queryParams.subscribe((params) => {
+      if (params['payment'] === 'success') {
+        this.pagoExitoso.set(true);
+      }
     });
   }
 
-  simularPago() {
+  activarSuscripcion() {
+    if (!this.empresa_id) {
+      this.snackBar.open('No se pudo identificar la empresa', 'OK', { duration: 3000 });
+      return;
+    }
+
     this.procesando.set(true);
 
-    // Simulamos el tiempo de espera de la pasarela
-    setTimeout(() => {
-      this.procesando.set(false);
-      this.snackBar.open('¡Pago realizado con éxito!', 'OK', { duration: 5000 });
-      // Redirigir al éxito o al detalle
-      this.router.navigate(['/presupuestos/detalle', 1]);
-    }, 3000);
-  }
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-  volver() {
-    this.location.back();
+    this.http
+      .post<{ url: string }>(
+        `${environment.apiUrl}/stripe/crear-sesion`,
+        { empresa_id: this.empresa_id },
+        { headers },
+      )
+      .subscribe({
+        next: (response) => {
+          window.location.href = response.url;
+        },
+        error: () => {
+          this.procesando.set(false);
+          this.snackBar.open('Error al iniciar el proceso de pago. Inténtalo de nuevo.', 'OK', {
+            duration: 5000,
+          });
+        },
+      });
   }
 }
