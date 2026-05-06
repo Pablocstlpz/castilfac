@@ -16,19 +16,24 @@ import { elementosRoutes } from "./routes/elementos.route.js";
 import { elementosMaterialesRoutes } from "./routes/elementosMateriales.route.js";
 import { historialPreciosBaseRoutes } from "./routes/historialPreciosBase.route.js";
 import { historialPreciosEmpresaRoutes } from "./routes/historialPreciosEmpresa.route.js";
+import { suscripcionRoutes } from "./routes/suscripcion.route.js";
+import { stripeRoutes } from "./routes/stripe.route.js";
+import { webhookStripe } from "./controllers/stripe.controller.js";
 
 const app = express();
 
 const corsOption = {
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Empresa-Id", "stripe-signature"],
   credentials: true,
 };
-app.use(cors(corsOption)); //habilitar cors
+app.use(cors(corsOption));
 
-app.use(express.json()); // Para parsear JSON en el body
+// El webhook de Stripe necesita el body en crudo ANTES de express.json()
+app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), webhookStripe);
 
-// Usar las rutas directas); // No necesitas añadir un prefijo aquí
+app.use(express.json());
+
 app.use("/api", empresasRoutes);
 app.use("/api", usuariosRoutes);
 app.use("/api", pedidosRoutes);
@@ -43,18 +48,17 @@ app.use("/api", elementosRoutes);
 app.use("/api", elementosMaterialesRoutes);
 app.use("/api", historialPreciosBaseRoutes);
 app.use("/api", historialPreciosEmpresaRoutes);
+app.use("/api", suscripcionRoutes);
+app.use("/api", stripeRoutes);
 
 app.get("/", (req, res) => {
-  res.json({
-    message: "API REST con Express.js",
-  });
+  res.json({ message: "API REST con Express.js" });
 });
-// Manejar rutas no encontradas (404)
+
 app.use((req, res) => {
   res.status(404).json({ message: "Página no encontrada" });
 });
 
-// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
