@@ -248,6 +248,11 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'stripe-pagos/:id',
+    loadComponent: () =>
+      import('./components/stripe-pagos/stripe-pagos').then((m) => m.StripePagos),
+  },
+  {
     path: 'sesioncerrada',
     loadComponent: () =>
       import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
