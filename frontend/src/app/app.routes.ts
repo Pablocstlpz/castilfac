@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
+import { subscriptionGuard } from './guards/subscription.guard';
 
 export const routes: Routes = [
   // Lazy loading (carga diferida)
@@ -122,8 +124,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/nopermitir/nosubscripcion/nosubscripcion').then((m) => m.Nosubscripcion),
   },
+  // Pantalla de pago/bloqueo — solo requiere estar autenticado, sin check de suscripción
+  {
+    path: 'stripe-pagos',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./components/stripe-pagos/stripe-pagos').then((m) => m.StripePagos),
+  },
+  {
+    path: 'stripe-pagos/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./components/stripe-pagos/stripe-pagos').then((m) => m.StripePagos),
+  },
   {
     path: 'iniciooperario',
+    canActivate: [subscriptionGuard],
     loadComponent: () =>
       import('./components/iniciooperario/operario-layout/operario-layout').then(
         (m) => m.OperarioLayout,
@@ -145,10 +161,9 @@ export const routes: Routes = [
   },
   {
     path: 'inicioadmin',
+    canActivate: [subscriptionGuard],
     loadComponent: () =>
       import('./components/inicioadmin/admin-layout/admin-layout').then((m) => m.AdminLayout),
-    //Ruta hija de admin-layout, para que el admin-layout se muestre en todas las paginas de admin,
-    //y dentro de admin-layout se muestre el contenido de cada pagina de admin segun la ruta
     children: [
       {
         path: '',
@@ -248,16 +263,10 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'stripe-pagos/:id',
-    loadComponent: () =>
-      import('./components/stripe-pagos/stripe-pagos').then((m) => m.StripePagos),
-  },
-  {
     path: 'sesioncerrada',
     loadComponent: () =>
       import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
   },
-  //Ruta 404 no found
   {
     path: '**',
     loadComponent: () =>
