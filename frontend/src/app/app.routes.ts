@@ -263,6 +263,13 @@ export const routes: Routes = [
     ],
   },
   {
+        path: 'restablecer-password',
+        loadComponent: () =>
+          import('./components/restablecer-password/restablecer-password').then(
+            (m) => m.RestablecerPassword,
+          ),
+  },
+  {
     path: 'sesioncerrada',
     loadComponent: () =>
       import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
