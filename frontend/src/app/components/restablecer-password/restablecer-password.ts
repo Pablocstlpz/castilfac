@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { UsuariosServices } from '../../services/usuarios';
 
 @Component({
   selector: 'app-restablecer-password',
@@ -12,35 +13,55 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   templateUrl: './restablecer-password.html',
 })
 export class RestablecerPassword {
-  
-  private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
 
-  // Estado del componente
+  // Inyectamos el servicio Router para poder redirigir al usuario entre las pantallas del flujo de recuperacion
+  private router = inject(Router);
+  // Inyectamos MatSnackBar para poder mostrar mensajes de aviso o error al usuario
+  private snackBar = inject(MatSnackBar);
+  // Inyectamos el servicio UsuariosServices para poder llamar al backend y solicitar el correo de recuperacion de contraseña
+  private usuarioServicios = inject(UsuariosServices);
+
+  // Variable para almacenar el email que el usuario introduce en el formulario
   public email: string = '';
+  // Variable para controlar si se muestra el spinner de carga mientras se procesa la peticion
   public cargando = signal<boolean>(false);
+  // Variable que controla el estado del HTML (si ya se envio el correo o no), la usa el @if del template
   public correoEnviado = signal<boolean>(false);
 
+  //cuando se hace submit del formulario de recuperacion de contraseña:
   enviarCorreo(): void {
+
+    //valido que el email sea valido antes de hacer la peticion al backend
     if (!this.email || !this.email.includes('@')) {
       this.snackBar.open('Por favor, introduce un correo electrónico válido.', 'Cerrar', { duration: 3000 });
       return;
     }
 
+    //activo el estado de carga para que el boton se deshabilite y se muestre el spinner
     this.cargando.set(true);
 
-    // Aquí llamarías a tu servicio de Backend (NodeMailer)
-    // this.authService.solicitarRecuperacion(this.email).subscribe(...)
-    
-    // Simulamos la llamada a la base de datos
-    setTimeout(() => {
-      this.cargando.set(false);
-      this.correoEnviado.set(true); // Esto cambia el HTML al estado 2
-    }, 1500);
+    //hago la peticion al backend para solicitar el envio del correo de recuperacion de contraseña
+    this.usuarioServicios.solicitarRecuperacion(this.email).subscribe({
+      next: (response) => {
+        console.log(response);
+        //desactivo el estado de carga
+        this.cargando.set(false);
+        //redirijo a la pantalla de email enviado, pasando el email por el state para poder reenviarlo si es necesario
+        this.router.navigate(['/email-enviado'], { state: { email: this.email } });
+      },
+      error: (error) => {
+        //enseño error
+        console.error('Error al solicitar la recuperacion de contraseña:', error);
+        //desactivo el estado de carga
+        this.cargando.set(false);
+        //navego igualmente para no revelar al usuario si el email existe en la base de datos o no
+        this.router.navigate(['/email-enviado'], { state: { email: this.email } });
+      }
+    });
   }
 
+  //redirige al usuario de vuelta al inicio de sesion
   volverAlLogin(): void {
-    // Redirige a la pantalla de login. Ajusta la ruta según tu proyecto.
     this.router.navigate(['/login']);
   }
 }
