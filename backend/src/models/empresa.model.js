@@ -78,6 +78,15 @@ export const Empresa = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    email_verificado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    token_verificacion: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
   },
   {
     tableName: 'empresas',

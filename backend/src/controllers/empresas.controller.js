@@ -2,6 +2,9 @@ import { Empresa } from "../models/empresa.model.js";
 import { Op } from "sequelize";
 import { sequelize } from "../data/db.js";
 import { Usuario } from "../models/usuario.model.js";
+import { randomUUID } from "crypto";
+import { enviarEmailVerificacion } from "../mailer.js";
+import { URL, FRONTEND_URL } from "../config.js";
 
 export const getEmpresas = async (req, res) => {
   try {
@@ -166,7 +169,24 @@ export const createEmpresa = async (req, res) => {
         .json({ message: "La provincia debe ser una provincia valida" });
     }
 
-    //valido que el email no este registrado en la empresa
+    // Si existe alguna empresa no verificada con el mismo NIF, email o teléfono,
+    // la elimino junto a sus usuarios para permitir que el usuario pueda reintentar el registro
+    const empresasNoVerificadas = await Empresa.findAll({
+      where: {
+        email_verificado: false,
+        [Op.or]: [
+          { nif: nifMayusculas },
+          { email: email },
+          { telefono: telefono },
+        ],
+      },
+    });
+    for (const emp of empresasNoVerificadas) {
+      await Usuario.destroy({ where: { empresa_id: emp.id } });
+      await emp.destroy();
+    }
+
+    //valido que el email no este registrado en una empresa ya verificada
     const existeEmpresa = await Empresa.findOne({
       where: { email: email },
     });
@@ -182,7 +202,7 @@ export const createEmpresa = async (req, res) => {
       return res.status(400).json({ message: "El email ya esta registrado" });
     }
 
-    //valido que el nif no este registrado en la empresa
+    //valido que el nif no este registrado en una empresa ya verificada
     const existeEmpresaNif = await Empresa.findOne({
       where: { nif: nifMayusculas },
     });
@@ -190,7 +210,7 @@ export const createEmpresa = async (req, res) => {
       return res.status(400).json({ message: "El NIF ya esta registrado" });
     }
 
-    //valido que el telefono no lo tenga otra empresa
+    //valido que el telefono no lo tenga otra empresa ya verificada
     const existeEmpresaTelefono = await Empresa.findOne({
       where: { telefono: telefono },
     });
@@ -205,7 +225,10 @@ export const createEmpresa = async (req, res) => {
       ? new Date(fecha_vencimiento)
       : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-    //creo la empresa
+    //genero el token de verificación
+    const token = randomUUID();
+
+    //creo la empresa con email_verificado en false y el token
     const empresa = await Empresa.create({
       nombre_comercial: nombre_comercial,
       razon_social: razon_social,
@@ -219,7 +242,13 @@ export const createEmpresa = async (req, res) => {
       fecha_vencimiento: fechaVencimiento,
       suscripcion_activa: suscripcion_activa ?? false,
       activo: activo ?? true,
+      email_verificado: false,
+      token_verificacion: token,
     });
+
+    //envío el email de verificación sin bloquear la respuesta
+    const urlVerificacion = `${URL}:3000/api/empresas/verificar/${token}`;
+    enviarEmailVerificacion(email, nombre_comercial, urlVerificacion);
 
     //devuelvo la empresa creada
     res.status(200).json(empresa);
@@ -448,5 +477,62 @@ export const deleteEmpresaCorreo = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error al eliminar la empresa por correo" });
+  }
+};
+
+export const verificarEmailEmpresa = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token requerido" });
+    }
+
+    const empresa = await Empresa.findOne({ where: { token_verificacion: token } });
+
+    if (!empresa) {
+      return res.redirect(`${FRONTEND_URL}/login`);
+    }
+
+    await empresa.update({
+      email_verificado: true,
+      token_verificacion: null,
+    });
+
+    return res.redirect(`${FRONTEND_URL}/verificacion-exito`);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error al verificar el email de la empresa" });
+  }
+};
+
+export const reenviarVerificacionEmpresa = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "El email es requerido" });
+    }
+
+    const empresa = await Empresa.findOne({ where: { email } });
+
+    if (!empresa) {
+      return res.status(404).json({ message: "No existe ninguna empresa con ese email" });
+    }
+
+    if (empresa.email_verificado) {
+      return res.status(400).json({ message: "Esta empresa ya está verificada" });
+    }
+
+    const nuevoToken = randomUUID();
+    await empresa.update({ token_verificacion: nuevoToken });
+
+    const urlVerificacion = `${URL}:3000/api/empresas/verificar/${nuevoToken}`;
+    enviarEmailVerificacion(email, empresa.nombre_comercial, urlVerificacion);
+
+    res.status(200).json({ message: "Email de verificación reenviado correctamente" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error al reenviar el email de verificación" });
   }
 };
