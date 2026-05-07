@@ -78,6 +78,24 @@ export class UsuariosServices {
     );
   }
 
+  solicitarRecuperacion(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.URL}/usuarios/recuperar-password`, { email }, this.httpOptions).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  restablecerPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.URL}/usuarios/restablecer-password`, { token, password }, this.httpOptions).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  loginConGoogle(credential: string): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.URL}/auth/google`, { credential }, this.httpOptions).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.log(error);
 
