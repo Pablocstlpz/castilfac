@@ -48,6 +48,14 @@ export const Usuario = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    reset_token: {
+      type: DataTypes.STRING(100), //token de restablecimiento de contraseña, se genera con randomBytes(32) que produce 64 caracteres hexadecimales
+      allowNull: true,
+    },
+    reset_token_expira: {
+      type: DataTypes.DATE, //fecha de expiracion del token, sera valido durante 1 hora desde su generacion
+      allowNull: true,
+    },
   },
   {
     tableName: 'usuarios',

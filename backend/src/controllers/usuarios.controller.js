@@ -3,6 +3,9 @@ import { sequelize } from "../data/db.js";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
 import { Empresa } from "../models/empresa.model.js";
+import { randomBytes } from "crypto";
+import { enviarEmailRecuperacion } from "../mailer.js";
+import { FRONTEND_URL } from "../config.js";
 
 export const getUsuarios = async (req, res) => {
   try {
@@ -423,6 +426,95 @@ export const deleteUsuarioCorreo = async (req, res) => {
   }
 };
 
+export const solicitarRecuperacion = async (req, res) => {
+  try {
+    //recojo el email que se pasa por el body
+    const { email } = req.body;
+
+    //valido que el email sea requerido
+    if (!email) {
+      return res.status(400).json({ message: "El email es requerido" });
+    }
+
+    //busco el usuario por su email
+    const usuario = await Usuario.findOne({ where: { email } });
+
+    //si no existe el usuario, devuelvo el mismo mensaje que si existiera para no dar pistas de si el email esta registrado o no
+    if (!usuario) {
+      return res.status(200).json({ message: "Si el email está registrado, recibirás un correo en breve." });
+    }
+
+    //genero un token unico y aleatorio de 64 caracteres para el restablecimiento de la contraseña
+    const token = randomBytes(32).toString("hex");
+
+    //establezco la fecha de expiracion del token, sera valido durante 1 hora desde ahora
+    const expira = new Date(Date.now() + 60 * 60 * 1000);
+
+    //guardo el token y su fecha de expiracion en el usuario
+    await usuario.update({ reset_token: token, reset_token_expira: expira });
+
+    //construyo la url de restablecimiento que se enviara al usuario por correo
+    const urlReset = `${FRONTEND_URL}/password-nueva?token=${token}`;
+
+    //envio el correo de recuperacion con el enlace al usuario
+    enviarEmailRecuperacion(email, usuario.nombre, urlReset);
+
+    //devuelvo el mismo mensaje independientemente de si el usuario existe o no
+    res.status(200).json({ message: "Si el email está registrado, recibirás un correo en breve." });
+  } catch (error) {
+    //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
+    console.log(error);
+    //devuelvo un mensaje de error al usuario si hay algun error
+    res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña" });
+  }
+};
+
+export const restablecerPassword = async (req, res) => {
+  try {
+    //recojo el token y la nueva contraseña que se pasan por el body
+    const { token, password } = req.body;
+
+    //valido que el token y la contraseña sean requeridos
+    if (!token || !password) {
+      return res.status(400).json({ message: "El token y la contraseña son requeridos" });
+    }
+
+    //valido que la contraseña tenga al menos 8 caracteres
+    if (password.length < 8) {
+      return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
+    }
+
+    //busco el usuario por el token de restablecimiento
+    const usuario = await Usuario.findOne({ where: { reset_token: token } });
+
+    //valido que el token sea valido, si no existe es que ya fue usado o nunca existio
+    if (!usuario) {
+      return res.status(400).json({ message: "El enlace no es válido o ya ha sido utilizado" });
+    }
+
+    //valido que el token no haya expirado comparando la fecha actual con la de expiracion
+    if (new Date() > usuario.reset_token_expira) {
+      //limpio el token caducado de la base de datos para que no ocupe espacio
+      await usuario.update({ reset_token: null, reset_token_expira: null });
+      return res.status(400).json({ message: "El enlace ha caducado. Solicita uno nuevo." });
+    }
+
+    //hasheo la nueva contraseña antes de guardarla en la base de datos
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    //actualizo la contraseña del usuario y elimino el token para que no se pueda reutilizar
+    await usuario.update({ password: hashedPassword, reset_token: null, reset_token_expira: null });
+
+    //devuelvo un mensaje de exito
+    res.status(200).json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
+    console.log(error);
+    //devuelvo un mensaje de error al usuario si hay algun error
+    res.status(500).json({ message: "Error al restablecer la contraseña" });
+  }
+};
+
 export const getUsuarioCorreoContraseña = async (req, res) => {
   try {
     //recojo el correo y la contraseña que se pasan por el body
@@ -469,6 +561,14 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
         .json({ message: "El correo o la contraseña son incorrectos" });
     }
 
+    //compruebo si la empresa de este usuario ha verificado su email
+    const empresa = await Empresa.findByPk(usuario.empresa_id);
+    if (!empresa || !empresa.email_verificado) {
+      return res
+        .status(403)
+        .json({ message: "La empresa no ha verificado su correo electrónico. Revisa tu bandeja de entrada." });
+    }
+
     //devuelvo el usuario
     res.status(200).json(usuario);
   } catch (error) {
@@ -480,3 +580,4 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
       .json({ message: "Error al obtener el usuario por correo y contraseña" });
   }
 };
+

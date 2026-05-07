@@ -3,12 +3,15 @@
 import { Router } from 'express';
 import {
     getUsuarios, getUsuario, createUsuario, updateUsuario,
-    deleteUsuario, deleteUsuarioCorreo, getUsuarioCorreoContraseña, getUsuarioPorEmpresa
+    deleteUsuario, deleteUsuarioCorreo, getUsuarioCorreoContraseña, getUsuarioPorEmpresa,
+    solicitarRecuperacion, restablecerPassword
 } from '../controllers/usuarios.controller.js';
 
 const router = Router();
 
 router.get('/usuarios', getUsuarios);
+router.post('/usuarios/recuperar-password', solicitarRecuperacion);
+router.post('/usuarios/restablecer-password', restablecerPassword);
 router.get('/usuarios/:id', getUsuario);
 router.post('/usuarios', createUsuario);
 router.put('/usuarios/:id', updateUsuario);
