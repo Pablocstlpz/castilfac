@@ -9,19 +9,16 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
   try {
     const { empresa_id } = req.params;
 
-    //obtengo materiales, categorias y precios de empresa en paralelo
     const [materiales, categorias, preciosEmpresa] = await Promise.all([
-      Material.findAll(),
+      Material.findAll({ where: { empresa_id, deleted_at: null } }),
       Categoria.findAll(),
       PrecioEmpresa.findAll({ where: { empresa_id } }),
     ]);
 
-    //si no hay materiales devuelvo 404
     if (!materiales || materiales.length === 0) {
       return res.status(404).json({ error: "No se encontraron materiales" });
     }
 
-    //enriquezco cada material con su categoria y precio de empresa
     const resultado = materiales.map((m) => {
       const mPlano = m.toJSON();
       const cat = categorias.find((c) => c.id === mPlano.categoria_id);
@@ -43,15 +40,14 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
 
 export const obtenerMateriales = async (req, res) => {
   try {
-    //obtener todos los materiales de la base de datos
-    const materiales = await Material.findAll();
+    const { empresa_id } = req.params;
 
-    //validar que el resultado no sea nulo o vacío
+    const materiales = await Material.findAll({ where: { empresa_id, deleted_at: null } });
+
     if (!materiales || materiales.length === 0) {
       return res.status(404).json({ error: "No se encontraron materiales" });
     }
 
-    //si hay datos, envio el resultado como JSON
     res.status(200).json(materiales);
   } catch (error) {
     console.error("Error al obtener materiales:", error);
@@ -61,8 +57,9 @@ export const obtenerMateriales = async (req, res) => {
 
 export const obtenerMaterialPorId = async (req, res) => {
   try {
-    const { id } = req.params;
-    const material = await Material.findByPk(id);
+    const { empresa_id, id } = req.params;
+
+    const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
       return res.status(404).json({ error: "Material no encontrado" });
@@ -77,8 +74,9 @@ export const obtenerMaterialPorId = async (req, res) => {
 
 export const toggleActivoMaterial = async (req, res) => {
   try {
-    const { id } = req.params;
-    const material = await Material.findByPk(id);
+    const { empresa_id, id } = req.params;
+
+    const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
       return res.status(404).json({ error: "Material no encontrado" });
@@ -94,11 +92,11 @@ export const toggleActivoMaterial = async (req, res) => {
 };
 
 export const crearMaterial = async (req, res) => {
-  // Iniciamos una transacción para garantizar que el material y su registro inicial
-  // en el historial se crean juntos, o ninguno si algo falla en el proceso
   const transaccion = await sequelize.transaction();
 
   try {
+    const { empresa_id } = req.params;
+
     const {
       categoria_id,
       codigo_interno,
@@ -114,12 +112,11 @@ export const crearMaterial = async (req, res) => {
       usuario_id,
     } = req.body;
 
-    // Guardamos el id del usuario que está creando el material para registrarlo en el historial
     const idUsuarioCreador = usuario_id ?? null;
 
-    // PASO 1: Creamos el nuevo material dentro de la transacción
     const nuevoMaterial = await Material.create(
       {
+        empresa_id,
         categoria_id,
         codigo_interno,
         nombre,
@@ -135,27 +132,21 @@ export const crearMaterial = async (req, res) => {
       { transaction: transaccion },
     );
 
-    // PASO 2: Construimos los datos del registro inicial de historial de precio base
-    // precio_anterior es 0 porque el material acaba de nacer y no tenía precio previo
-    const datosHistorialInicial = {
-      material_id: nuevoMaterial.id,
-      precio_anterior: 0,
-      precio_nuevo: precio_base,
-      usuario_admin_id: idUsuarioCreador,
-      motivo: "Registro inicial del material",
-    };
+    await HistorialPrecioBase.create(
+      {
+        material_id: nuevoMaterial.id,
+        precio_anterior: 0,
+        precio_nuevo: precio_base,
+        usuario_admin_id: idUsuarioCreador,
+        motivo: "Registro inicial del material",
+      },
+      { transaction: transaccion },
+    );
 
-    // PASO 3: Insertamos el registro inicial en el historial de precios base
-    await HistorialPrecioBase.create(datosHistorialInicial, {
-      transaction: transaccion,
-    });
-
-    // Todo ha salido bien, confirmamos la transacción para persistir ambos registros
     await transaccion.commit();
 
     res.status(201).json(nuevoMaterial);
   } catch (error) {
-    // Si cualquiera de los dos pasos falla, revertimos todo para no dejar datos inconsistentes
     await transaccion.rollback();
     console.error("Error al crear material:", error);
     res.status(500).json({ error: "Error al crear material" });
@@ -164,8 +155,9 @@ export const crearMaterial = async (req, res) => {
 
 export const actualizarMaterial = async (req, res) => {
   try {
-    const { id } = req.params;
-    const material = await Material.findByPk(id);
+    const { empresa_id, id } = req.params;
+
+    const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
       return res.status(404).json({ error: "Material no encontrado" });
@@ -211,8 +203,9 @@ export const actualizarMaterial = async (req, res) => {
 
 export const eliminarMaterial = async (req, res) => {
   try {
-    const { id } = req.params;
-    const material = await Material.findByPk(id);
+    const { empresa_id, id } = req.params;
+
+    const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
       return res.status(404).json({ error: "Material no encontrado" });

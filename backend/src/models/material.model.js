@@ -9,6 +9,10 @@ export const Material = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    empresa_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     categoria_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
