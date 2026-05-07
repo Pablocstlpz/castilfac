@@ -26,10 +26,19 @@ export class ComprobarUsuarioEmpresa {
     // obtengo la empresa del usuario
     this.empresasServices.getEmpresa(usuario.empresa_id).subscribe({
       next: (empresa: Empresa) => {
-        // verifico si tiene suscripción activa o no
-        if (empresa.suscripcion_activa === false) {
-          this.router.navigate(['/nosubscripcion']);
-          return;
+        // Si no tiene suscripción activa, verificar si el trial también ha vencido
+        if (!empresa.suscripcion_activa) {
+          const ahora = new Date();
+          const fechaVencimiento = empresa.fecha_vencimiento
+            ? new Date(empresa.fecha_vencimiento)
+            : null;
+
+          if (!fechaVencimiento || ahora > fechaVencimiento) {
+            // Trial expirado → pantalla de pago
+            this.router.navigate(['/stripe-pagos']);
+            return;
+          }
+          // Dentro del trial pero sin suscripción pagada → dejar pasar
         }
 
         // si es operario, redirijo a la página de iniciooperario
@@ -43,8 +52,7 @@ export class ComprobarUsuarioEmpresa {
         }
       },
       error: () => {
-        // si falla al obtener la empresa, lo trato como sin suscripción
-        this.router.navigate(['/nosubscripcion']);
+        this.router.navigate(['/stripe-pagos']);
       },
     });
   }
