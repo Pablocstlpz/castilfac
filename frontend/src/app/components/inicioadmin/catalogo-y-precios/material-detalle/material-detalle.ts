@@ -84,7 +84,9 @@ export class MaterialDetalle {
 
   //funcion para cargar los datos del material cuando se edita
   cargarMaterial(id: number): void {
-    this.materialesService.getMaterial(id).subscribe((material) => {
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(['/sesioncerrada']); return; }
+    this.materialesService.getMaterial(usuario.empresa_id, id).subscribe((material) => {
       this.materialForm.patchValue({
         nombre: material.nombre,
         codigo_interno: material.codigo_interno ?? '',
@@ -114,7 +116,8 @@ export class MaterialDetalle {
       return;
     }
     //construyo el objeto material con los valores del formulario
-    const materialData: Material = {
+    const materialFormulario: Material = {
+      empresa_id: usuario.empresa_id,
       nombre: this.materialForm.value.nombre,
       codigo_interno: this.materialForm.value.codigo_interno || undefined,
       categoria_id: this.materialForm.value.categoria_id,
@@ -132,15 +135,15 @@ export class MaterialDetalle {
     };
     //si no hay id es una creacion, si hay id es una actualizacion
     if (!this.id) {
-      this.crearMaterial(materialData);
+      this.crearMaterial(usuario.empresa_id, materialFormulario);
     } else {
-      this.actualizarMaterial(materialData);
+      this.actualizarMaterial(usuario.empresa_id, materialFormulario);
     }
   }
 
   //funcion para crear un nuevo material
-  crearMaterial(material: Material): void {
-    this.materialesService.addMaterial(material).subscribe({
+  crearMaterial(empresa_id: number, material: Material): void {
+    this.materialesService.addMaterial(empresa_id, material).subscribe({
       next: () => {
         this.snackBar.open('Material creado correctamente', 'Cerrar', {
           duration: 3000,
@@ -162,8 +165,8 @@ export class MaterialDetalle {
   }
 
   //funcion para actualizar un material existente
-  actualizarMaterial(material: Material): void {
-    this.materialesService.updateMaterial(material).subscribe({
+  actualizarMaterial(empresa_id: number, material: Material): void {
+    this.materialesService.updateMaterial(empresa_id, material).subscribe({
       next: () => {
         this.snackBar.open('Material actualizado correctamente', 'Cerrar', {
           duration: 3000,
