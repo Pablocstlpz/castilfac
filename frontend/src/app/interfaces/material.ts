@@ -1,5 +1,6 @@
 export interface Material {
   id: number;
+  empresa_id: number;
   categoria_id: number;
   codigo_interno?: string | null;
   nombre: string;
