@@ -70,6 +70,12 @@ export class EmpresasServices {
     );
   }
 
+  reenviarVerificacion(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.URL}/empresas/reenviar-verificacion`, { email }, this.httpOptions).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.log(error);
 
