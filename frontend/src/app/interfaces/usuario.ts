@@ -8,5 +8,5 @@ export interface Usuario {
     activo: boolean;
     fecha_creacion: Date;
     fecha_actualizacion: Date;
-    deleted_at: Date | null; //necesito poner null para que no se considere eliminado al buscar
+    deleted_at: Date | null;
 }
