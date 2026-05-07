@@ -103,7 +103,9 @@ export class CatalogoYPrecios {
 
   // Función para activar o desactivar un material desde la columna de estado
   toggleActivo(id: number): void {
-    this.materialesService.toggleActivo(id).subscribe((materialActualizado) => {
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) return;
+    this.materialesService.toggleActivo(usuario.empresa_id, id).subscribe((materialActualizado) => {
       // Actualizo el estado activo del material directamente en el signal para no recargar la página
       const listaActualizada = [...this._materiales()];
       for (let indice = 0; indice < listaActualizada.length; indice++) {
