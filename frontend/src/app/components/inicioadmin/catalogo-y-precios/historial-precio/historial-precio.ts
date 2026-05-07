@@ -167,7 +167,7 @@ export class HistorialPrecio {
     this.estaCargando.set(true);
 
     // PETICIÓN 1: Buscamos los datos del material (para tener el nombre y la info general)
-    this.materialesService.getMaterial(idMaterial).subscribe({
+    this.materialesService.getMaterial(idEmpresa, idMaterial).subscribe({
       next: (material) => {
         this.materialEncontrado.set(material);
 
