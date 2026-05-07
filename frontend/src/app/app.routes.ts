@@ -140,6 +140,7 @@ export const routes: Routes = [
   {
     path: 'iniciooperario',
     canActivate: [subscriptionGuard],
+    canActivateChild: [subscriptionGuard],
     loadComponent: () =>
       import('./components/iniciooperario/operario-layout/operario-layout').then(
         (m) => m.OperarioLayout,
@@ -162,6 +163,7 @@ export const routes: Routes = [
   {
     path: 'inicioadmin',
     canActivate: [subscriptionGuard],
+    canActivateChild: [subscriptionGuard],
     loadComponent: () =>
       import('./components/inicioadmin/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [
@@ -263,11 +265,46 @@ export const routes: Routes = [
     ],
   },
   {
-        path: 'restablecer-password',
-        loadComponent: () =>
-          import('./components/restablecer-password/restablecer-password').then(
-            (m) => m.RestablecerPassword,
-          ),
+    path: 'registro-verificacion',
+    loadComponent: () =>
+      import('./components/registro-verificacion/registro-verificacion').then(
+        (m) => m.RegistroVerificacion,
+      ),
+  },
+  {
+    path: 'verificacion-exito',
+    loadComponent: () =>
+      import('./components/registro-verificacion/verificacion-exito/verificacion-exito').then(
+        (m) => m.VerificacionExito,
+      ),
+  },
+  {
+    path: 'restablecer-password',
+    loadComponent: () =>
+      import('./components/restablecer-password/restablecer-password').then(
+        (m) => m.RestablecerPassword,
+      ),
+  },
+  {
+    path: 'email-enviado',
+    loadComponent: () =>
+      import('./components/restablecer-password/email-enviado/email-enviado').then(
+        (m) => m.EmailEnviado,
+      ),
+  },
+  {
+    path: 'password-nueva',
+    loadComponent: () =>
+      import('./components/restablecer-password/password-nueva/password-nueva').then(
+        (m) => m.PasswordNueva,
+      ),
+  },
+  {
+    path: 'password-cambiada',
+    loadComponent: () =>
+      import('./components/restablecer-password/password-cambiada/password-cambiada').then(
+        (m) => m.PasswordCambiada,
+      ),
   },
   {
     path: 'sesioncerrada',
