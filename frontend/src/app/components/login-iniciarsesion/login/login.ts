@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { AfterViewInit, Component, inject, NgZone } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -12,14 +12,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Usuario } from '../../../interfaces/usuario';
+import { Router, RouterLink } from '@angular/router';
 import { UsuariosServices } from '../../../services/usuarios';
-import { timeout } from 'rxjs';
 import { Authentication } from '../../../services/authentication';
 
+// El objeto `google` lo inyecta el script de Google Identity Services cargado en index.html
+declare const google: any;
+
+const GOOGLE_CLIENT_ID = 'TU_GOOGLE_CLIENT_ID_AQUI';
 
 @Component({
   selector: 'app-formulario',
@@ -31,31 +32,27 @@ import { Authentication } from '../../../services/authentication';
     ReactiveFormsModule,
     MatOptionModule,
     MatSelectModule,
-    RouterLink
-],
+    RouterLink,
+  ],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class Login implements AfterViewInit {
   public userForm!: FormGroup;
-  public hidePassword: boolean = true; // Variable para controlar la visibilidad de la contraseña
+  public hidePassword: boolean = true;
 
-  // Inyectamos el servicio Router para poder redirigir al usuario a la página de creación de un nuevo usuario cuando haga clic en el botón "Nuevo Usuario"
-  private router = inject(Router); // Inyectamos el servicio Router para poder redirigir al usuario a la página de creación de un nuevo usuario cuando haga clic en el botón "Nuevo Usuario"
-  private usuarioServicios = inject(UsuariosServices); // Inyectamos el servicio UsuariosServices para poder utilizar sus métodos y gestionar los usuarios desde este componente, como crear, actualizar o eliminar usuarios.
-  private authentication = inject(Authentication); // Inyectamos el servicio Authentication para poder utilizar sus métodos y gestionar la sesión del usuario desde este componente, como guardar, recuperar o cerrar la sesión.
-  
-  //Formulario
+  private router = inject(Router);
+  private usuarioServicios = inject(UsuariosServices);
+  private authentication = inject(Authentication);
+  private ngZone = inject(NgZone);
+
   constructor(private fb: FormBuilder) {
     this.userForm = this.fb.group({
-      //parte de los usuarios y sus validaciones
       emailUsuario: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
     });
   }
 
-  /**getter's */
-  //getters del usuario
   get emailUsuario() {
     return this.userForm.get('emailUsuario') as FormControl;
   }
@@ -70,43 +67,70 @@ export class Login {
     }
   }
 
-  //cuando se da click a registrar:
-  onSubmit(): void {
+  ngAfterViewInit(): void {
+    // Inicializa Google Identity Services y renderiza el botón en el contenedor
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response: { credential: string }) => {
+        // Ejecutamos dentro de NgZone para que Angular detecte los cambios
+        this.ngZone.run(() => this.manejarLoginGoogle(response.credential));
+      },
+    });
 
+    google.accounts.id.renderButton(
+      document.getElementById('google-signin-btn'),
+      {
+        theme: 'outline',
+        size: 'large',
+        width: '100%',
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left',
+      }
+    );
+  }
+
+  private manejarLoginGoogle(credential: string): void {
     this.router.navigate(['/loginespera']);
 
-    //guardo el correo
-    const correo = this.userForm.value.emailUsuario;
-    //guardo la contraseña
-    const contraseña = this.userForm.value.password;
-
-    //hago la peticion al backend para obtener el usuario por correo y contraseña
-    this.usuarioServicios.getUsuarioCorreoContraseña(correo, contraseña).subscribe({
+    this.usuarioServicios.loginConGoogle(credential).subscribe({
       next: (res) => {
-        console.log(res);
-
-        //guardamos el usuario en la sesion
         this.authentication.guardarUsuarioSesion(res);
-
-        //funcion timeout para esperar dos segundos
         setTimeout(() => {
-          //si falla redirije a la creacion fallida
           this.router.navigate(['/logincorrecto']);
-        }, 700); //espera 2 segundos para que se vea la pagina de espera
+        }, 700);
       },
       error: (error) => {
-        //enseño error
-        console.error('Error al iniciar sesion:', error);
-        //funcion timeout para esperar dos segundos
+        console.error('Error en login con Google:', error);
         setTimeout(() => {
-          //si falla redirije a la creacion fallida
           this.router.navigate(['/loginfallido']);
-        }, 700); //espera 2 segundos para que se vea la pagina de espera
-      }
+        }, 700);
+      },
     });
   }
 
-  //resetea formulario
+  onSubmit(): void {
+    this.router.navigate(['/loginespera']);
+
+    const correo = this.userForm.value.emailUsuario;
+    const contraseña = this.userForm.value.password;
+
+    this.usuarioServicios.getUsuarioCorreoContraseña(correo, contraseña).subscribe({
+      next: (res) => {
+        this.authentication.guardarUsuarioSesion(res);
+        setTimeout(() => {
+          this.router.navigate(['/logincorrecto']);
+        }, 700);
+      },
+      error: (error) => {
+        console.error('Error al iniciar sesion:', error);
+        setTimeout(() => {
+          this.router.navigate(['/loginfallido']);
+        }, 700);
+      },
+    });
+  }
+
   onReset(): void {
     this.userForm.reset();
   }
