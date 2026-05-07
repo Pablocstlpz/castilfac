@@ -14,56 +14,53 @@ export class Materiales {
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
-      //  'Authorization': `Bearer ${this.token}`
     }),
   };
 
   private http = inject(HttpClient);
 
-  //obtener todos los materiales enriquecidos con categoria y precio de empresa
   getMaterialesConPrecioEmpresa(empresa_id: number): Observable<MaterialConPrecio[]> {
     return this.http
       .get<MaterialConPrecio[]>(`${this.URL}/materiales/empresa/${empresa_id}`)
       .pipe(catchError(this.handleError));
   }
 
-  //obtener todos los materiales
-  getMateriales(): Observable<Material[]> {
-    return this.http.get<Material[]>(`${this.URL}/materiales`).pipe(
-      map((response) => response), // Aseguramos que la respuesta se trate como un array de Material
-      catchError(this.handleError),
-    );
+  getMateriales(empresa_id: number): Observable<Material[]> {
+    return this.http
+      .get<Material[]>(`${this.URL}/materiales/empresa/${empresa_id}/lista`)
+      .pipe(map((response) => response), catchError(this.handleError));
   }
 
-  getMaterial(id: number): Observable<Material> {
+  getMaterial(empresa_id: number, id: number): Observable<Material> {
     return this.http
-      .get<Material>(`${this.URL}/materiales/${id}`)
+      .get<Material>(`${this.URL}/materiales/empresa/${empresa_id}/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   addMaterial(
+    empresa_id: number,
     material: Omit<Material, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'deleted_at'>,
   ): Observable<Material> {
     return this.http
-      .post<Material>(`${this.URL}/materiales`, material, this.httpOptions)
+      .post<Material>(`${this.URL}/materiales/empresa/${empresa_id}`, material, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
-  updateMaterial(material: Material): Observable<Material> {
+  updateMaterial(empresa_id: number, material: Material): Observable<Material> {
     return this.http
-      .put<Material>(`${this.URL}/materiales/${material.id}`, material, this.httpOptions)
+      .put<Material>(`${this.URL}/materiales/empresa/${empresa_id}/${material.id}`, material, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
-  deleteMaterial(id: number): Observable<{ message: string }> {
+  deleteMaterial(empresa_id: number, id: number): Observable<{ message: string }> {
     return this.http
-      .delete<{ message: string }>(`${this.URL}/materiales/${id}`, this.httpOptions)
+      .delete<{ message: string }>(`${this.URL}/materiales/empresa/${empresa_id}/${id}`, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
-  toggleActivo(id: number): Observable<Material> {
+  toggleActivo(empresa_id: number, id: number): Observable<Material> {
     return this.http
-      .patch<Material>(`${this.URL}/materiales/${id}/activo`, {}, this.httpOptions)
+      .patch<Material>(`${this.URL}/materiales/empresa/${empresa_id}/${id}/activo`, {}, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
@@ -84,9 +81,7 @@ export class Materiales {
 
   private handleError(error: HttpErrorResponse) {
     console.log(error);
-
     const errorMessage = error.error?.message || 'Error desconocido al procesar la solicitud';
-
     return throwError(() => new Error(errorMessage));
   }
 }
