@@ -19,6 +19,7 @@ import { historialPreciosEmpresaRoutes } from "./routes/historialPreciosEmpresa.
 import { suscripcionRoutes } from "./routes/suscripcion.route.js";
 import { stripeRoutes } from "./routes/stripe.route.js";
 import { webhookStripe } from "./controllers/stripe.controller.js";
+import { authRoutes } from "./routes/auth.route.js";
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use("/api", historialPreciosBaseRoutes);
 app.use("/api", historialPreciosEmpresaRoutes);
 app.use("/api", suscripcionRoutes);
 app.use("/api", stripeRoutes);
+app.use("/api", authRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "API REST con Express.js" });
