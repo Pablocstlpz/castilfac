@@ -209,13 +209,17 @@ export class Registro {
             this.usuarioServicios.addUsuario(usuario).subscribe({
               next: (response) => {
                 console.log(response);
+                //guardo el email de empresa antes de resetear el formulario
+                const emailEmpresa = this.userForm.value.emailEmpresa;
                 //reseteo el formulario
                 this.userForm.reset();
 
                 //funcion timeout para esperar dos segundos
                 setTimeout(() => {
-                  //redirijo si es correcto a la pagina de creacion correcta
-                  this.router.navigate(['/creaccioncorrecta']);
+                  //redirijo a la pantalla de verificación por email, pasando el email de la empresa
+                  this.router.navigate(['/registro-verificacion'], {
+                    state: { email: emailEmpresa }
+                  });
                 }, 700); //espera 2 segundos para que se vea la pagina de espera
               },
               error: (error) => {
