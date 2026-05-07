@@ -15,4 +15,6 @@ export interface Empresa {
     logo_url: string;
     fecha_registro: Date;
     fecha_actualizacion: Date;
+    email_verificado?: boolean;
+    token_verificacion?: string | null;
 }
