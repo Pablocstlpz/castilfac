@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { UsuariosServices } from '../../../services/usuarios';
 
 @Component({
   selector: 'app-password-nueva',
@@ -11,68 +12,83 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule],
   templateUrl: './password-nueva.html',
 })
-export class PasswordNueva {
-  
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private snackBar = inject(MatSnackBar);
+export class PasswordNueva implements OnInit {
 
-  // Variables del formulario
+  // Inyectamos el Router para poder redirigir al usuario a la pantalla de exito cuando cambie la contraseña
+  private router = inject(Router);
+  // Inyectamos ActivatedRoute para poder leer el token que viene en los parametros de la URL del enlace del correo
+  private route = inject(ActivatedRoute);
+  // Inyectamos MatSnackBar para poder mostrar mensajes de aviso o error al usuario
+  private snackBar = inject(MatSnackBar);
+  // Inyectamos el servicio UsuariosServices para poder llamar al backend y restablecer la contraseña con el token
+  private usuarioServicios = inject(UsuariosServices);
+
+  // Variables del formulario de nueva contraseña
   public password = '';
   public confirmPassword = '';
+  // Variable para controlar si se muestra la contraseña en texto plano o como puntos
   public mostrarPassword = false;
+  // Variable donde guardamos el token que viene en la URL del enlace del correo de recuperacion
   private tokenRecuperacion: string | null = null;
 
-  // Estados visuales
+  // Variable para controlar si se muestra el spinner de carga mientras se hace la peticion
   public cargando = signal<boolean>(false);
+  // Variable para controlar si ya se ha cambiado la contraseña y mostrar la pantalla de exito
   public passwordCambiada = signal<boolean>(false);
 
   ngOnInit(): void {
-    // 1. Capturar el token de la URL (ej: /restablecer?token=xyz)
+    //capturo el token de recuperacion que viene en los parametros de la URL (ej: /password-nueva?token=xyz)
     this.route.queryParams.subscribe(params => {
-      this.tokenRecuperacion = params['token'];
-      
+      this.tokenRecuperacion = params['token'] || null;
+
+      //si no hay token, el enlace no es valido, aviso al usuario
       if (!this.tokenRecuperacion) {
         this.snackBar.open('Enlace no válido o caducado.', 'Cerrar', { duration: 4000 });
-        // Opcional: Redirigir al login si no hay token
-        // this.volverAlLogin(); 
       }
     });
   }
 
+  //alterna la visibilidad de la contraseña entre texto plano y puntos
   togglePassword(): void {
     this.mostrarPassword = !this.mostrarPassword;
   }
 
+  //cuando se hace submit del formulario para guardar la nueva contraseña:
   guardarPassword(): void {
-    // Validaciones extra de seguridad
-    if (this.password.length < 8) {
-      this.snackBar.open('La contraseña debe tener al menos 8 caracteres.', 'Cerrar', { duration: 3000 });
+
+    //el boton ya esta desactivado en el HTML si no cumple las condiciones, pero lo valido tambien aqui por seguridad
+    if (this.password.length < 8 || this.password !== this.confirmPassword) return;
+
+    //valido que tengamos token antes de hacer la peticion
+    if (!this.tokenRecuperacion) {
+      this.snackBar.open('Enlace no válido o caducado. Solicita uno nuevo.', 'Cerrar', { duration: 4000 });
       return;
     }
 
-    if (this.password !== this.confirmPassword) {
-      return; // El HTML ya desactiva el botón, pero por seguridad lo bloqueamos en TS
-    }
-
+    //activo el estado de carga para que el boton se deshabilite y se muestre el spinner
     this.cargando.set(true);
 
-    // TODO: Llamada a tu backend con el token y la nueva clave
-    /*
-    const payload = {
-      token: this.tokenRecuperacion,
-      newPassword: this.password
-    };
-    this.authService.restablecerPassword(payload).subscribe(...)
-    */
-
-    // Simulación de respuesta del servidor
-    setTimeout(() => {
-      this.cargando.set(false);
-      this.passwordCambiada.set(true); // Cambia el HTML a la pantalla de éxito
-    }, 1500);
+    //hago la peticion al backend con el token y la nueva contraseña para restablecerla
+    this.usuarioServicios.restablecerPassword(this.tokenRecuperacion, this.password).subscribe({
+      next: (response) => {
+        console.log(response);
+        //desactivo el estado de carga
+        this.cargando.set(false);
+        //redirijo a la pantalla de contraseña cambiada correctamente
+        this.router.navigate(['/password-cambiada']);
+      },
+      error: (error) => {
+        //enseño error
+        console.error('Error al restablecer la contraseña:', error);
+        //desactivo el estado de carga
+        this.cargando.set(false);
+        //muestro el mensaje de error que devuelve el backend (token expirado, no valido, etc)
+        this.snackBar.open(error.message || 'El enlace no es válido o ha caducado.', 'Cerrar', { duration: 5000 });
+      }
+    });
   }
 
+  //redirige al usuario de vuelta al inicio de sesion
   volverAlLogin(): void {
     this.router.navigate(['/login']);
   }
