@@ -10,9 +10,12 @@
     </div>
 
     <h1 class="text-2xl font-black text-slate-900 mb-2 tracking-tight">Confirma tu cuenta</h1>
-    <p class="text-sm text-slate-500 mb-8 leading-relaxed">
-      ¡Casi has terminado! Hemos enviado un enlace de verificación a tu correo electrónico.
+    <p class="text-sm text-slate-500 mb-2 leading-relaxed">
+      ¡Casi has terminado! Hemos enviado un enlace de verificación a:
     </p>
+    @if (emailEmpresa()) {
+      <p class="text-sm font-bold text-indigo-600 mb-6">{{ emailEmpresa() }}</p>
+    }
 
     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-8 text-left">
       <div class="flex items-start gap-3">
@@ -32,9 +35,12 @@
     </button>
 
     <p class="text-xs text-slate-400">
-      ¿No has recibido nada? 
-      <button (click)="reenviarVerificacion()" class="font-bold text-indigo-600 hover:text-indigo-800 transition-colors underline decoration-2 underline-offset-2 ml-1">
-        Reenviar email de activación
+      ¿No has recibido nada?
+      <button
+        (click)="reenviarVerificacion()"
+        [disabled]="cargando()"
+        class="font-bold text-indigo-600 hover:text-indigo-800 transition-colors underline decoration-2 underline-offset-2 ml-1 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ cargando() ? 'Enviando...' : 'Reenviar email de activación' }}
       </button>
     </p>
 
