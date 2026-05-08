@@ -17,10 +17,11 @@ import { Router, RouterLink } from '@angular/router';
 import { UsuariosServices } from '../../../services/usuarios';
 import { Authentication } from '../../../services/authentication';
 
+
 // El objeto `google` lo inyecta el script de Google Identity Services cargado en index.html
 declare const google: any;
 
-const GOOGLE_CLIENT_ID = 'TU_GOOGLE_CLIENT_ID_AQUI';
+const GOOGLE_CLIENT_ID = "795752472198-tk2903qvde156d5d8njdevnc3s3q434p.apps.googleusercontent.com"
 
 @Component({
   selector: 'app-formulario',
@@ -77,17 +78,14 @@ export class Login implements AfterViewInit {
       },
     });
 
-    google.accounts.id.renderButton(
-      document.getElementById('google-signin-btn'),
-      {
-        theme: 'outline',
-        size: 'large',
-        width: '100%',
-        text: 'signin_with',
-        shape: 'rectangular',
-        logo_alignment: 'left',
-      }
-    );
+    google.accounts.id.renderButton(document.getElementById('google-signin-btn'), {
+      theme: 'outline',
+      size: 'large',
+      width: '100%',
+      text: 'signin_with',
+      shape: 'rectangular',
+      logo_alignment: 'left',
+    });
   }
 
   private manejarLoginGoogle(credential: string): void {
