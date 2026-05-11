@@ -1,0 +1,142 @@
+<div class="min-h-screen bg-slate-100 font-sans p-4 md:p-8">
+  
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+      <mat-icon class="text-indigo-600">admin_panel_settings</mat-icon>
+      Centro de Mando
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Gestión global del ERP CastilGlass</p>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Registros Totales</p>
+      <h3 class="text-3xl font-black text-slate-800">{{ kpis().total }}</h3>
+    </div>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+      <p class="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">En Prueba (14d)</p>
+      <h3 class="text-3xl font-black text-slate-800">{{ kpis().prueba }}</h3>
+    </div>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+      <p class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Clientes Premium</p>
+      <h3 class="text-3xl font-black text-slate-800">{{ kpis().premium }}</h3>
+    </div>
+    <div class="bg-slate-900 p-5 rounded-2xl shadow-lg border border-slate-800 text-white relative overflow-hidden">
+      <div class="absolute right-[-10%] top-[-10%] opacity-10">
+        <mat-icon class="text-[80px] w-[80px] h-[80px]">payments</mat-icon>
+      </div>
+      <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Ingresos Estimados (MRR)</p>
+      <h3 class="text-3xl font-black">{{ kpis().ingresos }}€<span class="text-sm font-medium text-slate-400">/mes</span></h3>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative">
+    
+    <div class="p-4 border-b border-slate-100 flex items-center bg-slate-50">
+      <div class="relative w-full md:w-96">
+        <mat-icon class="absolute left-3 top-2.5 text-slate-400 text-sm">search</mat-icon>
+        <input 
+          type="text" 
+          [(ngModel)]="filtroBusqueda" 
+          (input)="filtrarEmpresas()"
+          placeholder="Buscar empresa por nombre, NIF o email..." 
+          class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-600 focus:outline-none"
+        >
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <div class="p-10 text-center text-slate-400 flex flex-col items-center gap-3">
+        <div class="animate-spin h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+        Cargando datos...
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        @for (empresa of empresasFiltradas(); track empresa.id) {
+          <div class="border border-slate-200 rounded-2xl p-5 hover:shadow-md transition-shadow relative" [ngClass]="{'opacity-60 bg-slate-50': !empresa.activo}">
+            
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h3 class="font-bold text-slate-900 truncate pr-2">{{ empresa.nombre_comercial }}</h3>
+                <p class="text-xs text-slate-500 font-mono">{{ empresa.nif }}</p>
+              </div>
+              @if (!empresa.email_verificado) {
+                <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">Sin verificar</span>
+              } @else if (!empresa.activo) {
+                <span class="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">Bloqueada</span>
+              } @else {
+                <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">OK</span>
+              }
+            </div>
+
+            <div class="space-y-1 mb-4">
+              <p class="text-xs text-slate-600 flex items-center gap-2"><mat-icon class="text-[14px] w-[14px] h-[14px] text-slate-400">email</mat-icon> {{ empresa.email }}</p>
+              <p class="text-xs text-slate-600 flex items-center gap-2"><mat-icon class="text-[14px] w-[14px] h-[14px] text-slate-400">event</mat-icon> Vence: {{ empresa.fecha_vencimiento | date:'dd/MM/yy' }}</p>
+            </div>
+
+            <div class="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+              <button (click)="verDetalle(empresa)" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors">
+                Ver Usuarios
+              </button>
+              <button 
+                (click)="toggleEstadoEmpresa(empresa)" 
+                class="px-3 py-2 rounded-lg text-xs font-bold transition-colors"
+                [ngClass]="empresa.activo ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'">
+                {{ empresa.activo ? 'Bloquear' : 'Activar' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (empresaSeleccionada()) {
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex justify-end">
+      <div class="w-full md:w-[450px] bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+        
+        <div class="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
+          <div>
+            <h2 class="text-xl font-black text-slate-900">{{ empresaSeleccionada()?.nombre_comercial }}</h2>
+            <p class="text-sm text-slate-500">{{ empresaSeleccionada()?.razon_social }}</p>
+          </div>
+          <button (click)="cerrarDetalle()" class="p-2 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-slate-700 shadow-sm">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1">
+          
+          <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-8">
+            <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-widest mb-3">Acciones de Suscripción</h4>
+            <button (click)="extenderSuscripcion(empresaSeleccionada()!)" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+              <mat-icon class="text-[18px]">add_task</mat-icon> Pasar a Premium (+30 días)
+            </button>
+          </div>
+
+          <h4 class="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+            <mat-icon class="text-slate-400">group</mat-icon> Usuarios de la cuenta
+          </h4>
+          
+          <div class="space-y-3">
+            @for (user of usuariosActivos(); track user.id) {
+              <div class="border border-slate-200 rounded-lg p-3 flex justify-between items-center bg-white">
+                <div>
+                  <p class="text-sm font-bold text-slate-800">{{ user.nombre }}</p>
+                  <p class="text-xs text-slate-500">{{ user.email }}</p>
+                </div>
+                <span class="text-[10px] font-black uppercase px-2 py-1 rounded" [ngClass]="user.rol === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'">
+                  {{ user.rol }}
+                </span>
+              </div>
+            }
+            @if (usuariosActivos().length === 0) {
+              <p class="text-sm text-slate-500 text-center py-4 italic">No hay usuarios registrados.</p>
+            }
+          </div>
+
+        </div>
+      </div>
+    </div>
+  }
+</div>
