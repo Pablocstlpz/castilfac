@@ -50,6 +50,11 @@ export class ComprobarUsuarioEmpresa {
         if (usuario.rol === 'admin') {
           this.router.navigate(['/inicioadmin']);
         }
+
+        //si es superadmin, redirijo a la página de superadmin
+        if (usuario.rol === 'superadmin') {
+          this.router.navigate(['/iniciosuperadmin']);
+        }
       },
       error: () => {
         this.router.navigate(['/stripe-pagos']);
