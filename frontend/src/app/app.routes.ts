@@ -312,6 +312,11 @@ export const routes: Routes = [
       import('./components/sesioncerrada/sesioncerrada').then((m) => m.Sesioncerrada),
   },
   {
+    path: 'iniciosuperadmin',
+    loadComponent: () =>
+      import('./components/iniciosuperadmin/iniciosuperadmin').then((m) => m.InicioSuperadmin),
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('./components/nopermitir/noencontrado/pagina404/pagina404').then((m) => m.Pagina404),
