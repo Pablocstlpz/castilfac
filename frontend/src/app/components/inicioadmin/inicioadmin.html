@@ -16,7 +16,9 @@
     </div>
   </header>
 
-  <div class="flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6 lg:p-8 pb-[calc(env(safe-area-inset-bottom)+5rem)] sm:pb-8">
+  <div
+    class="flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6 lg:p-8 pb-[calc(env(safe-area-inset-bottom)+5rem)] sm:pb-8"
+  >
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
@@ -31,8 +33,11 @@
             class="text-sm mt-2 flex items-center gap-1 font-medium"
             [class]="(porcentajeCambioMes() ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'"
           >
-            <mat-icon class="text-sm">{{ (porcentajeCambioMes() ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}% que el mes pasado
+            <mat-icon class="text-sm">{{
+              (porcentajeCambioMes() ?? 0) >= 0 ? 'trending_up' : 'trending_down'
+            }}</mat-icon>
+            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}% que el
+            mes pasado
           </p>
         } @else {
           <p class="text-sm text-slate-400 mt-2 font-medium">Sin datos del mes anterior</p>
@@ -57,7 +62,9 @@
             <mat-icon class="text-emerald-600">euro</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">{{ ingresosEstimados() | number: '1.0-0' }}€</p>
+        <p class="text-3xl font-bold text-slate-800">
+          {{ ingresosEstimados() | number: '1.0-0' }}€
+        </p>
         <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aprobados</p>
       </div>
 
@@ -116,7 +123,7 @@
       <div
         class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
         routerLink="/inicioadmin/catalogo-y-precios"
-        >
+      >
         <div class="flex items-center gap-4">
           <div
             class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-600 transition-colors"
