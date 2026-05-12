@@ -1,1 +1,422 @@
-<p>formulario-presupuesto works!</p>
+<div
+  class="flex-1 overflow-y-auto p-5 sm:p-8 bg-slate-50 h-full font-sans flex justify-center items-start pb-44 md:pb-32"
+>
+  <div
+    class="w-full max-w-6xl bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mt-8"
+  >
+    <div class="bg-blue-600 px-4 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <div class="bg-white/20 p-3 rounded-full flex items-center justify-center">
+          <mat-icon class="text-white text-3xl">request_quote</mat-icon>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-2xl font-bold text-white m-0">
+            {{ id ? 'Editar Presupuesto (V' + presupuesto.version + ')' : 'Nuevo Presupuesto' }}
+          </h1>
+          <p class="text-blue-100 text-sm mt-1">
+            Calculadora de costes, mermas y márgenes comerciales
+          </p>
+        </div>
+      </div>
+
+      @if (id) {
+        <span
+          class="bg-white/20 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-white/30 shadow-sm"
+        >
+          Versión: {{ presupuesto.version }}
+        </span>
+      }
+    </div>
+
+    <div class="p-4 sm:p-8">
+      <form (ngSubmit)="onSubmit()" class="space-y-8">
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm"
+        >
+          <div class="col-span-1 md:col-span-2">
+            <label
+              class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block flex items-center gap-1"
+            >
+              <mat-icon class="text-sm text-blue-500">person</mat-icon> Cliente Responsable *
+            </label>
+            <select
+              [(ngModel)]="presupuesto.cliente_id"
+              name="cliente_id"
+              (change)="onClienteChange()"
+              required
+              class="w-full p-3 bg-white border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+            >
+              <option [ngValue]="null" disabled>Selecciona un cliente de la lista...</option>
+              @for (c of clientesLista; track c.id) {
+                <option [value]="c.id">{{ c.nombre_empresa_o_particular }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label
+              class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block flex items-center gap-1"
+            >
+              <mat-icon class="text-sm text-blue-500">calendar_month</mat-icon> Validez del
+              Presupuesto
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="presupuesto.valido_hasta"
+              name="valido_hasta"
+              class="w-full p-3 bg-white border border-slate-300 rounded-xl outline-none font-bold focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <h2
+            class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2"
+          >
+            <mat-icon class="text-blue-500 text-sm">view_list</mat-icon> Líneas de Fabricación
+          </h2>
+
+          @for (el of presupuesto.elementos; track $index; let i = $index) {
+            <div
+              class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition-all hover:border-blue-300"
+            >
+              <div
+                class="bg-slate-800 p-4 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4"
+              >
+                <input
+                  [(ngModel)]="el.descripcion"
+                  name="desc_{{ i }}"
+                  placeholder="Ej: Ventana corredera Salón..."
+                  class="flex-1 bg-transparent border-b border-slate-600 text-white font-bold text-lg outline-none placeholder-slate-500 w-full focus:border-blue-400"
+                />
+
+                <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
+                  <div
+                    class="text-right flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700"
+                  >
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Tiempo(min):</span>
+                    <input
+                      type="number"
+                      [(ngModel)]="el.tiempo_estimado_minutos"
+                      name="tiempo_{{ i }}"
+                      (input)="recalcularTodo()"
+                      class="w-16 bg-transparent text-amber-400 font-black text-center outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    (click)="eliminarElemento(i)"
+                    class="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors flex items-center justify-center"
+                    title="Borrar línea"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white border-b border-slate-100"
+              >
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 uppercase">Ancho (m)</label
+                  ><input
+                    type="number"
+                    [(ngModel)]="el.medida_ancho"
+                    name="ancho_{{ i }}"
+                    (input)="recalcularTodo()"
+                    class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 uppercase">Alto (m)</label
+                  ><input
+                    type="number"
+                    [(ngModel)]="el.medida_alto"
+                    name="alto_{{ i }}"
+                    (input)="recalcularTodo()"
+                    class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 uppercase">Cantidad</label
+                  ><input
+                    type="number"
+                    [(ngModel)]="el.cantidad"
+                    name="cant_{{ i }}"
+                    (input)="recalcularTodo()"
+                    class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="flex flex-col justify-end">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase">Total Pieza</p>
+                  <p class="text-xl font-black text-slate-800">
+                    {{ (el.coste_linea || 0) | number: '1.2-2' }}€
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-4 bg-white border-b border-slate-100">
+                <label
+                  class="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-1"
+                  ><mat-icon class="text-[14px] w-[14px] h-[14px]">edit_note</mat-icon> Notas de
+                  Fabricación para Taller</label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="el.notas_fabricacion"
+                  name="notas_fab_{{ i }}"
+                  class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="Ej: Prestar atención al descuadre..."
+                />
+              </div>
+
+              <div class="p-4 bg-slate-50/50">
+                <div class="space-y-2 mb-4">
+                  @for (mat of el.materiales_desglose; track $index; let matIdx = $index) {
+                    <div
+                      class="flex justify-between items-center bg-white px-4 py-3 border border-slate-200 rounded-lg shadow-sm"
+                    >
+                      <div>
+                        <p class="text-sm font-bold text-slate-800">
+                          {{ mat.nombre_material_snapshot }}
+                        </p>
+                        <p
+                          class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded inline-block mt-1"
+                        >
+                          {{ (mat.cantidad_calculada || 0) | number: '1.2-2' }} {{ mat.tipo_unidad }}
+                          <span class="text-slate-400 ml-1"
+                            >(Inc. merma {{ mat.factor_desperdicio }}%)</span
+                          >
+                        </p>
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <span class="font-bold text-slate-700"
+                          >{{ (mat.coste_total || 0) | number: '1.2-2' }}€</span
+                        >
+                        <button
+                          type="button"
+                          (click)="eliminarMaterial(el, matIdx)"
+                          class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors flex items-center justify-center"
+                        >
+                          <mat-icon class="text-[18px] w-[18px] h-[18px]">close</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-slate-200">
+                  <select
+                    #selectorMat
+                    class="flex-1 p-3 border border-slate-300 rounded-xl bg-white outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">+ Selecciona material / cristal para añadir...</option>
+                    @for (m of materialesLista; track m.id) {
+                      <option [value]="m.id">
+                        {{ m.nombre }} ({{ m.precio_venta }}€ / {{ m.tipo_unidad }})
+                      </option>
+                    }
+                  </select>
+                  <button
+                    type="button"
+                    (click)="agregarMaterial(el, selectorMat.value); selectorMat.value = ''"
+                    class="bg-blue-100 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-200 transition-colors shadow-sm flex items-center justify-center gap-2"
+                  >
+                    <mat-icon>add</mat-icon> Añadir Material
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <button
+            type="button"
+            (click)="agregarElemento()"
+            class="w-full py-5 border-2 border-dashed border-blue-200 bg-blue-50/50 text-blue-600 rounded-2xl font-black hover:bg-blue-100 hover:border-blue-300 transition-all uppercase tracking-widest flex justify-center items-center gap-2"
+          >
+            <mat-icon>add_circle_outline</mat-icon> Añadir Nuevo Producto / Ventana
+          </button>
+        </div>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-8 p-4 sm:p-6 bg-slate-50 rounded-3xl border border-slate-200 shadow-sm mt-8"
+        >
+          <div class="space-y-4">
+            <h3
+              class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2"
+            >
+              <mat-icon class="text-[16px] w-[16px] h-[16px]">build</mat-icon> Taller y Extras
+            </h3>
+            <div>
+              <label class="text-[10px] font-bold text-blue-500 uppercase block mb-1"
+                >Precio Hora Taller (€/h)</label
+              >
+              <input
+                type="number"
+                [(ngModel)]="precioHoraTaller"
+                name="precioHora"
+                (input)="recalcularTodo()"
+                class="w-full p-2.5 bg-blue-50 border border-blue-200 rounded-lg font-black text-blue-700 outline-none"
+              />
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1"
+                >Gastos Extra (€)</label
+              >
+              <input
+                type="number"
+                [(ngModel)]="presupuesto.otros_costes"
+                name="otros_costes"
+                (input)="recalcularTodo()"
+                class="w-full p-2.5 border border-slate-300 rounded-lg outline-none font-bold focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-4 md:border-l md:border-slate-200 md:pl-8">
+            <h3
+              class="text-xs font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2"
+            >
+              <mat-icon class="text-[16px] w-[16px] h-[16px]">trending_up</mat-icon> Rentabilidad
+            </h3>
+            <div>
+              <label class="text-[10px] font-bold text-emerald-500 uppercase block mb-1"
+                >Margen Comercial (%)</label
+              >
+              <input
+                type="number"
+                [(ngModel)]="presupuesto.porcentaje_beneficio"
+                name="porcentaje_beneficio"
+                (input)="recalcularTodo()"
+                class="w-full p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 font-black rounded-lg outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div class="bg-white p-3 border border-slate-200 rounded-lg mt-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase block"
+                >Precio Base (Sin desc.)</span
+              >
+              <span class="text-lg font-black text-slate-800"
+                >{{ (presupuesto.precio_sin_descuento || 0) | number: '1.2-2' }}€</span
+              >
+            </div>
+          </div>
+
+          <div class="space-y-4 md:border-l md:border-slate-200 md:pl-8">
+            <h3
+              class="text-xs font-black text-indigo-500 uppercase tracking-widest flex items-center gap-2"
+            >
+              <mat-icon class="text-[16px] w-[16px] h-[16px]">local_offer</mat-icon> Descuento a
+              Cliente
+            </h3>
+            <div>
+              <label class="text-[10px] font-bold text-indigo-400 uppercase block mb-1"
+                >Rebaja Aplicada (%)</label
+              >
+              <input
+                type="number"
+                [(ngModel)]="presupuesto.descuento_aplicado"
+                name="descuento_aplicado"
+                (input)="recalcularTodo()"
+                class="w-full p-2.5 bg-indigo-50 border border-indigo-200 text-indigo-700 font-black rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1"
+                >Motivo / Promoción</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="presupuesto.motivo_descuento"
+                name="motivo_descuento"
+                class="w-full p-2.5 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Ej: Ficha de cliente o VIP"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase flex items-center gap-2 mb-2"
+              ><mat-icon class="text-[16px] w-[16px] h-[16px]">lock</mat-icon> Notas Internas
+              (Privado)</label
+            >
+            <textarea
+              [(ngModel)]="presupuesto.notas_internas"
+              name="notas_int"
+              rows="3"
+              class="w-full p-4 border border-slate-300 rounded-2xl outline-none text-sm italic focus:ring-2 focus:ring-slate-400"
+              placeholder="Anotaciones generales para el taller..."
+            ></textarea>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-blue-600 uppercase flex items-center gap-2 mb-2"
+              ><mat-icon class="text-[16px] w-[16px] h-[16px]">visibility</mat-icon> Notas para el
+              Cliente</label
+            >
+            <textarea
+              [(ngModel)]="presupuesto.notas_cliente"
+              name="notas_cli"
+              rows="3"
+              class="w-full p-4 border border-blue-200 bg-blue-50/50 rounded-2xl outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500"
+              placeholder="Textos que saldrán impresos en el PDF del presupuesto..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div
+          class="mt-10 pt-6 border-t border-slate-200 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 sticky bottom-0 bg-white/95 backdrop-blur-md p-4 sm:p-6 -mx-4 sm:mx-0 max-md:rounded-t-3xl max-md:rounded-b-none max-md:pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-15px_30px_rgba(0,0,0,0.05)] z-50"
+        >
+          <div class="flex gap-4 sm:gap-8 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+            <div class="min-w-fit">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Mat. + Extras
+              </p>
+              <p class="text-xl font-bold text-slate-800">
+                {{
+                  ((presupuesto.coste_materiales || 0) + (presupuesto.otros_costes || 0)) | number: '1.2-2'
+                }}€
+              </p>
+            </div>
+            <div class="min-w-fit border-l border-slate-200 pl-4 sm:pl-8">
+              <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                Taller ({{ totalMinutosFabricacion }}m)
+              </p>
+              <p class="text-xl font-bold text-blue-700">
+                {{ (presupuesto.coste_mano_obra || 0) | number: '1.2-2' }}€
+              </p>
+            </div>
+            <div class="min-w-fit border-l border-slate-200 pl-4 sm:pl-8">
+              <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                TOTAL A FACTURAR
+              </p>
+              <p class="text-3xl sm:text-4xl font-black text-slate-900">
+                {{ (presupuesto.precio_final || 0) | number: '1.2-2' }}€
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="cancelar()"
+              class="flex-1 md:flex-none h-14 px-6 border-slate-300 font-bold text-slate-500 uppercase tracking-wider rounded-xl"
+            >
+              Cancelar
+            </button>
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              [disabled]="!presupuesto.cliente_id || presupuesto.elementos.length === 0"
+              class="flex-1 md:flex-none h-14 px-8 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold shadow-lg shadow-blue-200 uppercase tracking-wider rounded-xl flex items-center justify-center gap-2"
+            >
+              <mat-icon>save</mat-icon>
+              {{ id ? 'Actualizar (V' + (presupuesto.version + 1) + ')' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
