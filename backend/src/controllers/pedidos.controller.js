@@ -201,7 +201,56 @@ export const getPedidosByEmpresa = async (req, res) => {
   }
 };
 
+//COMPROBAR SI EXISTE PEDIDO PARA UN PRESUPUESTO
+export const existePedidoDePresupuesto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pedido = await Pedido.findOne({ where: { presupuesto_id: id } });
+
+    res.status(200).json({ existe: !!pedido });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error al comprobar el pedido' });
+  }
+};
+
 //AÑADIR PEDIDO
+export const createPedido = async (req, res) => {
+  try {
+    const {
+      empresa_id,
+      presupuesto_id,
+      cliente_id,
+      operario_asignado_id,
+      importe_acordado,
+      fecha_inicio_estimada,
+      fecha_entrega_estimada,
+    } = req.body;
+
+    if (!empresa_id || !presupuesto_id || !cliente_id || !importe_acordado) {
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
+    }
+
+    const nuevoPedido = await Pedido.create({
+      empresa_id,
+      numero_pedido: "PED-" + Date.now(),
+      presupuesto_id,
+      cliente_id,
+      operario_asignado_id: operario_asignado_id || null,
+      importe_acordado,
+      fecha_pedido: new Date(),
+      fecha_inicio_estimada: fecha_inicio_estimada || null,
+      fecha_entrega_estimada: fecha_entrega_estimada || null,
+      estado_fabricacion: "pendiente",
+    });
+
+    res.status(201).json(nuevoPedido);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error al crear el pedido" });
+  }
+};
 
 //ACTUALIZAR PEDIDO
 export const updatePedido = async (req, res) => {

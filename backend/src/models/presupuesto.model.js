@@ -45,11 +45,6 @@ export const Presupuesto = sequelize.define(
       allowNull: true,
       defaultValue: 0.0,
     },
-    detalle_otros_costes: {
-      type: DataTypes.TEXT("long"),
-      allowNull: true,
-      defaultValue: null,
-    },
     porcentaje_beneficio: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
@@ -81,9 +76,7 @@ export const Presupuesto = sequelize.define(
         "enviado",
         "aprobado",
         "rechazado",
-        "aceptado",
-        "anulado",
-        "facturado",
+        "caducado",
       ),
       allowNull: false,
       defaultValue: "borrador",

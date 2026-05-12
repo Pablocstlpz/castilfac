@@ -10,6 +10,8 @@ import {
   getPedidosHistorialByOperario,
   getPedidoById,
   getFinanzasByEmpresa,
+  createPedido,
+  existePedidoDePresupuesto,
 } from "../controllers/pedidos.controller.js";
 
 const router = Router();
@@ -22,6 +24,8 @@ router.get("/pedidos/operario/:id", getPedidosByOperario);
 router.get("/pedidos/cliente/:id", getPedidosByCliente);
 router.get("/pedidos/historial/operario/:id", getPedidosHistorialByOperario);
 router.get("/pedidos/:id", getPedidoById);
+router.post("/pedidos", createPedido);
+router.get("/pedidos/presupuesto/:id", existePedidoDePresupuesto);
 router.put("/pedidos/marcar-fabricado/:id", marcarComoFabricado);
 router.put("/pedidos/:id", updatePedido);
 router.delete("/pedidos/:id", deletePedido);
