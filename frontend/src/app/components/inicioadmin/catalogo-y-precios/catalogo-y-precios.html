@@ -1,4 +1,4 @@
-<div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 min-h-screen pb-24 font-sans">
+<div class="flex-1 overflow-y-auto p-5 sm:p-8 bg-slate-50 min-h-screen pb-28 sm:pb-24 font-sans">
   <div class="sm:flex sm:items-center sm:justify-between mb-8">
     <div>
       <h1
@@ -24,7 +24,7 @@
   <div
     class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center"
   >
-    <div class="flex-1 min-w-75 relative">
+    <div class="flex-1 w-full min-w-0 sm:min-w-75 relative">
       <mat-icon class="absolute left-3 top-2.5 text-slate-400">search</mat-icon>
       <input
         type="text"
@@ -38,7 +38,7 @@
     <select
       [ngModel]="filtroCategoria()"
       (ngModelChange)="filtroCategoria.set($event); filtrarMateriales()"
-      class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-8 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+      class="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-8 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="todas">Todos</option>
       @for (cat of categorias(); track cat.id) {
@@ -59,7 +59,9 @@
 
   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="overflow-y-auto max-h-[48vh]">
-      <table class="min-w-full divide-y divide-slate-200 text-left whitespace-nowrap">
+      <table
+        class="mobile-card-list min-w-full divide-y divide-slate-200 text-left whitespace-nowrap"
+      >
         <thead class="bg-slate-50 sticky top-0 z-10">
           <tr>
             <th class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -103,18 +105,18 @@
               class="hover:bg-blue-50/50 transition-colors group"
               [class.opacity-50]="item.activo === false"
             >
-              <td class="px-2 py-3 font-mono text-sm font-bold text-slate-700">
+              <td data-label="Código" class="px-2 py-3 font-mono text-sm font-bold text-slate-700">
                 {{ item.codigo_interno ?? '—' }}
               </td>
 
-              <td class="px-2 py-3">
+              <td data-label="Material" class="px-2 py-3">
                 <div class="font-bold text-sm text-slate-900">{{ item.nombre }}</div>
                 <div class="text-[10px] uppercase font-bold text-blue-600 mt-0.5">
                   {{ item?.categoria_nombre ?? '—' }}
                 </div>
               </td>
 
-              <td class="px-2 py-3">
+              <td data-label="Unidad" class="px-2 py-3">
                 <div
                   class="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-md"
                 >
@@ -135,11 +137,14 @@
                 </div>
               </td>
 
-              <td class="px-2 py-3 text-right text-sm font-bold text-slate-500">
+              <td
+                data-label="Coste Base"
+                class="px-2 py-3 text-right text-sm font-bold text-slate-500"
+              >
                 {{ item.precio_base | number: '1.2-2' }} €
               </td>
 
-              <td class="px-2 py-3 text-right">
+              <td data-label="PVP Empresa" class="px-2 py-3 text-right">
                 @if (materialEditandoId() === item.id) {
                   <!-- Modo edición en línea: muestra input con botones de guardar y cancelar -->
                   <div class="flex items-center justify-end gap-1">
@@ -198,15 +203,15 @@
                 }
               </td>
 
-              <td class="px-2 py-3 text-center text-sm text-slate-600">
+              <td data-label="Merma" class="px-2 py-3 text-center text-sm text-slate-600">
                 {{ item.porcentaje_merma }}%
               </td>
 
-              <td class="px-2 py-3 text-sm text-slate-700 truncate max-w-36">
+              <td data-label="Proveedor" class="px-2 py-3 text-sm text-slate-700 truncate max-w-36">
                 {{ item.proveedor ?? '—' }}
               </td>
 
-              <td class="px-2 py-3 text-center">
+              <td data-label="Estado" class="px-2 py-3 text-center">
                 @if (item.activo !== false) {
                   <span
                     class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-200"
@@ -220,7 +225,7 @@
                 }
               </td>
 
-              <td class="px-2 py-3 text-right">
+              <td data-label="Acciones" class="px-2 py-3 text-right">
                 <div
                   class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
@@ -275,7 +280,8 @@
     <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
       <span class="text-sm text-slate-500">
         Mostrando
-        <span class="font-medium text-slate-900">{{ materialesFiltrados().length }}</span> materiales
+        <span class="font-medium text-slate-900">{{ materialesFiltrados().length }}</span>
+        materiales
       </span>
     </div>
   </div>
