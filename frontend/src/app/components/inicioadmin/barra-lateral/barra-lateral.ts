@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { EventEmitter, Input, Output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -8,4 +9,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './barra-lateral.html',
   styleUrl: './barra-lateral.css',
 })
-export class BarraLateral {}
+export class BarraLateral {
+  @Input() menuMovilAbierto = false;
+  @Output() cerrarMenu = new EventEmitter<void>();
+
+  cerrarMenuMovil() {
+    this.cerrarMenu.emit();
+  }
+}
