@@ -25,11 +25,18 @@
             <mat-icon class="text-blue-600">request_quote</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">AGREGAR DESPUES</p>
-        <p class="text-sm text-emerald-600 mt-2 flex items-center gap-1 font-medium">
-          <mat-icon class="text-sm">trending_up</mat-icon> CALCULAR PORCENTAJE DESPUES% que el mes
-          pasado
-        </p>
+        <p class="text-3xl font-bold text-slate-800">{{ presupuestosMes() }}</p>
+        @if (porcentajeCambioMes() !== null) {
+          <p
+            class="text-sm mt-2 flex items-center gap-1 font-medium"
+            [class]="(porcentajeCambioMes() ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'"
+          >
+            <mat-icon class="text-sm">{{ (porcentajeCambioMes() ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}% que el mes pasado
+          </p>
+        } @else {
+          <p class="text-sm text-slate-400 mt-2 font-medium">Sin datos del mes anterior</p>
+        }
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -50,8 +57,8 @@
             <mat-icon class="text-emerald-600">euro</mat-icon>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-800">AGREGAR DESPUES</p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aceptados</p>
+        <p class="text-3xl font-bold text-slate-800">{{ ingresosEstimados() | number: '1.0-0' }}€</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aprobados</p>
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">

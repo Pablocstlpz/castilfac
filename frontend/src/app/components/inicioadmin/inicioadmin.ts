@@ -1,15 +1,17 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ComprobarUsuarioEmpresa } from '../../services/comprobar-usuario-empresa';
 import { Authentication } from '../../services/authentication';
 import { UsuariosServices } from '../../services/usuarios';
 import { PedidosServices } from '../../services/pedidos';
+import { Presupuestos as PresupuestosService } from '../../services/presupuestos';
+import { Presupuesto } from '../../interfaces/presupuesto';
 
 @Component({
   selector: 'app-inicioadmin',
-  imports: [MatIconModule, CommonModule, RouterLink],
+  imports: [MatIconModule, CommonModule, DecimalPipe, RouterLink],
   templateUrl: './inicioadmin.html',
   styleUrl: './inicioadmin.css',
 })
@@ -17,58 +19,85 @@ export class Inicioadmin {
   private comprobarUsuarioEmpresa = inject(ComprobarUsuarioEmpresa);
   private authentication = inject(Authentication);
   private router = inject(Router);
-
-  //inyecto los servicios de usuarios
   private usuariosServices = inject(UsuariosServices);
-
-  //inyecto los servicios de pedidos
   private pedidosServices = inject(PedidosServices);
+  private presupuestosService = inject(PresupuestosService);
 
-  //signal con numero de usuarios en la empresa
   public numeroUsuarios = signal<number>(0);
-
-  //signal con numero de pedidos activos en la empresa
   public numeroPedidos = signal<number>(0);
+  public todosPresupuestos = signal<Presupuesto[]>([]);
+
+  public presupuestosMes = computed(() => {
+    const ahora = new Date();
+    return this.todosPresupuestos().filter((p) => {
+      const fecha = new Date(p.fecha_creacion);
+      return fecha.getMonth() === ahora.getMonth() && fecha.getFullYear() === ahora.getFullYear();
+    }).length;
+  });
+
+  public presupuestosUltimoMes = computed(() => {
+    const ahora = new Date();
+    const mesAnterior = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
+    return this.todosPresupuestos().filter((p) => {
+      const fecha = new Date(p.fecha_creacion);
+      return (
+        fecha.getMonth() === mesAnterior.getMonth() &&
+        fecha.getFullYear() === mesAnterior.getFullYear()
+      );
+    }).length;
+  });
+
+  public porcentajeCambioMes = computed(() => {
+    const anterior = this.presupuestosUltimoMes();
+    if (anterior === 0) return null;
+    return Math.round(((this.presupuestosMes() - anterior) / anterior) * 100);
+  });
+
+  public ingresosEstimados = computed(() => {
+    return this.todosPresupuestos()
+      .filter((p) => p.estado === 'aprobado')
+      .reduce((acc, p) => acc + (Number(p.precio_final) || 0), 0);
+  });
 
   ngOnInit() {
     this.comprobarUsuarioEmpresa.comprobarUsuarioEmpresa();
-    //compruebo si hay usuario en la sesion
     const usuario = this.authentication.obtenerUsuarioSesion();
-    //si no hay usuario o no es admin
     if (usuario === null || usuario.rol !== 'admin') {
-      //redirijo a la pagina de no autorizado
       this.router.navigate(['/nopermisos']);
+      return;
     }
 
-    //obtengo los usuarios de la empresa y los asigno al signal de numeroUsuarios
     this.obtenerUsuarios(usuario.empresa_id);
-
-    //obtengo los pedidos en fabricacion de la empresa y los asigno al signal de numeroPedidos
     this.obtenerTrabajos(usuario.empresa_id);
+    this.obtenerPresupuestos(usuario.empresa_id);
   }
 
-  //funcion para cerrar sesion
   cerrarSesion() {
     this.authentication.cerrarSesion();
     this.router.navigate(['/sesioncerrada']);
   }
 
-  //funcion para obtener usuarios de la empresa
   obtenerUsuarios(empresa_id: number) {
-    this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe((usuarios) => {
-      this.numeroUsuarios.set(usuarios.length);
+    this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe({
+      next: (usuarios) => this.numeroUsuarios.set(usuarios.length),
+      error: () => {},
     });
   }
 
-  //funcion para obtener trabajos activos (en cola o fabricacion)
   obtenerTrabajos(empresa_id: number) {
-    this.pedidosServices.getPedidosByEmpresa(empresa_id).subscribe((pedidos) => {
-      //filtro en una array los pedidos que esten en fabricacion
-      const pedidosEnFabricacion = pedidos.filter(
-        (pedido) => pedido.estado_fabricacion === 'en_fabricacion',
-      );
-      //los inserto en el signal
-      this.numeroPedidos.set(pedidosEnFabricacion.length);
+    this.pedidosServices.getPedidosByEmpresa(empresa_id).subscribe({
+      next: (pedidos) => {
+        const enFabricacion = pedidos.filter((p) => p.estado_fabricacion === 'en_fabricacion');
+        this.numeroPedidos.set(enFabricacion.length);
+      },
+      error: () => {},
+    });
+  }
+
+  obtenerPresupuestos(empresa_id: number) {
+    this.presupuestosService.getPresupuestosEmpresa(empresa_id).subscribe({
+      next: (data) => this.todosPresupuestos.set(data),
+      error: () => {},
     });
   }
 }
