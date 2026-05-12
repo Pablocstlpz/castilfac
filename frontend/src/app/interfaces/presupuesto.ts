@@ -1,20 +1,24 @@
 export interface MaterialDesglose {
   id: number;
-  cantidad: number;
-  precio_unitario_aplicado: number;
-  Material: {
-    id: number;
-    nombre: string;
-    codigo_interno: string;
-    tipo_unidad: string;
-  } | null;
+  material_id: number;
+  nombre_material_snapshot: string;
+  cantidad_calculada: number;
+  precio_congelado: number;
+  factor_desperdicio: number;
+  tipo_unidad: string;
+  coste_total: number;
 }
 
 export interface ElementoPresupuesto {
   id: number;
-  nombre: string;
+  descripcion: string;
   cantidad: number;
-  precio_final: number;
+  medida_ancho: number;
+  medida_alto: number;
+  tiempo_estimado_minutos: number;
+  notas_fabricacion: string;
+  orden: number;
+  coste_linea: number;
   materiales_desglose: MaterialDesglose[];
 }
 
@@ -29,13 +33,12 @@ export interface Presupuesto {
   coste_materiales?: number;
   coste_mano_obra?: number;
   otros_costes?: number;
-  detalle_otros_costes?: string | null;
   porcentaje_beneficio?: number;
   precio_sin_descuento?: number;
   descuento_aplicado?: number;
   motivo_descuento?: string | null;
   precio_final?: number;
-  estado: 'borrador' | 'enviado' | 'aprobado' | 'rechazado' | 'aceptado' | 'anulado' | 'facturado';
+  estado: 'borrador' | 'enviado' | 'aprobado' | 'rechazado' | 'caducado';
   valido_hasta?: string | null;
   fecha_creacion: string;
   fecha_envio?: string | null;
