@@ -105,6 +105,10 @@ export class DetallePedido implements OnInit {
     this.location.back();
   }
 
+  verPresupuesto(id: number): void {
+    this.router.navigate(['/inicioadmin/presupuestos/detalle-presupuesto', id]);
+  }
+
   cambiarEstado(nuevoEstado: string): void {
     const p = this.pedido();
     if (!p) return;
