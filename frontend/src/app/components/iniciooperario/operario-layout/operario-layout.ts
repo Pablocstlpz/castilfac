@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { BarraLateral } from "../barra-lateral/barra-lateral";
-import { RouterModule } from "@angular/router";
+import { BarraLateral } from '../barra-lateral/barra-lateral';
+import { RouterModule } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
@@ -19,5 +19,4 @@ export class OperarioLayout {
   cerrarMenuMovil() {
     this.menuMovilAbierto = false;
   }
-
 }
