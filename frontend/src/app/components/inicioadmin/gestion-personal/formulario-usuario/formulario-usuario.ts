@@ -118,8 +118,7 @@ export class FormularioUsuario {
       password: this.userForm.value.password,
       //llamo a la funcion de autentificacion que devuelve el usuario y cojo el empresa_id
       empresa_id: usuarioSesion.empresa_id,
-      rol: this.userForm.value.rol, // Asignamos un valor fijo para el rol del usuario, ya que en este formulario no se está gestionando la selección del rol del usuario. En un escenario real, este valor debería ser dinámico y permitir seleccionar entre diferentes roles como 'admin' u 'operario'.
-      activo: true, // Asignamos un valor fijo para indicar que el usuario está activo, ya que en este formulario no se está gestionando la activación o desactivación del usuario. En un escenario real, este valor podría ser dinámico y permitir activar o desactivar el usuario según sea necesario.
+      rol: this.userForm.value.rol,
       fecha_creacion: new Date(), // Asignamos la fecha actual como fecha de creación del usuario, ya que en este formulario no se está gestionando la fecha de creación. En un escenario real, este valor podría ser generado automáticamente en el backend al crear el usuario.
       fecha_actualizacion: new Date(), // Asignamos la fecha actual como fecha de actualización del usuario, ya que en este formulario no se está gestionando la fecha de actualización. En un escenario real, este valor podría ser generado automáticamente en el backend al actualizar el usuario.
       deleted_at: null, // Asignamos null para indicar que el usuario no ha sido eliminado, ya que en este formulario no se está gestionando la eliminación de usuarios. En un escenario real, este valor podría ser dinámico y permitir marcar al usuario como eliminado si es necesario.
