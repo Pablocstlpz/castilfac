@@ -14,6 +14,7 @@
     <div class="mt-4 sm:mt-0">
       <button
         class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all"
+        routerLink="/inicioadmin/presupuestos/nuevo"
       >
         <mat-icon class="text-sm h-5 w-5">add_circle</mat-icon>
         Nuevo Presupuesto
@@ -31,6 +32,7 @@
       </div>
       <div
         class="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600"
+        routerLink=""
       >
         <mat-icon>edit_document</mat-icon>
       </div>
@@ -80,7 +82,7 @@
   <div
     class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center"
   >
-    <div class="flex-1 min-w-75 relative">
+    <div class="flex-1 w-full min-w-0 sm:min-w-75 relative">
       <mat-icon class="absolute left-3 top-2.5 text-slate-400">search</mat-icon>
       <input
         type="text"
@@ -94,7 +96,7 @@
     <select
       [ngModel]="filtroEstado()"
       (ngModelChange)="filtroEstado.set($event)"
-      class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+      class="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="todos">Todos</option>
       <option value="borrador">Borrador</option>
@@ -106,7 +108,7 @@
 
   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="overflow-y-auto max-h-[40vh]">
-      <table class="min-w-full divide-y divide-slate-200">
+      <table class="mobile-card-list min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50 sticky top-0 z-10">
           <tr>
             <th
@@ -142,7 +144,7 @@
         <tbody class="divide-y divide-slate-100 bg-white">
           @for (p of presupuestosFiltrados(); track p.id) {
             <tr class="hover:bg-slate-50 transition-colors group">
-              <td class="whitespace-nowrap py-4 pl-6 pr-3">
+              <td data-label="Referencia / Fecha" class="whitespace-nowrap py-4 pl-6 pr-3">
                 <div class="font-bold text-slate-900">{{ p.numero_presupuesto }}</div>
                 <div class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                   <mat-icon class="text-[14px]">calendar_today</mat-icon>
@@ -150,7 +152,7 @@
                 </div>
               </td>
 
-              <td class="px-3 py-4">
+              <td data-label="Cliente" class="px-3 py-4">
                 <div class="text-sm font-medium text-slate-800">
                   {{ getNombreCliente(p.cliente_id) }}
                 </div>
@@ -159,62 +161,49 @@
                 </div>
               </td>
 
-              <td class="whitespace-nowrap px-3 py-4">
+              <td data-label="Importe Final" class="whitespace-nowrap px-3 py-4">
                 <div class="text-sm font-bold text-slate-800">
                   {{ p.precio_final | number: '1.2-2' }} €
                 </div>
                 <div class="text-xs text-slate-400">IVA no incluido</div>
               </td>
 
-              <td class="whitespace-nowrap px-3 py-4">
+              <td data-label="Estado" class="whitespace-nowrap px-3 py-4">
                 <span
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold border"
                   [ngClass]="{
                     'bg-slate-100 text-slate-600 border-slate-200': p.estado === 'borrador',
                     'bg-blue-50 text-blue-700 border-blue-200': p.estado === 'enviado',
                     'bg-emerald-50 text-emerald-700 border-emerald-200': p.estado === 'aprobado',
-                    'bg-green-50 text-green-700 border-green-200': p.estado === 'aceptado',
                     'bg-red-50 text-red-700 border-red-200': p.estado === 'rechazado',
-                    'bg-slate-200 text-slate-500 border-slate-300': p.estado === 'anulado',
-                    'bg-purple-50 text-purple-700 border-purple-200': p.estado === 'facturado',
+                    'bg-amber-50 text-amber-700 border-amber-200': p.estado === 'caducado',
                   }"
                 >
                   <span
                     class="h-1.5 w-1.5 rounded-full"
                     [ngClass]="{
-                      'bg-slate-400': p.estado === 'borrador' || p.estado === 'anulado',
+                      'bg-slate-400': p.estado === 'borrador',
                       'bg-blue-500': p.estado === 'enviado',
                       'bg-emerald-500': p.estado === 'aprobado',
-                      'bg-green-500': p.estado === 'aceptado',
                       'bg-red-500': p.estado === 'rechazado',
-                      'bg-purple-500': p.estado === 'facturado',
+                      'bg-amber-500': p.estado === 'caducado',
                     }"
                   ></span>
                   {{ p.estado | titlecase }}
                 </span>
               </td>
 
-              <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
+              <td data-label="Acciones" class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
                 <div
                   class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  @if (p.estado === 'aprobado' || p.estado === 'aceptado') {
-                    <button
-                      class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
-                      title="Convertir en pedido"
-                    >
-                      <mat-icon class="text-[16px]">precision_manufacturing</mat-icon>
-                      Fabricar
-                    </button>
-                  }
-                  @if (p.estado === 'borrador' || p.estado === 'enviado') {
-                    <button
-                      class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Editar"
-                    >
-                      <mat-icon class="text-[20px]">edit</mat-icon>
-                    </button>
-                  }
+                  <button
+                    [routerLink]="['/inicioadmin/presupuestos/editar', p.id]"
+                    class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Editar"
+                  >
+                    <mat-icon class="text-[20px]">edit</mat-icon>
+                  </button>
                   <button
                     (click)="verDetalle(p.id)"
                     class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
@@ -246,7 +235,8 @@
     <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
       <span class="text-sm text-slate-500">
         Mostrando
-        <span class="font-medium text-slate-900">{{ presupuestosFiltrados().length }}</span> presupuestos
+        <span class="font-medium text-slate-900">{{ presupuestosFiltrados().length }}</span>
+        presupuestos
       </span>
     </div>
   </div>

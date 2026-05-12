@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe, DecimalPipe, NgClass, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { Cliente } from '../../../interfaces/cliente';
 
 @Component({
   selector: 'app-presupuestos',
-  imports: [MatIcon, DatePipe, DecimalPipe, NgClass, TitleCasePipe, FormsModule],
+  imports: [MatIcon, DatePipe, DecimalPipe, NgClass, TitleCasePipe, FormsModule, RouterLink],
   templateUrl: './presupuestos.html',
   styleUrl: './presupuestos.css',
 })
@@ -51,7 +52,7 @@ export class Presupuestos {
     const now = new Date();
     return this.presupuestos().filter(
       (p) =>
-        (p.estado === 'aprobado' || p.estado === 'aceptado') &&
+        p.estado === 'aprobado' &&
         new Date(p.fecha_creacion).getMonth() === now.getMonth() &&
         new Date(p.fecha_creacion).getFullYear() === now.getFullYear(),
     ).length;
@@ -61,7 +62,7 @@ export class Presupuestos {
     const enviados = this.presupuestos().filter((p) => p.estado !== 'borrador').length;
     if (enviados === 0) return 0;
     const exitosos = this.presupuestos().filter(
-      (p) => p.estado === 'aprobado' || p.estado === 'aceptado' || p.estado === 'facturado',
+      (p) => p.estado === 'aprobado',
     ).length;
     return Math.round((exitosos / enviados) * 100);
   });
