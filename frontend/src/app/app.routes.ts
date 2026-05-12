@@ -178,6 +178,20 @@ export const routes: Routes = [
           import('./components/inicioadmin/presupuestos/presupuestos').then((m) => m.Presupuestos),
       },
       {
+        path: 'presupuestos/nuevo',
+        loadComponent: () =>
+          import('./components/inicioadmin/presupuestos/formulario-presupuesto/formulario-presupuesto').then(
+            (m) => m.FormularioPresupuesto,
+          ),
+      },
+      {
+        path: 'presupuestos/editar/:id',
+        loadComponent: () =>
+          import('./components/inicioadmin/presupuestos/formulario-presupuesto/formulario-presupuesto').then(
+            (m) => m.FormularioPresupuesto,
+          ),
+      },
+      {
         path: 'presupuestos/detalle-presupuesto/:id',
         loadComponent: () =>
           import('./components/inicioadmin/presupuestos/presupuesto-detalle/presupuesto-detalle').then(
