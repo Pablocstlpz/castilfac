@@ -198,8 +198,7 @@ export class Registro {
               nombre: this.userForm.value.nombre,
               email: this.userForm.value.emailUsuario,
               password: this.userForm.value.password,
-              rol: 'admin', //al crear el la empresa, es admin
-              activo: true, //el usuario esta activo por defecto al crearlo, se puede desactivar desde el panel de administración
+              rol: 'admin',
               fecha_creacion: new Date(), //la fecha en la que se ha creado, por lo que es la actual al momento
               fecha_actualizacion: new Date(), //la fecha en la que se ha actualizado, por lo que es la actual al momento hasta que se actualice otra vez
               deleted_at: null, //null porque no se ha borrado
