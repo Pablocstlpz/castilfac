@@ -69,6 +69,18 @@ export class PedidosServices {
   // }
 
   //updateUsuario(usuario: Usuario): Observable<Usuario> {
+  existePedidoDePresupuesto(presupuestoId: number): Observable<{ existe: boolean }> {
+    return this.http
+      .get<{ existe: boolean }>(`${this.URL}/pedidos/presupuesto/${presupuestoId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  createPedido(pedido: any): Observable<{ id: number; message: string }> {
+    return this.http
+      .post<{ id: number; message: string }>(`${this.URL}/pedidos`, pedido, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
   updatePedido(pedido: Pedido): Observable<{ message: string }> {
     return this.http
       .put<{ message: string }>(`${this.URL}/pedidos/${pedido.id}`, pedido, this.httpOptions)
