@@ -5,7 +5,6 @@ export interface Usuario {
     email: string;
     password: string;
     rol: string;
-    activo: boolean;
     fecha_creacion: Date;
     fecha_actualizacion: Date;
     deleted_at: Date | null;
