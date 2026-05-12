@@ -35,6 +35,29 @@ export class Presupuestos {
       .pipe(catchError(this.handleError));
   }
 
+  // AÑADIR ESTO EN TU ARCHIVO services/presupuestos.ts
+
+  addPresupuesto(presupuesto: any): Observable<{ id: number; message: string }> {
+    return this.http
+      .post<{
+        id: number;
+        message: string;
+      }>(`${this.URL}/presupuestos`, presupuesto, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
+  updatePresupuesto(id: number, presupuesto: any): Observable<{ message: string }> {
+    return this.http
+      .put<{ message: string }>(`${this.URL}/presupuestos/${id}`, presupuesto, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
+  patchEstadoPresupuesto(id: number, estado: string): Observable<{ message: string }> {
+    return this.http
+      .patch<{ message: string }>(`${this.URL}/presupuestos/${id}/estado`, { estado }, this.httpOptions)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.log(error);
 
