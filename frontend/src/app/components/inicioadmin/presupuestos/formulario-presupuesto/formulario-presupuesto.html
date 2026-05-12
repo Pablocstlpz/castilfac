@@ -4,7 +4,9 @@
   <div
     class="w-full max-w-6xl bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mt-8"
   >
-    <div class="bg-blue-600 px-4 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div
+      class="bg-blue-600 px-4 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+    >
       <div class="flex items-center gap-4 min-w-0">
         <div class="bg-white/20 p-3 rounded-full flex items-center justify-center">
           <mat-icon class="text-white text-3xl">request_quote</mat-icon>
@@ -149,7 +151,7 @@
                 <div class="flex flex-col justify-end">
                   <p class="text-[10px] font-bold text-slate-400 uppercase">Total Pieza</p>
                   <p class="text-xl font-black text-slate-800">
-                    {{ (el.coste_linea || 0) | number: '1.2-2' }}€
+                    {{ el.coste_linea || 0 | number: '1.2-2' }}€
                   </p>
                 </div>
               </div>
@@ -182,7 +184,7 @@
                         <p
                           class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded inline-block mt-1"
                         >
-                          {{ (mat.cantidad_calculada || 0) | number: '1.2-2' }} {{ mat.tipo_unidad }}
+                          {{ mat.cantidad_calculada || 0 | number: '1.2-2' }} {{ mat.tipo_unidad }}
                           <span class="text-slate-400 ml-1"
                             >(Inc. merma {{ mat.factor_desperdicio }}%)</span
                           >
@@ -190,7 +192,7 @@
                       </div>
                       <div class="flex items-center gap-4">
                         <span class="font-bold text-slate-700"
-                          >{{ (mat.coste_total || 0) | number: '1.2-2' }}€</span
+                          >{{ mat.coste_total || 0 | number: '1.2-2' }}€</span
                         >
                         <button
                           type="button"
@@ -295,7 +297,7 @@
                 >Precio Base (Sin desc.)</span
               >
               <span class="text-lg font-black text-slate-800"
-                >{{ (presupuesto.precio_sin_descuento || 0) | number: '1.2-2' }}€</span
+                >{{ presupuesto.precio_sin_descuento || 0 | number: '1.2-2' }}€</span
               >
             </div>
           </div>
@@ -373,7 +375,8 @@
               </p>
               <p class="text-xl font-bold text-slate-800">
                 {{
-                  ((presupuesto.coste_materiales || 0) + (presupuesto.otros_costes || 0)) | number: '1.2-2'
+                  (presupuesto.coste_materiales || 0) + (presupuesto.otros_costes || 0)
+                    | number: '1.2-2'
                 }}€
               </p>
             </div>
@@ -382,7 +385,7 @@
                 Taller ({{ totalMinutosFabricacion }}m)
               </p>
               <p class="text-xl font-bold text-blue-700">
-                {{ (presupuesto.coste_mano_obra || 0) | number: '1.2-2' }}€
+                {{ presupuesto.coste_mano_obra || 0 | number: '1.2-2' }}€
               </p>
             </div>
             <div class="min-w-fit border-l border-slate-200 pl-4 sm:pl-8">
@@ -390,7 +393,7 @@
                 TOTAL A FACTURAR
               </p>
               <p class="text-3xl sm:text-4xl font-black text-slate-900">
-                {{ (presupuesto.precio_final || 0) | number: '1.2-2' }}€
+                {{ presupuesto.precio_final || 0 | number: '1.2-2' }}€
               </p>
             </div>
           </div>
