@@ -1,7 +1,32 @@
 <div class="h-screen bg-slate-50 flex font-sans overflow-hidden">
-  <app-barra-lateral />
+  @if (menuMovilAbierto) {
+    <div
+      class="fixed inset-0 z-20 bg-slate-950/50 backdrop-blur-[2px] md:hidden"
+      (click)="cerrarMenuMovil()"
+    ></div>
+  }
+
+  <app-barra-lateral
+    [menuMovilAbierto]="menuMovilAbierto"
+    (cerrarMenu)="cerrarMenuMovil()"
+  />
 
   <main class="flex-1 min-w-0 overflow-hidden">
+    <header class="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden">
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm"
+        (click)="abrirMenuMovil()"
+        aria-label="Abrir menú"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+      <div class="min-w-0">
+        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Castilfac</p>
+        <p class="text-sm font-bold text-slate-900 truncate">Panel de operario</p>
+      </div>
+    </header>
+
     <router-outlet />
   </main>
 </div>
