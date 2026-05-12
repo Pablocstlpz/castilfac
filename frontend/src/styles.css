@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @config "../tailwind.config.js";
-@import "sweetalert2/dist/sweetalert2.min.css";
+@import 'sweetalert2/dist/sweetalert2.min.css';
 
 @layer base {
   html,
@@ -111,12 +111,12 @@
     text-align: right;
   }
 
-  .mobile-card-list td[data-label="Acciones"] {
+  .mobile-card-list td[data-label='Acciones'] {
     justify-content: flex-end;
   }
 
-  .mobile-card-list td[data-label="Acciones"]::before {
-    content: "";
+  .mobile-card-list td[data-label='Acciones']::before {
+    content: '';
     display: none;
   }
 
