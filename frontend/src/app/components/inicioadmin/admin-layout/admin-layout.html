@@ -6,13 +6,12 @@
     ></div>
   }
 
-  <app-barra-lateral
-    [menuMovilAbierto]="menuMovilAbierto"
-    (cerrarMenu)="cerrarMenuMovil()"
-  />
+  <app-barra-lateral [menuMovilAbierto]="menuMovilAbierto" (cerrarMenu)="cerrarMenuMovil()" />
 
   <main class="flex-1 min-w-0 overflow-hidden">
-    <header class="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden">
+    <header
+      class="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden"
+    >
       <button
         type="button"
         class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm"
