@@ -1,4 +1,4 @@
-<div class="flex-1 bg-slate-50 min-h-screen p-4 sm:p-8 font-sans">
+<div class="flex-1 bg-slate-50 min-h-screen p-5 sm:p-8 font-sans">
   @if (cliente()) {
     <div
       class="max-w-5xl mx-auto mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
@@ -160,7 +160,7 @@
             >
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="mobile-card-list w-full text-left">
               <thead class="bg-slate-50">
                 <tr>
                   <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">
@@ -176,13 +176,13 @@
               <tbody class="divide-y divide-slate-50">
                 @for (pedido of pedidosCliente().slice(0, 5); track pedido.id) {
                   <tr class="hover:bg-slate-50 transition-all">
-                    <td class="px-6 py-4 text-sm font-bold text-slate-700">
+                    <td data-label="Referencia" class="px-6 py-4 text-sm font-bold text-slate-700">
                       {{ pedido.numero_pedido }}
                     </td>
-                    <td class="px-6 py-4 text-xs text-slate-500">
+                    <td data-label="Fecha" class="px-6 py-4 text-xs text-slate-500">
                       {{ pedido.fecha_pedido | date: 'dd MMM yyyy' }}
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Estado" class="px-6 py-4">
                       <span
                         [class]="
                           'px-2 py-0.5 rounded-full text-[9px] font-black ' +
@@ -191,7 +191,10 @@
                         >{{ pedido.estado_fabricacion | uppercase }}</span
                       >
                     </td>
-                    <td class="px-6 py-4 text-sm font-black text-slate-800 text-right">
+                    <td
+                      data-label="Total"
+                      class="px-6 py-4 text-sm font-black text-slate-800 text-right"
+                    >
                       {{ pedido.importe_acordado | number: '1.2-2' }} €
                     </td>
                   </tr>
