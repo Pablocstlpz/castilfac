@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-sobrenosotros',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './sobrenosotros.html',
   styleUrl: './sobrenosotros.css',
 })
