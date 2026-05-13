@@ -90,13 +90,13 @@ export class GestionPersonal {
         error: (err: Error) => {
           void Swal.fire({
             title: 'Error',
-            text: err.message ?? 'No se pudo eliminar el empleado.',
+            text: err.message ?? 'No se pudo eliminar el empleado ya que hay datos asociados a él.',
             icon: 'error',
-            confirmButtonColor: '#2563eb',
-          });
-        },
+              confirmButtonColor: '#2563eb',
+            });
+          },
+        });
       });
-    });
   }
 
   //funcion para crear un usuario
