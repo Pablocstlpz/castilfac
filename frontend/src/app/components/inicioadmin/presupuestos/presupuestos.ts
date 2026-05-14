@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { Presupuestos as PresupuestosService } from '../../../services/presupuestos';
 import { ClientesServices } from '../../../services/clientes';
 import { Authentication } from '../../../services/authentication';
+import { PdfService } from '../../../services/pdf';
 import { Presupuesto } from '../../../interfaces/presupuesto';
 import { Cliente } from '../../../interfaces/cliente';
 
@@ -20,6 +21,7 @@ export class Presupuestos {
   private presupuestosService = inject(PresupuestosService);
   private clientesServices = inject(ClientesServices);
   private authentication = inject(Authentication);
+  private pdfService = inject(PdfService);
   private router = inject(Router);
 
   public presupuestos = signal<Presupuesto[]>([]);
@@ -103,5 +105,12 @@ export class Presupuestos {
 
   verDetalle(id: number): void {
     this.router.navigate(['/inicioadmin/presupuestos/detalle-presupuesto', id]);
+  }
+
+  descargarPDF(id: number): void {
+    this.presupuestosService.getPresupuesto(id).subscribe({
+      next: (pres) => this.pdfService.generarHojaFabricacion(pres, []),
+      error: (err) => console.error('Error al cargar presupuesto para PDF:', err),
+    });
   }
 }

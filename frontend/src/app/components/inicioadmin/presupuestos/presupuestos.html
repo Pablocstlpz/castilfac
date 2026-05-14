@@ -215,8 +215,9 @@
                     <mat-icon class="text-[20px]">visibility</mat-icon>
                   </button>
                   <button
-                    class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                    title="Descargar PDF"
+                    (click)="descargarPDF(p.id)"
+                    class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Descargar Hoja de Fabricacion"
                   >
                     <mat-icon class="text-[20px]">picture_as_pdf</mat-icon>
                   </button>
