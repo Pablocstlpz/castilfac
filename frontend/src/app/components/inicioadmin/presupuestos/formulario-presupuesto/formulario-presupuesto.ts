@@ -10,12 +10,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Cliente } from '../../../../interfaces/cliente';
 import { MaterialConPrecio } from '../../../../interfaces/material';
 import { Presupuesto } from '../../../../interfaces/presupuesto';
+import { Categoria } from '../../../../interfaces/categoria';
 
 // Tus servicios
 import { Authentication } from '../../../../services/authentication';
 import { ClientesServices } from '../../../../services/clientes';
 import { Materiales } from '../../../../services/materiales';
 import { Presupuestos } from '../../../../services/presupuestos';
+import { Categorias } from '../../../../services/categorias';
 
 @Component({
   selector: 'app-presupuesto-formulario',
@@ -34,11 +36,13 @@ export class FormularioPresupuesto implements OnInit {
   private clientesService = inject(ClientesServices);
   private materialesService = inject(Materiales);
   private presupuestosService = inject(Presupuestos);
+  private categoriasService = inject(Categorias); // Inyectamos el servicio de categorías
   private snackBar = inject(MatSnackBar);
 
   // Arrays tipados con tus interfaces
   public clientesLista: Cliente[] = [];
   public materialesLista: MaterialConPrecio[] = [];
+  public categoriasLista: Categoria[] = []; // Lista para el select de tipos de producto
 
   public precioHoraTaller: number = 30;
   public totalMinutosFabricacion: number = 0;
@@ -99,6 +103,11 @@ export class FormularioPresupuesto implements OnInit {
     this.materialesService
       .getMaterialesConPrecioEmpresa(empresaId)
       .subscribe((data) => (this.materialesLista = data));
+
+    // Cargamos las categorías activas
+    this.categoriasService.getCategorias().subscribe((data) => {
+      this.categoriasLista = data.filter((c) => c.activo !== false);
+    });
   }
 
   cargarPresupuesto(id: number): void {
@@ -126,11 +135,9 @@ export class FormularioPresupuesto implements OnInit {
     });
   }
 
-  // --- AUTOMATIZACIÓN DEL DESCUENTO DEL CLIENTE ---
   onClienteChange(): void {
     const clienteSel = this.clientesLista.find((c) => c.id == this.presupuesto.cliente_id);
     if (clienteSel) {
-      // Si el cliente tiene un descuento en su ficha, se aplica automáticamente
       this.presupuesto.descuento_aplicado = clienteSel.descuento_fijo || 0;
       this.presupuesto.motivo_descuento =
         this.presupuesto.descuento_aplicado > 0 ? 'Descuento comercial por ficha de cliente' : '';
@@ -138,10 +145,10 @@ export class FormularioPresupuesto implements OnInit {
     }
   }
 
-  // --- LÓGICA DE ELEMENTOS ---
   agregarElemento(): void {
     this.presupuesto.elementos.push({
       descripcion: '',
+      tipo_producto: null, // Se inicializa a null para que el usuario lo seleccione
       medida_ancho: 1,
       medida_alto: 1,
       cantidad: 1,
@@ -159,7 +166,6 @@ export class FormularioPresupuesto implements OnInit {
     this.recalcularTodo();
   }
 
-  // --- LÓGICA DE MATERIALES ---
   agregarMaterial(elemento: any, materialId: string): void {
     const matId = parseInt(materialId);
     if (!matId) return;
@@ -185,7 +191,6 @@ export class FormularioPresupuesto implements OnInit {
     this.recalcularTodo();
   }
 
-  // --- MOTOR DE CÁLCULO ---
   recalcularTodo(): void {
     let costeMatTotal = 0;
     this.totalMinutosFabricacion = 0;
@@ -228,7 +233,6 @@ export class FormularioPresupuesto implements OnInit {
       (this.presupuesto.coste_mano_obra || 0) +
       otrosCostes;
 
-    // Rentabilidad y Descuentos
     const beneficio = this.presupuesto.porcentaje_beneficio || 0;
     this.presupuesto.precio_sin_descuento = subtotal * (1 + beneficio / 100) || 0;
 
@@ -237,7 +241,6 @@ export class FormularioPresupuesto implements OnInit {
       (this.presupuesto.precio_sin_descuento || 0) * (1 - descuento / 100) || 0;
   }
 
-  // --- GUARDADO EXACTAMENTE COMO LO HACES EN CLIENTES ---
   onSubmit(): void {
     if (!this.presupuesto.cliente_id || this.presupuesto.elementos.length === 0) {
       this.snackBar.open('Debes seleccionar un cliente y añadir al menos un elemento.', 'Cerrar', {
