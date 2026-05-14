@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-100 flex font-sans">
+<div class="h-screen bg-slate-100 flex font-sans">
   <main class="flex-1 flex flex-col overflow-hidden">
     <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:hidden">
       <div class="flex items-center gap-2">
@@ -53,18 +53,13 @@
                   }
                 </p>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid">
                   <button
                     class="flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 font-medium transition-colors"
+                    (click)="verHojaFabricacion(pedido.presupuesto_id)"
                   >
                     <mat-icon class="text-red-500">picture_as_pdf</mat-icon>
                     Ver Plano / PDF
-                  </button>
-                  <button
-                    class="flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
-                  >
-                    <mat-icon>precision_manufacturing</mat-icon>
-                    Hoja Fabricacion
                   </button>
                 </div>
                 <div>

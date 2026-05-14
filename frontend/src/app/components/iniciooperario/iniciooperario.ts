@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { ComprobarUsuarioEmpresa } from '../../services/comprobar-usuario-empresa';
 import { Usuario } from '../../interfaces/usuario';
 import { PedidosServices } from '../../services/pedidos';
+import { Presupuestos as PresupuestosService } from '../../services/presupuestos';
+import { PdfService } from '../../services/pdf';
 import { Pedido } from '../../interfaces/pedido';
 import { Signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,9 +23,11 @@ export class Iniciooperario {
   private router = inject(Router); // Inyectamos el  Router para poder redirigir
   private comprobarUsuarioEmpresa = inject(ComprobarUsuarioEmpresa); // Inyectamos el servicio ComprobarUsuarioEmpresa para poder utilizar sus metodos
   public usuario: Usuario = this.authentication.obtenerUsuarioSesion(); // Inyectamos el servicio Usuario para poder utilizar sus metodos
-  private pedidosServices = inject(PedidosServices); // Inyectamos el servicio PedidosServices para poder utilizar sus metodos
-  public pedidosArray = signal<Pedido[]>([]); //inyecto el array de pedidos para poder utilizarlos en el html
-  private snackBar = inject(MatSnackBar); //inyecto el servicio MatSnackBar para poder utilizar sus metodos
+  private pedidosServices = inject(PedidosServices);
+  private presupuestosService = inject(PresupuestosService);
+  private pdfService = inject(PdfService);
+  public pedidosArray = signal<Pedido[]>([]);
+  private snackBar = inject(MatSnackBar);
 
   //al cargar la pagina
   ngOnInit(): void {
@@ -43,6 +47,18 @@ export class Iniciooperario {
   obtenerPedidosEnFabricacion() {
     this.pedidosServices.getPedidosByOperario(this.usuario.id).subscribe((pedidos) => {
       this.pedidosArray.set(pedidos);
+    });
+  }
+
+  verHojaFabricacion(presupuestoId: number): void {
+    this.presupuestosService.getPresupuesto(presupuestoId).subscribe({
+      next: (pres) => this.pdfService.generarHojaFabricacion(pres, []),
+      error: () => this.snackBar.open('No se pudo cargar la hoja de fabricacion', 'Cerrar', {
+        duration: 3000,
+        panelClass: 'snackbar-error',
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+      }),
     });
   }
 
