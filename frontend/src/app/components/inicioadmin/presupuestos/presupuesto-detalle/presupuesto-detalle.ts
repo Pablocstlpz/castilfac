@@ -12,6 +12,7 @@ import { Presupuestos } from '../../../../services/presupuestos';
 import { PedidosServices } from '../../../../services/pedidos';
 import { UsuariosServices } from '../../../../services/usuarios';
 import { Authentication } from '../../../../services/authentication';
+import { PdfService } from '../../../../services/pdf';
 
 @Component({
   selector: 'app-presupuesto-detalle',
@@ -29,6 +30,7 @@ export class PresupuestoDetalle implements OnInit {
   private pedidosService = inject(PedidosServices);
   private usuariosService = inject(UsuariosServices);
   private authentication = inject(Authentication);
+  private pdfService = inject(PdfService);
 
   public presupuesto = signal<Presupuesto | null>(null);
   public operarios = signal<Usuario[]>([]);
@@ -165,7 +167,10 @@ export class PresupuestoDetalle implements OnInit {
   }
 
   exportarPDF(): void {
-    console.log('Exportando PDF...');
+    const pres = this.presupuesto();
+    if (!pres) return;
+    // El desglose ya almacena tipo_unidad, pasamos [] como lista maestra (fallback interno del servicio)
+    this.pdfService.generarHojaFabricacion(pres, []);
   }
 
   editarPresupuesto(): void {
