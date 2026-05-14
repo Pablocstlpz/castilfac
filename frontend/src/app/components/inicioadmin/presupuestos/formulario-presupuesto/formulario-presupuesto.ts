@@ -36,7 +36,7 @@ export class FormularioPresupuesto implements OnInit {
   private clientesService = inject(ClientesServices);
   private materialesService = inject(Materiales);
   private presupuestosService = inject(Presupuestos);
-  private categoriasService = inject(Categorias); // Inyectamos el servicio de categorías
+  private categoriasService = inject(Categorias);
   private snackBar = inject(MatSnackBar);
 
   // Arrays tipados con tus interfaces
