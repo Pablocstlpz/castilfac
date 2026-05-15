@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: castilfac_db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: castilfac
+    volumes:
+      - castilfac_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: castilfac_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mariadb
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: castilfac
+      PORT: 3000
+    depends_on:
+      - mariadb
+
+  frontend:
+    build: ./frontend
+    container_name: castilfac_web
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  castilfac_data:
