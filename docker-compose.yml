@@ -19,6 +19,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      URL: https://apicastilfac.pablosrv.com
       DB_HOST: mariadb
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
