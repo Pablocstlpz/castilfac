@@ -23,6 +23,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: castilfac
       PORT: 3000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      FRONTEND_URL: https://castilfac.pablosrv.com
     depends_on:
       - mariadb
 
