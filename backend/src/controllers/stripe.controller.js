@@ -1,22 +1,21 @@
 import Stripe from 'stripe';
 import { Empresa } from '../models/empresa.model.js';
+import { empresaIdEfectivo, esSuperadmin } from "../utils/tenant.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const crearSesionCheckout = async (req, res) => {
   try {
-    //recojo el id de la empresa del body
-    const { empresa_id } = req.body;
+    //empresa_id se toma del JWT (no del body) para que un usuario no pueda
+    //crear una sesion de checkout pagando para OTRA empresa.
+    const empresa_id = empresaIdEfectivo(req);
 
-    //valido que el id de la empresa sea requerido
     if (!empresa_id) {
-      return res.status(400).json({ message: "El ID de empresa es requerido" });
+      return res.status(400).json({ message: "Empresa no identificada" });
     }
 
-    //busco la empresa por el id
     const empresa = await Empresa.findByPk(empresa_id);
 
-    //valido que la empresa exista
     if (!empresa) {
       return res.status(404).json({ message: "Empresa no encontrada" });
     }
@@ -136,6 +135,17 @@ export const verificarSesionPago = async (req, res) => {
     //valido que la sesion tenga empresa asociada
     if (!empresa_id) {
       return res.status(400).json({ message: "Sesión sin empresa asociada" });
+    }
+
+    //Tenant: el usuario solo puede verificar sesiones de SU empresa. Asi un atacante
+    //con un session_id ajeno no puede gatillar la activacion de suscripcion de otro.
+    if (
+      !esSuperadmin(req) &&
+      String(empresa_id) !== String(req.user.empresa_id)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Sesion no asociada a tu empresa" });
     }
 
     //busco la empresa por el id

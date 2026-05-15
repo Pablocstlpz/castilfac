@@ -7,6 +7,11 @@ import { Cliente } from "../models/cliente.model.js";
 import { Elemento } from "../models/elemento.model.js";
 import { ElementoMaterial } from "../models/elementoMaterial.model.js";
 import { Material } from "../models/material.model.js";
+import {
+  assertEmpresaIdParam,
+  assertOwnsRecurso,
+  empresaIdEfectivo,
+} from "../utils/tenant.js";
 
 export const patchEstadoPresupuesto = async (req, res) => {
   try {
@@ -14,14 +19,13 @@ export const patchEstadoPresupuesto = async (req, res) => {
     const { estado } = req.body;
 
     const presupuesto = await Presupuesto.findByPk(id);
-    if (!presupuesto) {
-      return res.status(404).json({ message: "Presupuesto no encontrado" });
-    }
+    //Tenant: el presupuesto debe ser de la empresa del JWT.
+    if (!assertOwnsRecurso(req, res, presupuesto)) return;
 
     await presupuesto.update({ estado, fecha_actualizacion: new Date() });
     res.status(200).json({ message: "Estado actualizado correctamente" });
   } catch (error) {
-    console.log(error);
+    console.error("[patchEstadoPresupuesto] error:", error);
     res.status(500).json({ message: "Error al actualizar el estado" });
   }
 };
@@ -31,9 +35,7 @@ export const getPresupuestoById = async (req, res) => {
     const { id } = req.params;
 
     const presupuesto = await Presupuesto.findByPk(id);
-    if (!presupuesto) {
-      return res.status(404).json({ message: "Presupuesto no encontrado" });
-    }
+    if (!assertOwnsRecurso(req, res, presupuesto)) return;
 
     const cliente = await Cliente.findByPk(presupuesto.cliente_id, {
       attributes: ["nombre_empresa_o_particular"],
@@ -121,20 +123,18 @@ export const getPresupuestoById = async (req, res) => {
 
 export const getPresupuestos = async (req, res) => {
   try {
+    //Tenant: el :id es empresa_id en /empresas/:id/presupuestos.
+    if (!assertEmpresaIdParam(req, res, "id")) return;
+
     const { id } = req.params;
     const presupuestos = await Presupuesto.findAll({
       where: { empresa_id: id },
     });
 
-    if (!presupuestos) {
-      return res
-        .status(404)
-        .json({ message: "No se encontraron presupuestos para esta empresa" });
-    }
-
+    //lista vacia -> 200 + [] (antes daba 404 erroneamente)
     res.status(200).json(presupuestos);
   } catch (error) {
-    console.error(error);
+    console.error("[getPresupuestos] error:", error);
     res.status(500).json({ message: "Error al obtener los presupuestos" });
   }
 };
@@ -145,7 +145,6 @@ export const createPresupuesto = async (req, res) => {
 
   try {
     const {
-      empresa_id,
       usuario_id,
       cliente_id,
       numero_presupuesto,
@@ -164,6 +163,10 @@ export const createPresupuesto = async (req, res) => {
       elementos,
     } = req.body;
 
+    //empresa_id se toma del JWT, no del body, para evitar crear presupuestos
+    //en otras empresas.
+    const empresa_id = empresaIdEfectivo(req);
+
     // Validaciones
     if (!empresa_id || !cliente_id || !usuario_id || !numero_presupuesto) {
       await transaccion.rollback();
@@ -171,8 +174,15 @@ export const createPresupuesto = async (req, res) => {
         .status(400)
         .json({
           message:
-            "Faltan campos obligatorios (empresa_id, cliente_id, usuario_id, numero_presupuesto)",
+            "Faltan campos obligatorios (cliente_id, usuario_id, numero_presupuesto)",
         });
+    }
+
+    //El cliente al que se asocia el presupuesto debe ser de la propia empresa.
+    const clienteRel = await Cliente.findByPk(cliente_id, { transaction: transaccion });
+    if (!clienteRel || String(clienteRel.empresa_id) !== String(empresa_id)) {
+      await transaccion.rollback();
+      return res.status(400).json({ message: "Cliente invalido para esta empresa" });
     }
 
     // 1. Crear cabecera
@@ -292,6 +302,33 @@ export const updatePresupuesto = async (req, res) => {
     if (!presupuesto) {
       await transaccion.rollback();
       return res.status(404).json({ message: "Presupuesto no encontrado" });
+    }
+
+    //Tenant: el presupuesto debe pertenecer a la empresa del JWT.
+    //Hacemos el chequeo a mano (en vez de assertOwnsRecurso) porque tenemos
+    //transaccion abierta y hay que rollbackearla antes de responder.
+    if (
+      req.user?.rol !== "superadmin" &&
+      String(presupuesto.empresa_id) !== String(req.user.empresa_id)
+    ) {
+      await transaccion.rollback();
+      return res.status(404).json({ message: "Presupuesto no encontrado" });
+    }
+
+    //Si llega cliente_id en el body, validamos que el cliente sea de la misma empresa.
+    if (cliente_id) {
+      const clienteRel = await Cliente.findByPk(cliente_id, {
+        transaction: transaccion,
+      });
+      if (
+        !clienteRel ||
+        String(clienteRel.empresa_id) !== String(presupuesto.empresa_id)
+      ) {
+        await transaccion.rollback();
+        return res
+          .status(400)
+          .json({ message: "Cliente invalido para esta empresa" });
+      }
     }
 
     // 1. Actualizar datos de cabecera

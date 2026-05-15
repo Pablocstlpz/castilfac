@@ -1,8 +1,8 @@
-# ✅ Solución a la Auditoría — Bloque 1
+# ✅ Solución a la Auditoría — Bloques 1 y 2
 
 > **Fecha**: 2026-05-15
-> **Bloque aplicado**: 🔴 Bloque 1 — *Detener la hemorragia* (auditoria.md §5)
-> **Estado**: Implementado. La API ya exige JWT en todas las rutas operativas; los hashes y tokens internos dejan de viajar al cliente; el registro ya no permite auto-activarse la suscripción.
+> **Bloques aplicados**: 🔴 Bloque 1 — *Detener la hemorragia* y 🟠 Bloque 2 — *Tenant isolation* (auditoria.md §5)
+> **Estado**: Implementado. La API ya exige JWT en todas las rutas operativas; los hashes y tokens internos dejan de viajar al cliente; el registro ya no permite auto-activarse la suscripción; **un usuario solo puede leer/modificar recursos de su propia empresa**.
 
 Este archivo documenta uno a uno los cambios aplicados, qué hace cada uno y por qué.
 
@@ -205,9 +205,9 @@ Esto resuelve **CRIT-01** (la API ya no es pública) y **CRIT-06** (`checkSuscri
 
 ---
 
-## 5. Qué queda fuera (lo aborda el Bloque 2/3/4 del plan)
+## 5. Qué queda fuera del Bloque 1 (se aborda más abajo o en Bloques 3/4)
 
-- **Tenant isolation** (CRIT-04): un admin de empresa A puede aún pedir recursos de empresa B con su JWT válido. Lo resolverá el helper `assertEmpresa(req, recurso)` del **Bloque 2**.
+- ~~**Tenant isolation** (CRIT-04)~~ → resuelto en **Bloque 2** (sección 7 de este documento).
 - **Validators**: se mantienen los `cursos.validator.js` zombie. Se limpian en el **Bloque 3**.
 - **Bug `formulario-usuario.ts` (hash en el input password)**: pendiente del **Bloque 3**.
 - **Rate limiting, helmet, bcrypt 12, CORS con origin restringido**: **Bloque 4**.
@@ -215,8 +215,152 @@ Esto resuelve **CRIT-01** (la API ya no es pública) y **CRIT-06** (`checkSuscri
 
 ---
 
-## 6. Riesgos conocidos del cambio
+## 6. Riesgos conocidos del cambio (Bloque 1)
 
 - **Sesiones existentes**: los usuarios que tenían sesión abierta antes del despliegue NO tienen JWT en `sessionStorage` → su próxima petición autenticada recibe 401 y el interceptor los lleva a `/sesioncerrada`. Es el comportamiento esperado, sólo hay que avisar.
 - **TTL del access token**: 8 h. Aceptable mientras no haya refresh. Si quieres reducirlo a 15 min, hay que implementar el refresh flow antes (ya está la función `generarRefreshToken` lista).
 - **Webhook de Stripe**: sigue público (correcto). Continúa montado dos veces (en `app.js` y en `stripe.route.js`) — la primera registro gana y la segunda se ignora. No es un bug, pero conviene limpiar en el Bloque 4.
+
+---
+
+## 7. Bloque 2 — Tenant isolation
+
+> **Objetivo**: que un usuario con un JWT válido no pueda leer, modificar ni borrar recursos de otra empresa. Antes del Bloque 1 cualquiera podía; tras el Bloque 1 sólo lo podía hacer un usuario logado de cualquier empresa. Tras el Bloque 2 cada usuario queda confinado a su `empresa_id`.
+
+### 7.0 Idea general
+
+Se introduce un helper compartido [`backend/src/utils/tenant.js`](backend/src/utils/tenant.js) con tres funciones que cubren los tres patrones que aparecen una y otra vez en los controladores:
+
+1. **`assertEmpresaIdParam(req, res, nombreParam)`** — la URL trae `:empresa_id` (o `:id` cuando el endpoint es "por empresa"). Comprueba que coincide con `req.user.empresa_id`. Si no, devuelve 403.
+2. **`assertOwnsRecurso(req, res, recurso)`** — tras un `findByPk(...)`, valida que el recurso pertenece a la empresa del JWT. Si no, devuelve **404** a propósito (en vez de 403) para no filtrar la existencia de IDs ajenos.
+3. **`empresaIdEfectivo(req)`** — al crear recursos, se ignora cualquier `empresa_id` que venga del body y se usa el del JWT. Excepción: `superadmin` puede pasarlo explícitamente.
+
+Y un cuarto helper auxiliar:
+4. **`esSuperadmin(req)`** — `req.user.rol === 'superadmin'`, usado para los *bypasses* legítimos.
+
+Todos los helpers son *fail-safe*: tras detectar el problema, envían la respuesta de error y devuelven `false`. El controlador hace `if (!assertX(...)) return;` y se evita una ráfaga de `if/else` anidados.
+
+### 7.1 [`backend/src/controllers/clientes.controller.js`](backend/src/controllers/clientes.controller.js) (reescrito)
+- `getClientesByEmpresa`: `assertEmpresaIdParam(req, res, "empresa_id")` antes de leer.
+- `getClienteById` / `updateCliente` / `deleteCliente`: `assertOwnsRecurso(req, res, cliente)` tras el `findByPk`.
+- `addCliente`: ignora `empresa_id` del body; usa `empresaIdEfectivo(req)`.
+- **Resuelve el comentario `//FALTAN VALIDACIONES`** del fichero original con un único validador centralizado `validarPayloadCliente(payload, { paraCrear })` que cubre:
+  - `tipo_cliente` ∈ `['particular','empresa','vip','mayorista']`.
+  - `nombre_empresa_o_particular`: 1–255 chars.
+  - `email`: ≤ 255 chars y contiene `@`.
+  - `telefono`: regex `^\+?[1-9]\d{6,14}$`.
+  - `nif_cif`: regex permisiva alfanumérica 8–12 (cubre DNI/NIE/CIF, no descartamos clientes particulares).
+  - `descuento_fijo`: 0–100.
+  - `direccion`: ≤ 500 chars.
+- Listados vacíos ahora devuelven **200 + `[]`** (antes devolvían 404, lo que tiraba el cliente HTTP del frontend).
+
+### 7.2 [`backend/src/controllers/pedidos.controller.js`](backend/src/controllers/pedidos.controller.js) (reescrito)
+Patrón complejo: las URLs mezclan `:id` que tan pronto es pedido, como operario, como cliente, como empresa.
+- `getPedidoById` / `updatePedido` / `deletePedido` / `marcarComoFabricado`: `assertOwnsRecurso(req, res, pedido)` tras el `findByPk`.
+- `getPedidosByEmpresa` / `getFinanzasByEmpresa`: el `:id` es empresa_id → `assertEmpresaIdParam(req, res, "id")`.
+- `getPedidosByOperario` / `getPedidosHistorialByOperario`:
+  - Validan que el operario referenciado pertenezca a la misma empresa (`validarOperarioDeMiEmpresa`).
+  - **Extra**: si el solicitante tiene rol `operario`, sólo puede ver SUS propios pedidos — antes podía pedir el listado de cualquier otro operario de su empresa pasándole otro id.
+- `getPedidosByCliente`: valida que el cliente sea de mi empresa (`validarClienteDeMiEmpresa`).
+- `existePedidoDePresupuesto`: si el pedido encontrado no es de mi empresa, devuelve `{ existe: false }` (en vez de filtrar que sí existe en otra empresa).
+- `createPedido`:
+  - `empresa_id` viene del JWT, no del body.
+  - Valida que el `cliente_id` y el `operario_asignado_id` (si llega) son de la misma empresa antes de crear.
+- `updatePedido`:
+  - Idem: si cambias `cliente_id` o `operario_asignado_id`, deben ser de la misma empresa que el pedido.
+
+### 7.3 [`backend/src/controllers/presupuestos.controller.js`](backend/src/controllers/presupuestos.controller.js)
+- `patchEstadoPresupuesto` / `getPresupuestoById`: `assertOwnsRecurso(req, res, presupuesto)`.
+- `getPresupuestos` (`GET /empresas/:id/presupuestos`): `assertEmpresaIdParam(req, res, "id")`. Lista vacía → 200 + `[]`.
+- `createPresupuesto`:
+  - `empresa_id` se toma del JWT (`empresaIdEfectivo(req)`).
+  - Se valida que el `cliente_id` referenciado sea de la misma empresa antes de abrir la transacción.
+- `updatePresupuesto`:
+  - Chequeo de pertenencia *en línea* (no podemos usar `assertOwnsRecurso` porque tenemos una transacción abierta y hay que hacer `rollback` antes de responder).
+  - Si el body incluye `cliente_id`, se valida que sea de la misma empresa que el presupuesto.
+
+### 7.4 [`backend/src/controllers/materiales.controller.js`](backend/src/controllers/materiales.controller.js)
+Todas las rutas ya llevaban `:empresa_id` en la URL — añadimos `assertEmpresaIdParam(req, res, "empresa_id")` al principio de cada handler: `obtenerMateriales`, `obtenerMaterialesConPrecioEmpresa`, `obtenerMaterialPorId`, `toggleActivoMaterial`, `crearMaterial` (con `rollback` previo a la respuesta), `actualizarMaterial`, `eliminarMaterial`. Listas vacías → 200 + `[]`.
+
+### 7.5 [`backend/src/controllers/preciosEmpresa.controller.js`](backend/src/controllers/preciosEmpresa.controller.js)
+- `getPrecioEmpresa`: `assertEmpresaIdParam(req, res, "id")`.
+- `actualizarPrecioPvp`: `empresa_id` se toma del JWT (antes venía del body — un body manipulado podía actualizar precios de otra empresa). Además se valida que el `material_id` recibido pertenezca a la misma empresa antes de crear el `PrecioEmpresa` y el registro de historial.
+
+### 7.6 [`backend/src/controllers/historialPreciosEmpresa.controller.js`](backend/src/controllers/historialPreciosEmpresa.controller.js)
+Antes devolvía **el historial completo del SaaS** a cualquier usuario autenticado. Ahora se filtra por `empresa_id = req.user.empresa_id` (un `superadmin` ve todo). Lista vacía → 200 + `[]`.
+
+### 7.7 [`backend/src/controllers/plantillasProducto.controller.js`](backend/src/controllers/plantillasProducto.controller.js)
+- `getPlantillasProducto`: era un catálogo común; se mantiene sin filtrado pero ahora devuelve `[]` en vez de 404 si está vacío.
+- `getPlantillaProductoPorIdEmpresa`: `assertEmpresaIdParam(req, res, "id")` para que sólo veas las plantillas de tu empresa.
+
+### 7.8 [`backend/src/controllers/suscripcion.controller.js`](backend/src/controllers/suscripcion.controller.js)
+`verificarSuscripcion`: `assertEmpresaIdParam(req, res, "empresa_id")`. Antes se podía consultar el estado de la suscripción de cualquier empresa con sólo conocer su id.
+
+### 7.9 [`backend/src/controllers/stripe.controller.js`](backend/src/controllers/stripe.controller.js)
+- `crearSesionCheckout`: `empresa_id` se toma del JWT (no del body) — antes un usuario podía abrir una sesión de checkout pagando para otra empresa.
+- `verificarSesionPago`: tras recuperar la sesión de Stripe, se comprueba que `session.metadata.empresa_id` coincida con la empresa del JWT. Si no, 403 — así un atacante con un `session_id` ajeno no puede disparar la activación de suscripción de otra empresa.
+
+### 7.10 Tarea 7 del Bloque 2 — endpoints peligrosos
+- `DELETE /usuarios/correo/:correo` y `DELETE /empresas/correo/:correo` ya se cerraron a `autorizarRol(['superadmin'])` en el Bloque 1 (sección 1.8). Se mantienen así.
+- *2FA* queda fuera de scope (Bloque 4 / pendiente de decisión sobre proveedor TOTP).
+
+---
+
+## 8. Lista de archivos modificados (Bloque 2)
+
+**Backend (nuevos):**
+31. `backend/src/utils/tenant.js` — helpers de aislamiento multi-tenant.
+
+**Backend (modificados):**
+32. `backend/src/controllers/clientes.controller.js` — reescrito completo (tenant + validaciones).
+33. `backend/src/controllers/pedidos.controller.js` — reescrito completo (tenant + permisos finos por rol).
+34. `backend/src/controllers/presupuestos.controller.js`
+35. `backend/src/controllers/materiales.controller.js`
+36. `backend/src/controllers/preciosEmpresa.controller.js`
+37. `backend/src/controllers/historialPreciosEmpresa.controller.js`
+38. `backend/src/controllers/plantillasProducto.controller.js`
+39. `backend/src/controllers/suscripcion.controller.js`
+40. `backend/src/controllers/stripe.controller.js`
+
+> **Nota**: el frontend no requiere cambios para el Bloque 2. Los componentes ya pasan `empresa_id` desde `Authentication.obtenerUsuarioSesion()`, así que cuando el backend rechace una URL con un `empresa_id` ajeno, el interceptor del Bloque 1 ya redirige a `/nopermisos`.
+
+---
+
+## 9. Verificación manual del Bloque 2
+
+1. **Aislamiento de empresa**: con la sesión de un admin de empresa **A**, abre DevTools → Console y prueba:
+   ```js
+   fetch('/api/clientes/<id-empresa-B>', { headers: { Authorization: 'Bearer ' + sessionStorage.getItem('token_castilfac') }}).then(r => r.status)
+   // -> 403 (antes: 200 con los clientes de B)
+   ```
+2. **Acceso a recursos cruzados**:
+   ```js
+   // <id-cliente-de-B> debe ser un id real de un cliente de la empresa B
+   fetch('/api/clientes/id/<id-cliente-de-B>', { headers: { Authorization: 'Bearer ' + sessionStorage.getItem('token_castilfac') }}).then(r => r.status)
+   // -> 404 (no 403, para no filtrar que ese id existe)
+   ```
+3. **Body manipulado al crear**:
+   ```js
+   fetch('/api/clientes', {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/json',
+       Authorization: 'Bearer ' + sessionStorage.getItem('token_castilfac'),
+     },
+     body: JSON.stringify({ empresa_id: 99999, nombre_empresa_o_particular: 'X', tipo_cliente: 'particular' })
+   }).then(r => r.json())
+   // El cliente se crea, PERO con tu empresa_id real, no 99999.
+   ```
+4. **Validaciones del Bloque 2 (clientes)**: prueba a crear un cliente con `tipo_cliente: 'cualquier-cosa'` → 400 con mensaje claro. Con `descuento_fijo: 9999` → 400. Con `telefono: 'abc'` → 400.
+5. **Operario solo ve sus pedidos**: logado como operario id=5, prueba `GET /api/pedidos/operario/6` → 403.
+6. **Stripe**: prueba a llamar `POST /api/stripe/verificar-sesion` con un `session_id` real pero de OTRA empresa → 403.
+
+---
+
+## 10. Riesgos conocidos del Bloque 2
+
+- **Falsos 404 en superadmin**: si un superadmin pide un recurso que no existe, recibe 404 igual que si fuera de otra empresa. Es intencional: para usuarios normales evita enumerar IDs ajenos, y para superadmin el 404 sigue siendo correcto.
+- **Validaciones de `clientes`**: la regex de `nif_cif` es deliberadamente permisiva (8–12 alfanuméricos) porque los clientes pueden ser particulares (DNI), empresas (CIF) o extranjeros (NIE/VAT). Si más adelante se quiere validación estricta tipo CIF español, conviene hacerlo en el frontend con dos campos separados.
+- **`updatePresupuesto`**: el chequeo de pertenencia se hace *en línea* en vez de con `assertOwnsRecurso` porque hay transacción abierta. Es un caso aislado; el resto sigue usando el helper.
+- **`historialPreciosBase`**: no se ha tocado, lo dejamos como catálogo común a todas las empresas (es el histórico de precios *base* de los materiales del catálogo global). Si en realidad cada empresa tiene su propio catálogo base, hay que añadir `empresa_id` al modelo `HistorialPrecioBase` y filtrar como en `HistorialPrecioEmpresa`.
+- **`pedidos.controller.js` queries SQL crudas**: las consultas raw siguen siendo seguras gracias al filtro previo (`assertOwnsRecurso` o `assertEmpresaIdParam`). Sería más limpio meter el `WHERE empresa_id = ?` también dentro de la SQL, pero como ahora siempre hay un chequeo previo, el resultado neto es equivalente. Lo dejo así para no inflar el diff.

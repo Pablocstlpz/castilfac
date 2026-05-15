@@ -1,14 +1,12 @@
 import { Empresa } from '../models/empresa.model.js';
+import { assertEmpresaIdParam } from "../utils/tenant.js";
 
 export const verificarSuscripcion = async (req, res) => {
   try {
-    //recojo el id de la empresa de la URL
-    const { empresa_id } = req.params;
+    //Tenant: empresa_id de la URL debe coincidir con el del JWT (excepto superadmin).
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
 
-    //valido que el id de la empresa sea requerido
-    if (!empresa_id) {
-      return res.status(400).json({ message: "El ID de empresa es requerido" });
-    }
+    const { empresa_id } = req.params;
 
     //busco la empresa por el id
     const empresa = await Empresa.findByPk(empresa_id);

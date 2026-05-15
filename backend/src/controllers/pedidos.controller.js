@@ -1,8 +1,16 @@
 import { Pedido } from "../models/pedido.model.js";
+import { Usuario } from "../models/usuario.model.js";
+import { Cliente } from "../models/cliente.model.js";
 import { sequelize } from "../data/db.js";
+import {
+  assertEmpresaIdParam,
+  assertOwnsRecurso,
+  empresaIdEfectivo,
+  esSuperadmin,
+} from "../utils/tenant.js";
 
 const PEDIDOS_WITH_CLIENTE_SELECT = `
-    SELECT 
+    SELECT
         p.*,
         c.nombre_empresa_o_particular AS cliente_nombre,
         c.direccion AS cliente_direccion
@@ -10,26 +18,39 @@ const PEDIDOS_WITH_CLIENTE_SELECT = `
     INNER JOIN clientes c ON c.id = p.cliente_id
 `;
 
-//OBTENER TODOS LOS PEDIDOS
+//Helper local: comprueba que el usuario con id == :id pertenece a la misma empresa
+//que el del JWT. Util para getPedidosByOperario / getPedidosHistorialByOperario.
+const validarOperarioDeMiEmpresa = async (req, res) => {
+  if (esSuperadmin(req)) return true;
+  const operario = await Usuario.findByPk(req.params.id);
+  if (!operario || String(operario.empresa_id) !== String(req.user.empresa_id)) {
+    res.status(404).json({ message: "Operario no encontrado" });
+    return false;
+  }
+  return true;
+};
+
+//Idem para cliente.
+const validarClienteDeMiEmpresa = async (req, res) => {
+  if (esSuperadmin(req)) return true;
+  const cliente = await Cliente.findByPk(req.params.id);
+  if (!cliente || String(cliente.empresa_id) !== String(req.user.empresa_id)) {
+    res.status(404).json({ message: "Cliente no encontrado" });
+    return false;
+  }
+  return true;
+};
+
+//OBTENER TODOS LOS PEDIDOS (solo superadmin via autorizarRol en la ruta)
 export const getPedidos = async (req, res) => {
   try {
-    // busco todos los pedidos junto con nombre/dirección del cliente
     const [pedidos] = await sequelize.query(`
             ${PEDIDOS_WITH_CLIENTE_SELECT}
             ORDER BY p.id DESC
         `);
-
-    //valido que haya pedidos, si no hay digo que no hay
-    if (pedidos.length === 0) {
-      return res.status(404).json({ message: "No hay pedidos" });
-    }
-
-    //devuelvo los pedidos
     res.status(200).json(pedidos);
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[getPedidos] error:", error);
     res.status(500).json({ message: "Error al obtener los pedidos" });
   }
 };
@@ -37,10 +58,13 @@ export const getPedidos = async (req, res) => {
 //OBTENER PEDIDO POR SU ID
 export const getPedidoById = async (req, res) => {
   try {
-    //obtengo el id del pedido de URL
     const { id } = req.params;
 
-    // busco el pedido junto con el nombre y dirección del cliente via JOIN
+    //Buscamos primero con Sequelize para poder validar empresa antes de devolver datos.
+    const pedido = await Pedido.findByPk(id);
+    if (!assertOwnsRecurso(req, res, pedido)) return;
+
+    //Si pasa el filtro, recuperamos el row enriquecido con cliente via SQL crudo.
     const [pedidos] = await sequelize.query(
       `
             ${PEDIDOS_WITH_CLIENTE_SELECT}
@@ -49,54 +73,52 @@ export const getPedidoById = async (req, res) => {
       { replacements: [id] },
     );
 
-    //valido que exista
     if (pedidos.length === 0) {
       return res.status(404).json({ message: "Pedido no encontrado" });
     }
 
-    //devuelvo el pedido (el primero del array)
     res.status(200).json(pedidos[0]);
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[getPedidoById] error:", error);
     res.status(500).json({ message: "Error al obtener el pedido" });
   }
 };
 
-//BUSCAR PEDIDO POR OPERARIO
+//BUSCAR PEDIDOS POR OPERARIO (operarios solo ven los suyos, admins ven los de su empresa)
 export const getPedidosByOperario = async (req, res) => {
   try {
-    //obtengo el id del operario de URL
-    const { id } = req.params;
+    //Tenant: el operario pedido debe ser de la misma empresa que el del JWT.
+    if (!(await validarOperarioDeMiEmpresa(req, res))) return;
 
-    // busco los pedidos junto con nombre/dirección del cliente
+    //Si el solicitante es un operario, solo puede pedir SUS propios pedidos.
+    if (
+      req.user?.rol === "operario" &&
+      String(req.user.id) !== String(req.params.id)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Solo puedes consultar tus propios pedidos" });
+    }
+
     const [pedidos] = await sequelize.query(
       `
             ${PEDIDOS_WITH_CLIENTE_SELECT}
             WHERE p.operario_asignado_id = ? AND p.estado_fabricacion = 'en_fabricacion'
             ORDER BY p.id DESC
             `,
-      { replacements: [id] },
+      { replacements: [req.params.id] },
     );
 
-    // Sin pedidos en fabricación: lista vacía (200), no 404 — si no, el cliente HTTP falla y la UI no actualiza
-    if (pedidos.length === 0) {
-      return res.status(200).json([]);
-    }
+    if (pedidos.length === 0) return res.status(200).json([]);
 
-    //ordenar por fecha de inicio estimada
     pedidos.sort(
       (a, b) =>
         new Date(a.fecha_inicio_estimada) - new Date(b.fecha_inicio_estimada),
     );
 
-    //devuelvo los pedidos
     res.status(200).json(pedidos);
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[getPedidosByOperario] error:", error);
     res.status(500).json({
       message: "Error al obtener los pedidos asignados a este operario",
     });
@@ -106,30 +128,23 @@ export const getPedidosByOperario = async (req, res) => {
 //BUSCAR PEDIDOS POR CLIENTE
 export const getPedidosByCliente = async (req, res) => {
   try {
-    //obtengo el id del cliente de URL
-    const { id } = req.params;
+    //Tenant: el cliente debe pertenecer a mi empresa.
+    if (!(await validarClienteDeMiEmpresa(req, res))) return;
 
-    // busco los pedidos junto con nombre/dirección del cliente
     const [pedidos] = await sequelize.query(
       `
             ${PEDIDOS_WITH_CLIENTE_SELECT}
             WHERE p.cliente_id = ?
             ORDER BY p.id DESC
             `,
-      { replacements: [id] },
+      { replacements: [req.params.id] },
     );
 
-    //si no hay pedidos devuelvo array vacio para que el frontend no falle
-    if (pedidos.length === 0) {
-      return res.status(200).json([]);
-    }
+    if (pedidos.length === 0) return res.status(200).json([]);
 
-    //devuelvo los pedidos
     res.status(200).json(pedidos);
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[getPedidosByCliente] error:", error);
     res
       .status(500)
       .json({ message: "Error al obtener los pedidos de este cliente" });
@@ -139,15 +154,18 @@ export const getPedidosByCliente = async (req, res) => {
 //OBTENER DATOS FINANCIEROS DE UNA EMPRESA (con filtro temporal opcional)
 export const getFinanzasByEmpresa = async (req, res) => {
   try {
+    //Tenant: el :id es empresa_id; debe coincidir con el del JWT.
+    if (!assertEmpresaIdParam(req, res, "id")) return;
+
     const { id } = req.params;
     const { rango } = req.query;
 
     const filtroFecha =
-      rango === 'mes'
+      rango === "mes"
         ? "AND DATE(p.fecha_creacion) >= DATE_FORMAT(NOW(), '%Y-%m-01')"
-        : rango === 'anio'
+        : rango === "anio"
           ? "AND DATE(p.fecha_creacion) >= DATE_FORMAT(NOW(), '%Y-01-01')"
-          : '';
+          : "";
 
     const [pedidos] = await sequelize.query(
       `
@@ -161,18 +179,21 @@ export const getFinanzasByEmpresa = async (req, res) => {
 
     res.status(200).json(pedidos);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Error al obtener las finanzas de esta empresa' });
+    console.error("[getFinanzasByEmpresa] error:", error);
+    res
+      .status(500)
+      .json({ message: "Error al obtener las finanzas de esta empresa" });
   }
 };
 
 //BUSCAR PEDIDOS POR EMPRESA
 export const getPedidosByEmpresa = async (req, res) => {
   try {
-    //obtengo el id de la empresa de URL
+    //Tenant: el :id es empresa_id; debe coincidir con el del JWT.
+    if (!assertEmpresaIdParam(req, res, "id")) return;
+
     const { id } = req.params;
 
-    // busco los pedidos junto con nombre/dirección del cliente
     const [pedidos] = await sequelize.query(
       `
             ${PEDIDOS_WITH_CLIENTE_SELECT}
@@ -182,19 +203,9 @@ export const getPedidosByEmpresa = async (req, res) => {
       { replacements: [id] },
     );
 
-    //valido que haya pedidos, si no hay digo que no hay
-    if (pedidos.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No hay pedidos de esta empresa" });
-    }
-
-    //devuelvo los pedidos
     res.status(200).json(pedidos);
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[getPedidosByEmpresa] error:", error);
     res
       .status(500)
       .json({ message: "Error al obtener los pedidos de esta empresa" });
@@ -205,13 +216,19 @@ export const getPedidosByEmpresa = async (req, res) => {
 export const existePedidoDePresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
-
     const pedido = await Pedido.findOne({ where: { presupuesto_id: id } });
+
+    //Tenant: si existe pedido, debe ser de mi empresa para evitar filtraciones.
+    if (pedido && !esSuperadmin(req)) {
+      if (String(pedido.empresa_id) !== String(req.user.empresa_id)) {
+        return res.status(200).json({ existe: false });
+      }
+    }
 
     res.status(200).json({ existe: !!pedido });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Error al comprobar el pedido' });
+    console.error("[existePedidoDePresupuesto] error:", error);
+    res.status(500).json({ message: "Error al comprobar el pedido" });
   }
 };
 
@@ -219,7 +236,6 @@ export const existePedidoDePresupuesto = async (req, res) => {
 export const createPedido = async (req, res) => {
   try {
     const {
-      empresa_id,
       presupuesto_id,
       cliente_id,
       operario_asignado_id,
@@ -228,8 +244,28 @@ export const createPedido = async (req, res) => {
       fecha_entrega_estimada,
     } = req.body;
 
-    if (!empresa_id || !presupuesto_id || !cliente_id || !importe_acordado) {
+    if (!presupuesto_id || !cliente_id || importe_acordado === undefined) {
       return res.status(400).json({ message: "Faltan campos obligatorios" });
+    }
+
+    //empresa_id se toma del JWT, no del body.
+    const empresa_id = empresaIdEfectivo(req);
+    if (!empresa_id) {
+      return res.status(400).json({ message: "Empresa no identificada" });
+    }
+
+    //Comprobamos que cliente y operario (si vienen) son de la misma empresa.
+    const cliente = await Cliente.findByPk(cliente_id);
+    if (!cliente || String(cliente.empresa_id) !== String(empresa_id)) {
+      return res.status(400).json({ message: "Cliente invalido para esta empresa" });
+    }
+    if (operario_asignado_id) {
+      const op = await Usuario.findByPk(operario_asignado_id);
+      if (!op || String(op.empresa_id) !== String(empresa_id)) {
+        return res
+          .status(400)
+          .json({ message: "Operario invalido para esta empresa" });
+      }
     }
 
     const nuevoPedido = await Pedido.create({
@@ -247,7 +283,7 @@ export const createPedido = async (req, res) => {
 
     res.status(201).json(nuevoPedido);
   } catch (error) {
-    console.log(error);
+    console.error("[createPedido] error:", error);
     res.status(500).json({ message: "Error al crear el pedido" });
   }
 };
@@ -255,9 +291,11 @@ export const createPedido = async (req, res) => {
 //ACTUALIZAR PEDIDO
 export const updatePedido = async (req, res) => {
   try {
-    //obtengo el id del pedido de URL
     const { id } = req.params;
-    //obtengo los datos del pedido del body
+
+    const pedido = await Pedido.findByPk(id);
+    if (!assertOwnsRecurso(req, res, pedido)) return;
+
     const {
       cliente_id,
       estado_fabricacion,
@@ -271,12 +309,20 @@ export const updatePedido = async (req, res) => {
       notas_operario,
     } = req.body;
 
-    //busco el pedido por su id
-    const pedido = await Pedido.findByPk(id);
-
-    //valido que el pedido exista
-    if (!pedido) {
-      return res.status(404).json({ message: "Pedido no encontrado" });
+    //Si se cambia cliente / operario, validamos que sean de la misma empresa.
+    if (cliente_id) {
+      const cli = await Cliente.findByPk(cliente_id);
+      if (!cli || String(cli.empresa_id) !== String(pedido.empresa_id)) {
+        return res.status(400).json({ message: "Cliente invalido para esta empresa" });
+      }
+    }
+    if (operario_asignado_id) {
+      const op = await Usuario.findByPk(operario_asignado_id);
+      if (!op || String(op.empresa_id) !== String(pedido.empresa_id)) {
+        return res
+          .status(400)
+          .json({ message: "Operario invalido para esta empresa" });
+      }
     }
 
     const camposActualizar = {
@@ -306,15 +352,11 @@ export const updatePedido = async (req, res) => {
         .json({ message: "No se han enviado campos para actualizar" });
     }
 
-    //actualizo los datos del pedido
     await pedido.update(camposActualizar);
 
-    //confirmo que el pedido se ha actualizado
     res.status(200).json({ message: "Pedido actualizado correctamente" });
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[updatePedido] error:", error);
     res.status(500).json({ message: "Error al actualizar el pedido" });
   }
 };
@@ -322,26 +364,15 @@ export const updatePedido = async (req, res) => {
 //BORRAR PEDIDO
 export const deletePedido = async (req, res) => {
   try {
-    //obtengo el id del pedido
     const { id } = req.params;
 
-    //busco el pedido por su id
     const pedido = await Pedido.findByPk(id);
+    if (!assertOwnsRecurso(req, res, pedido)) return;
 
-    //valido que el pedido exista
-    if (!pedido) {
-      return res.status(404).json({ message: "Pedido no encontrado" });
-    }
-
-    //borro el pedido
     await pedido.destroy();
-
-    //confirmo que el pedido se ha borrado
     res.status(200).json({ message: "Pedido borrado correctamente" });
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[deletePedido] error:", error);
     res.status(500).json({ message: "Error al borrar el pedido" });
   }
 };
@@ -349,65 +380,53 @@ export const deletePedido = async (req, res) => {
 //MARCAR COMO FABRICADO
 export const marcarComoFabricado = async (req, res) => {
   try {
-    //obtengo el id del pedido
     const { id } = req.params;
 
-    //busco el pedido por su id
     const pedido = await Pedido.findByPk(id);
+    if (!assertOwnsRecurso(req, res, pedido)) return;
 
-    //valido que el pedido exista
-    if (!pedido) {
-      return res.status(404).json({ message: "Pedido no encontrado" });
-    }
-
-    //marco como fabricado
     pedido.estado_fabricacion = "fabricado";
-    //lo guardo
     await pedido.save();
 
-    //confirmo que el pedido se ha marcado como fabricado
     res
       .status(200)
       .json({ message: "Pedido marcado como fabricado correctamente" });
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[marcarComoFabricado] error:", error);
     res
       .status(500)
       .json({ message: "Error al marcar como fabricado el pedido" });
   }
 };
 
-//OBTENER TODOS LOS PEDIDOS DE UN OPERARIO
+//OBTENER HISTORIAL COMPLETO DE PEDIDOS DE UN OPERARIO
 export const getPedidosHistorialByOperario = async (req, res) => {
   try {
-    //obtengo el id del operario de URL
-    const { id } = req.params;
+    if (!(await validarOperarioDeMiEmpresa(req, res))) return;
 
-    //busco los pedidos junto con nombre/dirección del cliente
+    //Si el solicitante es operario, solo su propio historial.
+    if (
+      req.user?.rol === "operario" &&
+      String(req.user.id) !== String(req.params.id)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Solo puedes consultar tu propio historial" });
+    }
+
     const [pedidos] = await sequelize.query(
       `
             ${PEDIDOS_WITH_CLIENTE_SELECT}
             WHERE p.operario_asignado_id = ?
             ORDER BY p.id DESC
             `,
-      { replacements: [id] },
+      { replacements: [req.params.id] },
     );
 
-    //valido que haya pedidos, si no hay digo que no hay
-    if (pedidos.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No hay pedidos de este operario" });
-    }
-
-    //devuelvo los pedidos
+    //lista vacia -> 200 + []
     res.status(200).json(pedidos);
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    console.error("[getPedidosHistorialByOperario] error:", error);
     res
       .status(500)
       .json({ message: "Error al obtener los pedidos de este operario" });

@@ -4,9 +4,13 @@ import { Categoria } from "../models/categoria.model.js";
 import { PrecioEmpresa } from "../models/precioEmpresa.model.js";
 import { HistorialPrecioBase } from "../models/historialPrecioBase.model.js";
 import { sequelize } from "../data/db.js";
+import { assertEmpresaIdParam } from "../utils/tenant.js";
 
 export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
   try {
+    //Tenant: empresa_id de la URL debe coincidir con el del JWT.
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
+
     const { empresa_id } = req.params;
 
     const [materiales, categorias, preciosEmpresa] = await Promise.all([
@@ -40,14 +44,12 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
 
 export const obtenerMateriales = async (req, res) => {
   try {
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
     const { empresa_id } = req.params;
 
     const materiales = await Material.findAll({ where: { empresa_id, deleted_at: null } });
 
-    if (!materiales || materiales.length === 0) {
-      return res.status(404).json({ error: "No se encontraron materiales" });
-    }
-
+    //lista vacia -> 200 + []
     res.status(200).json(materiales);
   } catch (error) {
     console.error("Error al obtener materiales:", error);
@@ -57,6 +59,7 @@ export const obtenerMateriales = async (req, res) => {
 
 export const obtenerMaterialPorId = async (req, res) => {
   try {
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
     const { empresa_id, id } = req.params;
 
     const material = await Material.findOne({ where: { id, empresa_id } });
@@ -74,6 +77,7 @@ export const obtenerMaterialPorId = async (req, res) => {
 
 export const toggleActivoMaterial = async (req, res) => {
   try {
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
     const { empresa_id, id } = req.params;
 
     const material = await Material.findOne({ where: { id, empresa_id } });
@@ -95,6 +99,10 @@ export const crearMaterial = async (req, res) => {
   const transaccion = await sequelize.transaction();
 
   try {
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) {
+      await transaccion.rollback();
+      return;
+    }
     const { empresa_id } = req.params;
 
     const {
@@ -155,6 +163,7 @@ export const crearMaterial = async (req, res) => {
 
 export const actualizarMaterial = async (req, res) => {
   try {
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
     const { empresa_id, id } = req.params;
 
     const material = await Material.findOne({ where: { id, empresa_id } });
@@ -203,6 +212,7 @@ export const actualizarMaterial = async (req, res) => {
 
 export const eliminarMaterial = async (req, res) => {
   try {
+    if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
     const { empresa_id, id } = req.params;
 
     const material = await Material.findOne({ where: { id, empresa_id } });

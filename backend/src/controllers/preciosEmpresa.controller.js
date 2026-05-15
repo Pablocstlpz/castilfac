@@ -3,23 +3,27 @@ import { PrecioEmpresa } from "../models/precioEmpresa.model.js";
 import { HistorialPrecioEmpresa } from "../models/historialPrecioEmpresa.model.js";
 import { Material } from "../models/material.model.js";
 import { sequelize } from "../data/db.js";
+import {
+  assertEmpresaIdParam,
+  empresaIdEfectivo,
+} from "../utils/tenant.js";
 
 export const getPrecioEmpresa = async (req, res) => {
   try {
+    //Tenant: el :id de la URL es empresa_id; debe coincidir con el del JWT.
+    if (!assertEmpresaIdParam(req, res, "id")) return;
+
     const empresa_id = req.params.id;
 
-    //busco en la tabla por el empresa_id = idPrecio
     const precio = await PrecioEmpresa.findAll({
       where: { empresa_id: empresa_id },
     });
 
-    if (!precio) {
-      return res.status(404).json({ message: "Precio no encontrado" });
-    }
-
+    //lista vacia -> 200 + []
     res.status(200).json(precio);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[getPrecioEmpresa] error:", error);
+    res.status(500).json({ message: "Error al obtener los precios" });
   }
 };
 
@@ -29,7 +33,11 @@ export const actualizarPrecioPvp = async (req, res) => {
   const transaccion = await sequelize.transaction();
 
   try {
-    const { material_id, empresa_id, usuario_id, nuevo_precio } = req.body;
+    const { material_id, usuario_id, nuevo_precio } = req.body;
+
+    //empresa_id se toma del JWT, no del body. Esto evita que un body manipulado
+    //actualice precios de OTRA empresa.
+    const empresa_id = empresaIdEfectivo(req);
 
     // Valido que todos los campos obligatorios están presentes antes de continuar
     if (
@@ -71,7 +79,12 @@ export const actualizarPrecioPvp = async (req, res) => {
         transaction: transaccion,
       });
 
-      if (!materialEncontrado) {
+      //Tenant: el material debe pertenecer a la misma empresa, si no, 404
+      //para no filtrar la existencia de un material ajeno.
+      if (
+        !materialEncontrado ||
+        String(materialEncontrado.empresa_id) !== String(empresa_id)
+      ) {
         await transaccion.rollback();
         return res.status(404).json({ message: "Material no encontrado" });
       }
