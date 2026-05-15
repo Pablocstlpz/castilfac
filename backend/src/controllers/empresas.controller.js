@@ -247,7 +247,7 @@ export const createEmpresa = async (req, res) => {
     });
 
     //envío el email de verificación sin bloquear la respuesta
-    const urlVerificacion = `${URL}:3000/api/empresas/verificar/${token}`;
+    const urlVerificacion = `${URL}/api/empresas/verificar/${token}`;
     enviarEmailVerificacion(email, nombre_comercial, urlVerificacion);
 
     //devuelvo la empresa creada
@@ -527,7 +527,7 @@ export const reenviarVerificacionEmpresa = async (req, res) => {
     const nuevoToken = randomUUID();
     await empresa.update({ token_verificacion: nuevoToken });
 
-    const urlVerificacion = `${URL}:3000/api/empresas/verificar/${nuevoToken}`;
+    const urlVerificacion = `${URL}/api/empresas/verificar/${nuevoToken}`;
     enviarEmailVerificacion(email, empresa.nombre_comercial, urlVerificacion);
 
     res.status(200).json({ message: "Email de verificación reenviado correctamente" });
