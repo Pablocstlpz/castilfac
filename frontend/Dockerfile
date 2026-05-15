@@ -19,3 +19,14 @@ COPY --from=build /app/dist/ngproyecto/browser /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
+
+# Etapa 2: Servidor de archivos (Runtime)
+FROM nginx:alpine
+# Copiamos la nueva configuración
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiamos los archivos de la app
+COPY --from=build /app/dist/ngproyecto/browser /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
