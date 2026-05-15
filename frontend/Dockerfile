@@ -12,8 +12,8 @@ RUN npm run build -- --configuration production
 
 # Etapa 2: Servidor de archivos (Runtime)
 FROM nginx:alpine
-# Copiamos el dist generado en la etapa anterior a la carpeta de nginx
-COPY --from=build /app/dist/castilfac/browser /usr/share/nginx/html
+# CORRECCIÓN: Usamos 'ngproyecto' que es el nombre en tu angular.json
+COPY --from=build /app/dist/ngproyecto/browser /usr/share/nginx/html
 
 # Exponemos el puerto interno
 EXPOSE 80
