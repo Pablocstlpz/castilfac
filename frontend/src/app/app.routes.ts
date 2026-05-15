@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { subscriptionGuard } from './guards/subscription.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   // Lazy loading (carga diferida)
@@ -139,7 +140,7 @@ export const routes: Routes = [
   },
   {
     path: 'iniciooperario',
-    canActivate: [subscriptionGuard],
+    canActivate: [subscriptionGuard, roleGuard('operario')],
     canActivateChild: [subscriptionGuard],
     loadComponent: () =>
       import('./components/iniciooperario/operario-layout/operario-layout').then(
@@ -162,7 +163,7 @@ export const routes: Routes = [
   },
   {
     path: 'inicioadmin',
-    canActivate: [subscriptionGuard],
+    canActivate: [subscriptionGuard, roleGuard('admin')],
     canActivateChild: [subscriptionGuard],
     loadComponent: () =>
       import('./components/inicioadmin/admin-layout/admin-layout').then((m) => m.AdminLayout),
@@ -327,6 +328,7 @@ export const routes: Routes = [
   },
   {
     path: 'iniciosuperadmin',
+    canActivate: [roleGuard('superadmin')],
     loadComponent: () =>
       import('./components/iniciosuperadmin/iniciosuperadmin').then((m) => m.InicioSuperadmin),
   },

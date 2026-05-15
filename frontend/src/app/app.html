@@ -1,8 +1,11 @@
-<div class="min-h-screen flex flex-col">
-  <!--esto me ha ayudado la ia, ya que en algunas paginas el footer se quedaba mal-->
-  <app-head />
-  <main class="flex-1">
+<div [class]="esRutaProtegida() ? 'h-screen overflow-hidden' : 'min-h-screen flex flex-col'">
+  @if (!esRutaProtegida()) {
+    <app-head />
+  }
+  <main [class]="esRutaProtegida() ? 'h-full overflow-hidden' : 'flex-1'">
     <router-outlet />
   </main>
-  <app-footer />
+  @if (!esRutaProtegida()) {
+    <app-footer />
+  }
 </div>

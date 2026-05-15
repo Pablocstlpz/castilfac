@@ -5,7 +5,7 @@ import { UpperCasePipe } from '@angular/common';
 import { PedidosServices } from '../../../services/pedidos';
 import { Pedido } from '../../../interfaces/pedido';
 import { Authentication } from '../../../services/authentication';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuariosServices } from '../../../services/usuarios';
@@ -24,7 +24,6 @@ export class Pedidos {
   private authentication = inject(Authentication);
   private usuariosServices = inject(UsuariosServices);
   private clientesServices = inject(ClientesServices);
-  private router = inject(Router);
 
   private todosPedidos = signal<Pedido[]>([]);
   public usuarios = signal<Usuario[]>([]);
@@ -46,23 +45,10 @@ export class Pedidos {
     });
   });
 
-  //al cargar la pagina
   ngOnInit(): void {
-    //obtengo el usuario de la sesion
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    //si el usuario es null o no es admin ni operario
-    if (usuario === null || usuario.rol !== 'admin') {
-      //redirijo a la pagina de no autorizado
-      this.router.navigate(['/nopermisos']);
-    }
-
-    //obtengo los pedidos de la empresa y los asigno al signal de pedidos
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.obtenerPedidos(usuario.empresa_id);
-
-    //obtengo los usuarios de la empresa y los asigno al signal de usuarios
     this.cargarUsuarios(usuario.empresa_id);
-
-    //obtengo los clientes de la empresa y los asigno al signal de clientes
     this.cargarClientes(usuario.empresa_id);
   }
 

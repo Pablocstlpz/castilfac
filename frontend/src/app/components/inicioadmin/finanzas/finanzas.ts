@@ -44,11 +44,7 @@ export class Finanzas {
   });
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.cargarDatos(usuario.empresa_id, this.filtroTiempo());
   }
 

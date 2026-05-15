@@ -34,11 +34,7 @@ export class Clientes {
   });
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.cargarClientes(usuario.empresa_id);
   }
 

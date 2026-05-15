@@ -59,13 +59,6 @@ export class MaterialDetalle {
   });
 
   ngOnInit(): void {
-    //compruebo si el usuario tiene sesion y es admin
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
-    //cargo las categorias para el select
     this.cargarCategorias();
     //obtengo el id de la url para saber si es edicion o creacion
     const idParam = this.activatedRoute.snapshot.params['id'];

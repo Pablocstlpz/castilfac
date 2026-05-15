@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Authentication } from '../../services/authentication';
 import { Router } from '@angular/router';
-import { ComprobarUsuarioEmpresa } from '../../services/comprobar-usuario-empresa';
 import { Usuario } from '../../interfaces/usuario';
 import { PedidosServices } from '../../services/pedidos';
 import { Presupuestos as PresupuestosService } from '../../services/presupuestos';
@@ -19,21 +18,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrl: './iniciooperario.css',
 })
 export class Iniciooperario {
-  private authentication = inject(Authentication); // Inyectamos el servicio Authentication para poder utilizar sus metodos
-  private router = inject(Router); // Inyectamos el  Router para poder redirigir
-  private comprobarUsuarioEmpresa = inject(ComprobarUsuarioEmpresa); // Inyectamos el servicio ComprobarUsuarioEmpresa para poder utilizar sus metodos
-  public usuario: Usuario = this.authentication.obtenerUsuarioSesion(); // Inyectamos el servicio Usuario para poder utilizar sus metodos
+  private authentication = inject(Authentication);
+  private router = inject(Router);
+  public usuario: Usuario = this.authentication.obtenerUsuarioSesion()!;
   private pedidosServices = inject(PedidosServices);
   private presupuestosService = inject(PresupuestosService);
   private pdfService = inject(PdfService);
   public pedidosArray = signal<Pedido[]>([]);
   private snackBar = inject(MatSnackBar);
 
-  //al cargar la pagina
   ngOnInit(): void {
-    //compruebo a traves de la funcion para reutilizar que cree
-    this.comprobarUsuarioEmpresa.comprobarUsuarioEmpresa();
-    //obtengo los pedidos de este operario que esten en fabricacion
     this.obtenerPedidosEnFabricacion();
   }
 

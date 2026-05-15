@@ -59,12 +59,6 @@ export class ClienteFormulario {
   }
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
-
     this.activatedRoute.queryParams.subscribe((params) => {
       this.id = params['id'];
       if (this.id) {

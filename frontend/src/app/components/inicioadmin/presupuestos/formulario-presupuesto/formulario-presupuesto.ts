@@ -71,12 +71,7 @@ export class FormularioPresupuesto implements OnInit {
   };
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
-
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.cargarListas(usuario.empresa_id);
 
     this.activatedRoute.paramMap.subscribe((params) => {

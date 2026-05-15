@@ -5,7 +5,6 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { ClientesServices } from '../../../../services/clientes';
 import { PedidosServices } from '../../../../services/pedidos';
-import { Authentication } from '../../../../services/authentication';
 import { Router } from '@angular/router';
 
 @Component({
@@ -18,16 +17,8 @@ export class DetalleCliente {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
 
-  //inyectar servicios de clientes
   private clientesService = inject(ClientesServices);
-
-  //inyectar servicios de pedidos
   private pedidosService = inject(PedidosServices);
-
-  //inyectar servicios de autenticacion
-  private authentication = inject(Authentication);
-
-  //importar el router para redirigir
   private router = inject(Router);
 
   // Signal para almacenar el cliente
@@ -37,14 +28,6 @@ export class DetalleCliente {
   public pedidosCliente = signal<any[]>([]);
 
   ngOnInit(): void {
-    //compruebo que haya un usuario logueado y que sea admin
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      //redirijo a la pagina de no autorizado
-      this.router.navigate(['/nopermisos']);
-    }
-
-    // obtenemos el id del cliente de la URL
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.cargarCliente(Number(idParam));

@@ -2,7 +2,6 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { ComprobarUsuarioEmpresa } from '../../services/comprobar-usuario-empresa';
 import { Authentication } from '../../services/authentication';
 import { UsuariosServices } from '../../services/usuarios';
 import { PedidosServices } from '../../services/pedidos';
@@ -16,7 +15,6 @@ import { Presupuesto } from '../../interfaces/presupuesto';
   styleUrl: './inicioadmin.css',
 })
 export class Inicioadmin {
-  private comprobarUsuarioEmpresa = inject(ComprobarUsuarioEmpresa);
   private authentication = inject(Authentication);
   private router = inject(Router);
   private usuariosServices = inject(UsuariosServices);
@@ -60,13 +58,7 @@ export class Inicioadmin {
   });
 
   ngOnInit() {
-    this.comprobarUsuarioEmpresa.comprobarUsuarioEmpresa();
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
-
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.obtenerUsuarios(usuario.empresa_id);
     this.obtenerTrabajos(usuario.empresa_id);
     this.obtenerPresupuestos(usuario.empresa_id);

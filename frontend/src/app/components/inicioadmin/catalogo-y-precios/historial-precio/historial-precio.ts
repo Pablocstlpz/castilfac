@@ -137,14 +137,9 @@ export class HistorialPrecio {
   });
 
   ngOnInit(): void {
-    // 1. Verificamos la sesión y los permisos
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario === null || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
 
-    // 2. Leemos la URL para sacar el ID del material
+    // Leemos la URL para sacar el ID del material
     // Soporta tanto /ruta/:id como ?id=5
     const idMaterialRuta = this.route.snapshot.paramMap.get('id');
     const idMaterialQuery = this.route.snapshot.queryParamMap.get('id');

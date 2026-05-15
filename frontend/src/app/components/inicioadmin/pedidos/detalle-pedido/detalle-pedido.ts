@@ -43,20 +43,13 @@ export class DetallePedido implements OnInit {
   public mensajeExito = signal<string | null>(null);
 
   ngOnInit(): void {
-    //compruebo que haya un usuario logueado y sea admin
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (!usuario || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
 
-    //obtengo el id de la URL y cargo el pedido
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.cargarDatosPedido(Number(idParam));
     }
 
-    //cargo los usuarios de la empresa para el select de asignar operario
     this.cargarUsuariosEmpresa(usuario.empresa_id);
   }
 

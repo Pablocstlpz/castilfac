@@ -29,17 +29,6 @@
 }
 
 @media (max-width: 767px) {
-  main > * {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 5rem) !important;
-  }
-
-  main .h-screen,
-  main .min-h-screen,
-  main .h-full,
-  main .overflow-y-auto {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 5rem);
-  }
-
   .grid-cols-2,
   .grid-cols-3,
   .grid-cols-4,

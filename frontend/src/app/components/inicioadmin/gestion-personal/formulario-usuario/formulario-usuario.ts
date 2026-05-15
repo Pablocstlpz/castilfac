@@ -57,15 +57,6 @@ export class FormularioUsuario {
   }
 
   ngOnInit(): void {
-    //compruebo si hay usuario en la sesion
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    //si el usuario no es admin o no hay usuario en la sesion
-    if (usuario === null || usuario.rol !== 'admin') {
-      //redirijo a la pagina de no autorizado
-      this.router.navigate(['/nopermisos']);
-    }
-
-    //extraer parámetros de la URL
     this.activatedRoute.queryParams.subscribe((params) => {
       // Suscribimos a los cambios en los parámetros de la ruta para obtener el ID del usuario que queremos editar, si es que se proporciona. Esto nos permite cargar los datos del usuario en el formulario para su edición. Si no se proporciona un ID, asumimos que estamos creando un nuevo usuario.
       this.id = params['id']; // Asignamos el valor del ID extraído de la URL a la variable id del componente para su uso posterior, como cargar los datos del usuario o actualizarlo.

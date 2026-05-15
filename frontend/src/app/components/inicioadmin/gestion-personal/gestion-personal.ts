@@ -35,17 +35,8 @@ export class GestionPersonal {
     });
   });
 
-  //al cargar la pagina
   ngOnInit(): void {
-    //compruebo si hay usuario en la sesion
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    //si no hay usuario o no es admin
-    if (usuario === null || usuario.rol !== 'admin') {
-      //redirijo a la pagina de no autorizado
-      this.router.navigate(['/nopermisos']);
-    }
-
-    //obtengo los usuarios de la empresa y los asigno al signal de usuarios
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.obtenerUsuarios(usuario.empresa_id);
   }
 

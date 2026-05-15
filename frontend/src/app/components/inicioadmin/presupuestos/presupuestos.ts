@@ -70,11 +70,7 @@ export class Presupuestos {
   });
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (!usuario || usuario.rol !== 'admin') {
-      this.router.navigate(['/nopermisos']);
-      return;
-    }
+    const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.cargarPresupuestos(usuario.empresa_id);
     this.cargarClientes(usuario.empresa_id);
   }
