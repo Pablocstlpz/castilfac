@@ -92,6 +92,11 @@ export const getEmpresaByNif = async (req, res) => {
 export const createEmpresa = async (req, res) => {
   try {
     //recojo los datos del body
+    //NOTA DE SEGURIDAD: NO se aceptan del body:
+    //  - suscripcion_activa, fecha_vencimiento  (solo los toca el flujo de Stripe)
+    //  - activo                                  (solo lo toca un superadmin)
+    //  - email_verificado, token_verificacion    (solo el flujo de verificacion por email)
+    //Asi evitamos que un cliente se de de alta con suscripcion premium ya activada.
     const {
       nombre_comercial,
       razon_social,
@@ -103,9 +108,6 @@ export const createEmpresa = async (req, res) => {
       ciudad,
       provincia,
       logo_url,
-      fecha_vencimiento,
-      suscripcion_activa,
-      activo,
     } = req.body;
 
     //valido que todos los campos sean requeridos
@@ -220,15 +222,15 @@ export const createEmpresa = async (req, res) => {
         .json({ message: "El telefono ya esta registrado" });
     }
 
-    // Si no viene fecha_vencimiento, usar hoy + 14 días (prueba gratis)
-    const fechaVencimiento = fecha_vencimiento
-      ? new Date(fecha_vencimiento)
-      : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    //la fecha de vencimiento se calcula SIEMPRE en el servidor: hoy + 14 dias (prueba gratis)
+    //el cliente no puede ya extenderla.
+    const fechaVencimiento = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
     //genero el token de verificación
     const token = randomUUID();
 
-    //creo la empresa con email_verificado en false y el token
+    //creo la empresa con valores controlados por el servidor.
+    //suscripcion_activa se queda en false y solo el flujo de Stripe la pone a true.
     const empresa = await Empresa.create({
       nombre_comercial: nombre_comercial,
       razon_social: razon_social,
@@ -239,9 +241,10 @@ export const createEmpresa = async (req, res) => {
       codigo_postal: codigo_postal,
       ciudad: ciudad,
       provincia: provincia,
+      logo_url: logo_url,
       fecha_vencimiento: fechaVencimiento,
-      suscripcion_activa: suscripcion_activa ?? false,
-      activo: activo ?? true,
+      suscripcion_activa: false,
+      activo: true,
       email_verificado: false,
       token_verificacion: token,
     });
@@ -279,6 +282,10 @@ export const updateEmpresa = async (req, res) => {
     }
 
     //recojo los datos del body
+    //SEGURIDAD: SOLO leemos del body los campos editables por la empresa.
+    //suscripcion_activa, fecha_vencimiento, activo, email_verificado y token_verificacion
+    //los gestiona el servidor (flujo Stripe, verificacion de email, superadmin),
+    //por lo que NO se aceptan del cliente -> evita escalada de privilegios via PUT.
     const {
       nombre_comercial,
       razon_social,
@@ -289,9 +296,6 @@ export const updateEmpresa = async (req, res) => {
       codigo_postal,
       ciudad,
       provincia,
-      suscripcion_activa,
-      fecha_vencimiento,
-      activo,
       logo_url,
     } = req.body;
 
@@ -387,7 +391,10 @@ export const updateEmpresa = async (req, res) => {
         .json({ message: "La provincia debe ser una provincia valida" });
     }
 
-    //actualizo la empresa
+    //actualizo SOLO los campos editables por la empresa.
+    //Los campos de suscripcion (suscripcion_activa, fecha_vencimiento), de estado (activo)
+    //y de verificacion (email_verificado, token_verificacion) NO se tocan aqui:
+    //solo los gestionan Stripe, el flujo de verificacion de email o un superadmin.
     const empresaActualizada = await empresaExiste.update({
       nombre_comercial: nombre_comercial,
       razon_social: razon_social,
@@ -398,11 +405,8 @@ export const updateEmpresa = async (req, res) => {
       codigo_postal: codigo_postal,
       ciudad: ciudad,
       provincia: provincia,
-      suscripcion_activa: suscripcion_activa,
-      fecha_vencimiento: fecha_vencimiento,
-      activo: activo,
-      fecha_actualizacion: new Date(),
       logo_url: logo_url,
+      fecha_actualizacion: new Date(),
     });
 
     //devuelvo la empresa actualizada

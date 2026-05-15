@@ -1,25 +1,29 @@
 import { Empresa } from '../models/empresa.model.js';
 
+//middleware que comprueba si la empresa del usuario autenticado tiene suscripcion activa
+//requiere que autenticarToken se ejecute antes para tener req.user.empresa_id
 export const checkSuscripcion = async (req, res, next) => {
   try {
-    //intento obtener el id de la empresa desde los parametros, el body o la cabecera
+    //prioridad: empresa del JWT autenticado > parametros > body > cabecera
+    //asi evitamos que un usuario consulte recursos de otra empresa pasando un empresa_id distinto
     const empresa_id =
+      req.user?.empresa_id ||
       req.params.empresa_id ||
       req.params.id ||
       req.body?.empresa_id ||
       req.headers['x-empresa-id'];
 
-    //si no hay empresa_id dejo pasar la peticion
+    //si no podemos identificar empresa, denegamos por seguridad
     if (!empresa_id) {
-      return next();
+      return res.status(400).json({ message: "Empresa no identificada" });
     }
 
     //busco la empresa por el id
     const empresa = await Empresa.findByPk(empresa_id);
 
-    //si no existe la empresa dejo pasar la peticion
+    //si no existe la empresa denegamos
     if (!empresa) {
-      return next();
+      return res.status(404).json({ message: "Empresa no encontrada" });
     }
 
     //compruebo si la suscripcion esta activa
@@ -39,12 +43,11 @@ export const checkSuscripcion = async (req, res, next) => {
       }
     }
 
-    //si todo esta bien dejo pasar la peticion
+    //todo correcto, dejo pasar
     next();
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //dejo pasar la peticion para no bloquear la aplicacion
-    next();
+    //error real del servidor -> NO dejamos pasar (cerramos el fail-open)
+    console.error("[checkSuscripcion] error:", error);
+    return res.status(500).json({ message: "Error al verificar la suscripción" });
   }
 };

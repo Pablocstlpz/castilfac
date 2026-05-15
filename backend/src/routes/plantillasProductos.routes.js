@@ -4,12 +4,14 @@ import {
   getPlantillasProducto,
   getPlantillaProductoPorIdEmpresa,
 } from "../controllers/plantillasProducto.controller.js";
+import { autenticarToken } from "../middlewares/auth.middleware.js";
+import { checkSuscripcion } from "../middlewares/checkSuscripcion.middleware.js";
 
 const router = Router();
 
-// Ruta para obtener todas las plantillas de producto
+router.use(autenticarToken, checkSuscripcion);
+
 router.get("/plantillas-producto", getPlantillasProducto);
-// Ruta para obtener una plantilla de producto por ID de empresa
 router.get(
   "/plantillas-producto/empresa/:id",
   getPlantillaProductoPorIdEmpresa,

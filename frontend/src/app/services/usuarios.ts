@@ -71,9 +71,10 @@ export class UsuariosServices {
     );
   }
 
-  // El backend devuelve el objeto Usuario directamente (sin wrapper), por eso el tipo es Observable<Usuario>
-  getUsuarioCorreoContraseña(correo: string, contraseña: string): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.URL}/usuarios/login`, { correo, contraseña }, this.httpOptions).pipe(
+  // El backend ahora devuelve { accessToken, usuario } para que el frontend
+  // pueda guardar el JWT y mandarlo en cada peticion posterior (interceptor).
+  getUsuarioCorreoContraseña(correo: string, contraseña: string): Observable<{ accessToken: string; usuario: Usuario }> {
+    return this.http.post<{ accessToken: string; usuario: Usuario }>(`${this.URL}/usuarios/login`, { correo, contraseña }, this.httpOptions).pipe(
       catchError(this.handleError)
     );
   }
@@ -90,10 +91,22 @@ export class UsuariosServices {
     );
   }
 
-  loginConGoogle(credential: string): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.URL}/auth/google`, { credential }, this.httpOptions).pipe(
+  // loginGoogle devuelve la misma forma que el login tradicional: { accessToken, usuario }
+  loginConGoogle(credential: string): Observable<{ accessToken: string; usuario: Usuario }> {
+    return this.http.post<{ accessToken: string; usuario: Usuario }>(`${this.URL}/auth/google`, { credential }, this.httpOptions).pipe(
       catchError(this.handleError)
     );
+  }
+
+  // Registro inicial: crea el primer admin de una empresa recien dada de alta.
+  // Endpoint publico que reemplaza al POST /usuarios para el flujo de registro,
+  // porque POST /usuarios ahora exige JWT de admin.
+  registroInicial(usuario: Usuario): Observable<{ message: string; usuario: Usuario }> {
+    return this.http.post<{ message: string; usuario: Usuario }>(
+      `${this.URL}/usuarios/registro-inicial`,
+      usuario,
+      this.httpOptions,
+    ).pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse) {

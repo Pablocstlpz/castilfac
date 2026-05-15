@@ -10,8 +10,13 @@ import {
   actualizarMaterial,
   eliminarMaterial,
 } from "../controllers/materiales.controller.js";
+import { autenticarToken } from "../middlewares/auth.middleware.js";
+import { checkSuscripcion } from "../middlewares/checkSuscripcion.middleware.js";
 
 const router = Router();
+
+//Todas las rutas de materiales requieren JWT y suscripcion vigente.
+router.use(autenticarToken, checkSuscripcion);
 
 // Listado enriquecido con precio de empresa (para catálogo / tabla de precios)
 router.get("/materiales/empresa/:empresa_id", obtenerMaterialesConPrecioEmpresa);

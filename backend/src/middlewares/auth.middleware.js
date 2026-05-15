@@ -4,7 +4,8 @@ import jwt from 'jsonwebtoken';
 import { SECRET_KEY, REFRESH_SECRET_KEY } from '../config.js';
 
 // Tiempo de expiración de tokens
-export const ACCESS_TOKEN_EXPIRY = '15m';  // 5-15 minutos
+//8h cubre una jornada de trabajo completa sin requerir refresh todavia (Bloque 1)
+export const ACCESS_TOKEN_EXPIRY = '8h';
 export const REFRESH_TOKEN_EXPIRY = '7d';  // 7 días
 
 // Generar Access Token
@@ -26,23 +27,29 @@ export const generarRefreshToken = (payload) => {
 };
 
 
-// Verificar token
+// Verificar token (Authorization: Bearer <token>)
 export const autenticarToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
 
-  if (!authHeader){
-    return res.status(403).json({ message: "Token no proporcionado" });
+  if (!authHeader) {
+    return res.status(401).json({ message: "Token no proporcionado" });
   }
 
-  const token =  authHeader.split(" ")[1];
+  //la cabecera tiene el formato "Bearer <token>" => lo partimos y nos quedamos con el token
+  const partes = authHeader.split(" ");
+  const token = partes.length === 2 && partes[0] === "Bearer" ? partes[1] : null;
 
-  jwt.verify(token, process.env.SECRET_KEY, (err, usuario) => {
+  if (!token) {
+    return res.status(401).json({ message: "Token mal formado" });
+  }
 
+  jwt.verify(token, SECRET_KEY, (err, usuario) => {
     if (err) {
-      return res.status(403).json({ message: "Token invalido o expirado" });
+      //token expirado o invalido -> 401 para que el front pueda cerrar sesion
+      return res.status(401).json({ message: "Token invalido o expirado" });
     }
-    req.user = usuario; //contiene el contenido del payload
-    console.log(usuario);
+    //inyectamos el payload (id, rol, empresa_id) en req.user para los siguientes middlewares
+    req.user = usuario;
     next();
   });
 };
@@ -57,13 +64,15 @@ export const verificarRefreshToken = (token) => {
         throw new Error('Refresh token inválido o expirado');
     }
 };
+
 //averiguar si está autorizado según el rol
+//acepta tanto array como string -> autorizarRol('admin') o autorizarRol(['admin','superadmin'])
 export const autorizarRol = (rolesPermitidos) => {
+  const roles = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];
   return (req, res, next) => {
-    
-    if (!rolesPermitidos.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.rol)) {
       return res.status(403).json({ message: "No tienes permiso para acceder a esta ruta" });
     }
     next();
-  }
-}
+  };
+};

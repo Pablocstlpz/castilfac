@@ -62,3 +62,16 @@ export const Usuario = sequelize.define(
     timestamps: false, // ya tienes columnas de fecha propias
   }
 );
+
+//Limpieza automatica al serializar el modelo a JSON.
+//Asi cualquier res.json(usuario) o JSON.stringify(usuario) ya NO viaja con el hash bcrypt
+//ni con el token de reset, sin tener que tocar cada controlador.
+//Si necesitas el password en codigo (login), accedelo via la propiedad: usuario.password
+//porque toJSON solo afecta a la serializacion, no al objeto en memoria.
+Usuario.prototype.toJSON = function () {
+  const datos = { ...this.get() };
+  delete datos.password;
+  delete datos.reset_token;
+  delete datos.reset_token_expira;
+  return datos;
+};

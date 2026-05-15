@@ -93,7 +93,8 @@ export class Login implements AfterViewInit {
 
     this.usuarioServicios.loginConGoogle(credential).subscribe({
       next: (res) => {
-        this.authentication.guardarUsuarioSesion(res);
+        // res = { accessToken, usuario }; guardarSesion guarda ambos.
+        this.authentication.guardarSesion(res);
         setTimeout(() => {
           this.router.navigate(['/logincorrecto']);
         }, 700);
@@ -115,7 +116,8 @@ export class Login implements AfterViewInit {
 
     this.usuarioServicios.getUsuarioCorreoContraseña(correo, contraseña).subscribe({
       next: (res) => {
-        this.authentication.guardarUsuarioSesion(res);
+        // res = { accessToken, usuario }; guardarSesion guarda token + usuario.
+        this.authentication.guardarSesion(res);
         setTimeout(() => {
           this.router.navigate(['/logincorrecto']);
         }, 700);

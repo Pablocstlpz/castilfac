@@ -2,6 +2,7 @@ import { OAuth2Client } from "google-auth-library";
 import { Usuario } from "../models/usuario.model.js";
 import { Empresa } from "../models/empresa.model.js";
 import { GOOGLE_CLIENT_ID } from "../config.js";
+import { generarAccessToken } from "../middlewares/auth.middleware.js";
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
@@ -62,10 +63,17 @@ export const loginGoogle = async (req, res) => {
       }
     }
 
-    // Devolver el usuario (misma respuesta que el login tradicional)
-    res.status(200).json(usuario);
+    //genero un access token JWT igual que en el login tradicional
+    const accessToken = generarAccessToken({
+      id: usuario.id,
+      rol: usuario.rol,
+      empresa_id: usuario.empresa_id,
+    });
+
+    //devuelvo el token y el usuario (el toJSON del modelo ya filtra password / reset_token)
+    res.status(200).json({ accessToken, usuario });
   } catch (error) {
-    console.log(error);
+    console.error("[loginGoogle] error:", error);
     res.status(500).json({ message: "Error al procesar el login con Google" });
   }
 };

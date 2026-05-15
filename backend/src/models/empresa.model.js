@@ -93,3 +93,12 @@ export const Empresa = sequelize.define(
     timestamps: false, // ya tienes columnas de fecha propias
   }
 );
+
+//Limpieza automatica al serializar el modelo a JSON.
+//Evita que el token de verificacion de email se exponga por la API:
+//cualquiera que lo obtuviera podria verificar el correo de una empresa ajena.
+Empresa.prototype.toJSON = function () {
+  const datos = { ...this.get() };
+  delete datos.token_verificacion;
+  return datos;
+};

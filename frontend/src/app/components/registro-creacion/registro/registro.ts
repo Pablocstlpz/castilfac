@@ -158,11 +158,14 @@ export class Registro {
   onSubmit(): void {
     this.router.navigate(['/creacionespera']);
 
-    //cojo los datos desde los getters que el usuario ha introducido y creo un objeto de empresa
+    //SOLO mandamos campos editables por el cliente. El backend ignora suscripcion_activa,
+    //activo, email_verificado, fecha_vencimiento y token_verificacion en este endpoint
+    //para evitar escalada de privilegios (el trial gratuito y la suscripcion los gestiona
+    //el servidor desde createEmpresa y desde el webhook de Stripe).
     const empresa: Empresa = {
-      id: 0, //se asigna 0 para que el backend lo genere automaticamente ya que es autoincremental
-      fecha_registro: new Date(), //la fecha en la que se ha creado, por lo que es la actual al momento
-      fecha_actualizacion: new Date(), //la fecha en la que se ha actualizado, por lo que es la actual al momento hasta que se actualice otra vez
+      id: 0,
+      fecha_registro: new Date(),
+      fecha_actualizacion: new Date(),
       nombre_comercial: this.userForm.value.nombre_comercial,
       razon_social: this.userForm.value.razon_social,
       nif: this.userForm.value.nif,
@@ -172,105 +175,70 @@ export class Registro {
       codigo_postal: this.userForm.value.codigo_postal,
       ciudad: this.userForm.value.ciudad,
       provincia: this.userForm.value.provincia,
-      suscripcion_activa: true, //true si tiene subscripcion, false si no
-      fecha_vencimiento: new Date(new Date().setDate(new Date().getDate() + 14)), //la fecha en la que vence la suscripcion
-      activo: true, //la empresa esta activa por defecto al crearla, se puede desactivar desde el panel de administración
+      //estos cuatro los ignora el backend; los dejamos solo porque la interface Empresa
+      //sigue exigiendolos para tipado; el servidor pone los valores reales.
+      suscripcion_activa: false,
+      fecha_vencimiento: new Date(),
+      activo: true,
       logo_url: '',
     };
 
-    //creacion de la empresa
-    //le paso a la funcion de addEMpresa el objeto creado de la empresa
+    //creacion de la empresa. Ahora addEmpresa devuelve la empresa completa con su id,
+    //asi que ya no necesitamos llamar a getEmpresaByNif para resolver el id (un round-trip menos
+    //y una ruta autenticada menos en el flujo de registro).
     this.empresaServicios.addEmpresa(empresa).subscribe({
-      next: (response) => {
-        console.log(response);
+      next: (empresaCreada: any) => {
+        this.idEmpresa = empresaCreada.id;
 
-        //creacion del usuario (necesito buscar la empresa para el id de la empresa) por lo que se debe de poner en el next al ser asincrono
-        this.empresaServicios.getEmpresaByNif(this.userForm.value.nif).subscribe({
-          next: (response) => {
-            console.log(response);
-            //cuando llegue la respuesta al next, guardo el id de la empresa buscada
-            this.idEmpresa = response.id;
+        //creo el usuario admin inicial. NO mandamos password al backend dentro del objeto
+        //plantilla porque el backend ya marca rol='admin' a fuego. Solo enviamos lo minimo.
+        const usuario: Usuario = {
+          id: 0,
+          empresa_id: this.idEmpresa,
+          nombre: this.userForm.value.nombre,
+          email: this.userForm.value.emailUsuario,
+          password: this.userForm.value.password,
+          rol: 'admin',
+          fecha_creacion: new Date(),
+          fecha_actualizacion: new Date(),
+          deleted_at: null,
+        };
 
-            //creo el objeto de usuario con los datos de los getters y el id de la emoresa
-            const usuario: Usuario = {
-              id: 0, //se generara en el backend
-              empresa_id: this.idEmpresa, //ID que he guardado de la empresa buscada
-              nombre: this.userForm.value.nombre,
-              email: this.userForm.value.emailUsuario,
-              password: this.userForm.value.password,
-              rol: 'admin',
-              fecha_creacion: new Date(), //la fecha en la que se ha creado, por lo que es la actual al momento
-              fecha_actualizacion: new Date(), //la fecha en la que se ha actualizado, por lo que es la actual al momento hasta que se actualice otra vez
-              deleted_at: null, //null porque no se ha borrado
-            };
-
-            //Le paso a la funcion de crear usuario el objeto
-            this.usuarioServicios.addUsuario(usuario).subscribe({
-              next: (response) => {
-                console.log(response);
-                //guardo el email de empresa antes de resetear el formulario
-                const emailEmpresa = this.userForm.value.emailEmpresa;
-                //reseteo el formulario
-                this.userForm.reset();
-
-                //funcion timeout para esperar dos segundos
-                setTimeout(() => {
-                  //redirijo a la pantalla de verificación por email, pasando el email de la empresa
-                  this.router.navigate(['/registro-verificacion'], {
-                    state: { email: emailEmpresa }
-                  });
-                }, 700); //espera 2 segundos para que se vea la pagina de espera
-              },
-              error: (error) => {
-                //enseño error
-                console.error('Error al crear usuario:', error);
-                //funcion timeout para esperar dos segundos
-                setTimeout(() => {
-                  //si falla redirije a la creacion fallida
-                  this.router.navigate(['/creacionfallida']);
-                }, 700); //espera 2 segundos para que se vea la pagina de espera
-
-                //si falla, borro tambien la empresa creada para que no haya empresas sin admins
-                this.empresaServicios
-                  .deleteEmpresaCorreo(this.userForm.value.emailEmpresa)
-                  .subscribe({
-                    next: (response) => {
-                      console.log(response);
-                    },
-                    error: (error) => {
-                      console.error('Error al eliminar empresa:', error);
-                    },
-                  });
-              },
-            });
+        //Usamos el endpoint PUBLICO de registro inicial. POST /usuarios ahora exige JWT.
+        this.usuarioServicios.registroInicial(usuario).subscribe({
+          next: () => {
+            const emailEmpresa = this.userForm.value.emailEmpresa;
+            this.userForm.reset();
+            setTimeout(() => {
+              this.router.navigate(['/registro-verificacion'], {
+                state: { email: emailEmpresa },
+              });
+            }, 700);
           },
           error: (error) => {
-            console.error('Error al obtener empresa por NIF:', error);
-            //funcion timeout para esperar dos segundos
+            console.error('Error al crear usuario:', error);
             setTimeout(() => {
-              //si falla redirije a la creacion fallida
               this.router.navigate(['/creacionfallida']);
-            }, 700); //espera 2 segundos para que se vea la pagina de espera
+            }, 700);
 
-            //si falla, borro tambien la empresa creada buscando por su correo para que no haya empresas sin admins
-            this.empresaServicios.deleteEmpresaCorreo(this.userForm.value.emailEmpresa).subscribe({
-              next: (response) => {
-                console.log(response);
-              },
-              error: (error) => {
-                console.error('Error al eliminar empresa:', error);
-              },
-            });
+            //rollback: si falla la creacion del usuario, intentamos borrar la empresa.
+            //IMPORTANTE: deleteEmpresaCorreo ahora exige rol superadmin (JWT), por lo que
+            //en este flujo publico va a devolver 401/403. Lo dejamos como best-effort hasta
+            //que en el Bloque 4 se haga un endpoint transaccional /empresas/registro.
+            this.empresaServicios
+              .deleteEmpresaCorreo(this.userForm.value.emailEmpresa)
+              .subscribe({
+                next: () => {},
+                error: (error) => console.error('Error al eliminar empresa (best-effort):', error),
+              });
           },
         });
       },
       error: (error) => {
         console.error('Error al crear empresa:', error);
-        //funcion timeout para esperar dos segundos
         setTimeout(() => {
-          //si falla redirije a la creacion fallida
           this.router.navigate(['/creacionfallida']);
-        }, 700); //espera 2 segundos para que se vea la pagina de espera
+        }, 700);
       },
     });
   }

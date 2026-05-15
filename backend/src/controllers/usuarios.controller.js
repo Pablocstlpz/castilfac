@@ -6,6 +6,7 @@ import { Empresa } from "../models/empresa.model.js";
 import { randomBytes } from "crypto";
 import { enviarEmailRecuperacion } from "../mailer.js";
 import { FRONTEND_URL } from "../config.js";
+import { generarAccessToken } from "../middlewares/auth.middleware.js";
 
 export const getUsuarios = async (req, res) => {
   try {
@@ -569,8 +570,15 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
         .json({ message: "La empresa no ha verificado su correo electrónico. Revisa tu bandeja de entrada." });
     }
 
-    //devuelvo el usuario
-    res.status(200).json(usuario);
+    //genero un access token JWT con los datos imprescindibles para autorizar peticiones posteriores
+    const accessToken = generarAccessToken({
+      id: usuario.id,
+      rol: usuario.rol,
+      empresa_id: usuario.empresa_id,
+    });
+
+    //devuelvo el token y el usuario (el toJSON del modelo ya filtra password / reset_token)
+    res.status(200).json({ accessToken, usuario });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
     console.log(error);
@@ -581,3 +589,85 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
   }
 };
 
+//Endpoint PUBLICO de registro: crea el primer admin de una empresa recien creada.
+//Reemplaza al POST /usuarios para el flujo de registro porque POST /usuarios pasa a
+//requerir autenticacion (solo admin). Para evitar que cualquiera lo use de forma
+//abusiva imponemos tres invariantes:
+//   1. La empresa debe existir.
+//   2. La empresa NO debe tener su email verificado (sigue en flujo de alta).
+//   3. La empresa NO debe tener todavia ningun usuario asociado.
+//Ademas forzamos rol = 'admin' (ignoramos lo que mande el cliente).
+export const crearAdminInicial = async (req, res) => {
+  try {
+    const { empresa_id, nombre, email, password } = req.body;
+
+    if (!empresa_id || !nombre || !email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Todos los campos son requeridos" });
+    }
+
+    //busco la empresa por el id
+    const empresa = await Empresa.findByPk(empresa_id);
+    if (!empresa) {
+      return res.status(404).json({ message: "Empresa no encontrada" });
+    }
+
+    //solo permitimos este endpoint cuando la empresa NO esta verificada todavia
+    //(esta en el flujo de registro). Si ya esta verificada, hay que usar el flujo
+    //normal autenticado de creacion de usuarios.
+    if (empresa.email_verificado) {
+      return res
+        .status(403)
+        .json({ message: "Esta empresa ya esta verificada. Crea usuarios desde el panel de administracion." });
+    }
+
+    //solo se permite si la empresa NO tiene aun ningun usuario (registro inicial)
+    const usuariosExistentes = await Usuario.count({ where: { empresa_id } });
+    if (usuariosExistentes > 0) {
+      return res
+        .status(409)
+        .json({ message: "Esta empresa ya tiene un administrador inicial" });
+    }
+
+    if (!email.includes("@")) {
+      return res
+        .status(400)
+        .json({ message: "El email debe ser un email valido" });
+    }
+
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "La contraseña debe tener al menos 8 caracteres" });
+    }
+
+    //comprobacion de email unico (cubre tanto usuarios como empresas)
+    const existeUsuario = await Usuario.findOne({ where: { email } });
+    if (existeUsuario) {
+      return res.status(400).json({ message: "El email ya esta registrado" });
+    }
+    const existeEmpresa = await Empresa.findOne({ where: { email } });
+    if (existeEmpresa && existeEmpresa.id !== Number(empresa_id)) {
+      return res.status(400).json({ message: "El email ya esta registrado" });
+    }
+
+    //hasheo y creo. El rol se fuerza a 'admin' aunque el cliente mande otra cosa.
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const usuario = await Usuario.create({
+      empresa_id,
+      nombre,
+      email,
+      password: hashedPassword,
+      rol: "admin",
+    });
+
+    //devuelvo el usuario (el toJSON del modelo ya filtra password / reset_token)
+    res
+      .status(201)
+      .json({ message: "Admin inicial creado correctamente", usuario });
+  } catch (error) {
+    console.error("[crearAdminInicial] error:", error);
+    res.status(500).json({ message: "Error al crear el admin inicial" });
+  }
+};
