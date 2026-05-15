@@ -10,6 +10,7 @@ services:
       MARIADB_DATABASE: castilfac
     volumes:
       - castilfac_data:/var/lib/mysql
+      - /DATA:/DATA
 
   backend:
     build: ./backend
