@@ -4,7 +4,7 @@ import { Pedido } from '../interfaces/pedido';
 
 import { catchError, map, Observable, tap, throwError } from 'rxjs';
 
-import { environment } from '../../environments/enviroments';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

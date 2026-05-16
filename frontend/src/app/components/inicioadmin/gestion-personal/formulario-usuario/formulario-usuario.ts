@@ -19,6 +19,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Usuario } from '../../../../interfaces/usuario';
 import { UsuariosServices } from '../../../../services/usuarios';
 import { Authentication } from '../../../../services/authentication';
+import {
+  LIMITES,
+  REGEX_NOMBRE_PERSONA,
+} from '../../../../shared/regex';
 
 @Component({
   selector: 'app-formulario-usuario',
@@ -36,40 +40,63 @@ import { Authentication } from '../../../../services/authentication';
 })
 export class FormularioUsuario {
   public userForm!: FormGroup;
-  public hidePassword: boolean = true; // Variable para controlar la visibilidad de la contraseña
+  public hidePassword: boolean = true;
 
-  // Inyectamos el servicio Router para poder redirigir al usuario a la página de creación de un nuevo usuario cuando haga clic en el botón "Nuevo Usuario"
-  private router = inject(Router); // Inyectamos el servicio Router para poder redirigir al usuario a la página de creación de un nuevo usuario cuando haga clic en el botón "Nuevo Usuario"
-  private usuarioServicios = inject(UsuariosServices); // Inyectamos el servicio UsuariosServices para poder utilizar sus métodos y gestionar los usuarios desde este componente, como crear, actualizar o eliminar usuarios.
-  private authentication = inject(Authentication); // Inyectamos el servicio Authentication para poder gestionar la autenticación del usuario, como obtener el usuario en sesión o cerrar sesión. Esto es importante para asegurarnos de que solo los usuarios autorizados puedan acceder a este formulario y realizar acciones de gestión de usuarios.
-  private snackBar = inject(MatSnackBar); // Inyectamos el servicio MatSnackBar para mostrar notificaciones de éxito o error al crear o actualizar un usuario. Esto mejora la experiencia del usuario al proporcionar retroalimentación inmediata sobre las acciones realizadas.
-  private activatedRoute = inject(ActivatedRoute); // Inyectamos el servicio ActivatedRoute para poder obtener los parámetros de la URL
-  public id!: number; // Variable para almacenar el ID del usuario que se va a editar, si es que se proporciona en la URL. Si no se proporciona un ID, asumimos que estamos creando un nuevo usuario.
+  private router = inject(Router);
+  private usuarioServicios = inject(UsuariosServices);
+  private authentication = inject(Authentication);
+  private snackBar = inject(MatSnackBar);
+  private activatedRoute = inject(ActivatedRoute);
+
+  //Si esta seteado estamos editando; si es null/undefined estamos creando.
+  public id!: number;
 
   constructor(private fb: FormBuilder) {
+    //La contraseña arranca como REQUIRED + minLength 8 (para alinearse con el backend);
+    //al editar la desactivamos como required y la dejamos opcional para no obligar a
+    //cambiarla. Si el usuario la deja vacia, el backend mantiene la actual.
     this.userForm = this.fb.group({
-      id: [''], // Campo para el ID del usuario, se puede usar para editar un usuario existente
-      nombre: ['', [Validators.required, Validators.maxLength(100)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      id: [''],
+      nombre: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(LIMITES.NOMBRE_USUARIO_MAX),
+          Validators.pattern(REGEX_NOMBRE_PERSONA),
+        ],
+      ],
+      email: [
+        '',
+        [Validators.required, Validators.email, Validators.maxLength(LIMITES.EMAIL_MAX)],
+      ],
+      password: ['', [Validators.required, Validators.minLength(LIMITES.PASSWORD_MIN)]],
       rol: ['operario', [Validators.required]],
     });
   }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
-      // Suscribimos a los cambios en los parámetros de la ruta para obtener el ID del usuario que queremos editar, si es que se proporciona. Esto nos permite cargar los datos del usuario en el formulario para su edición. Si no se proporciona un ID, asumimos que estamos creando un nuevo usuario.
-      this.id = params['id']; // Asignamos el valor del ID extraído de la URL a la variable id del componente para su uso posterior, como cargar los datos del usuario o actualizarlo.
+      this.id = params['id'];
       if (this.id) {
+        //Modo EDICION: la contraseña pasa a ser opcional (>= 8 si llega, vacia si no).
+        //ANTES: este metodo precargaba response.password en el input, lo que mostraba
+        //el HASH bcrypt en claro y, al guardar sin cambiarlo, hacia doble-hash y rompia
+        //el login del usuario editado. Ya NO se hace.
+        this.password.clearValidators();
+        this.password.setValidators([Validators.minLength(LIMITES.PASSWORD_MIN)]);
+        this.password.updateValueAndValidity();
+
         this.usuarioServicios.getUsuario(this.id).subscribe({
           next: (response: any) => {
-            // Si la petición para obtener los datos del usuario es exitosa, se ejecuta esta función. Aquí puedes cargar los datos del usuario en el formulario para que el usuario pueda editarlos. Por ejemplo, puedes usar this.userForm.patchValue(response) para llenar el formulario con los datos del usuario obtenido de la API.
-            // Cargar los datos del usuario en el formulario para su edición
-            this.userForm.controls['id'].setValue(response.id);
-            this.userForm.controls['nombre'].setValue(response.nombre);
-            this.userForm.controls['email'].setValue(response.email);
-            this.userForm.controls['password'].setValue(response.password);
-            this.userForm.controls['rol'].setValue(response.rol ?? 'operario');
+            this.userForm.patchValue({
+              id: response.id,
+              nombre: response.nombre,
+              email: response.email,
+              rol: response.rol ?? 'operario',
+            });
+            //Importante: NO seteamos password — el backend ya filtra el hash via
+            //toJSON, pero aun asi nunca queremos precargar nada en este campo.
+            this.password.setValue('');
           },
         });
       }
@@ -102,35 +129,34 @@ export class FormularioUsuario {
       return;
     }
 
+    //En edicion: si el campo password viene vacio, NO lo enviamos al backend.
+    //updateUsuario en el backend detecta password vacio/ausente y mantiene la actual.
+    const passwordPlano = (this.userForm.value.password || '').trim();
+    const enviarPassword = !this.id || passwordPlano.length > 0;
+
     const usuarioNuevo: Usuario = {
-      id: this.userForm.value.id, // El ID se asigna solo si estamos editando un juego existente, para crear un nuevo juego el ID se generará automáticamente en el backend.
+      id: this.userForm.value.id,
       nombre: this.userForm.value.nombre,
       email: this.userForm.value.email,
-      password: this.userForm.value.password,
-      //llamo a la funcion de autentificacion que devuelve el usuario y cojo el empresa_id
+      password: enviarPassword ? passwordPlano : '',
       empresa_id: usuarioSesion.empresa_id,
       rol: this.userForm.value.rol,
-      fecha_creacion: new Date(), // Asignamos la fecha actual como fecha de creación del usuario, ya que en este formulario no se está gestionando la fecha de creación. En un escenario real, este valor podría ser generado automáticamente en el backend al crear el usuario.
-      fecha_actualizacion: new Date(), // Asignamos la fecha actual como fecha de actualización del usuario, ya que en este formulario no se está gestionando la fecha de actualización. En un escenario real, este valor podría ser generado automáticamente en el backend al actualizar el usuario.
-      deleted_at: null, // Asignamos null para indicar que el usuario no ha sido eliminado, ya que en este formulario no se está gestionando la eliminación de usuarios. En un escenario real, este valor podría ser dinámico y permitir marcar al usuario como eliminado si es necesario.
+      fecha_creacion: new Date(),
+      fecha_actualizacion: new Date(),
+      deleted_at: null,
     };
 
     if (!this.id) {
-      // Si no hay un ID en la URL, significa que estamos creando un nuevo juego, por lo que llamamos al método anadirjuego. Si hay un ID, significa que estamos editando un juego existente, por lo que llamamos al método actualizarjuego.
-      console.log('añadir');
       this.anadirUsuario(usuarioNuevo);
     } else {
-      console.log('actualizar');
       this.actualizarUsuario(usuarioNuevo);
     }
   }
 
   //funcion para añadir un usuario en la empresa
   anadirUsuario(usuarioNuevo: Usuario): void {
-    console.log(this.userForm.value);
     this.usuarioServicios.addUsuario(usuarioNuevo).subscribe({
-      next: (response) => {
-        // Mostrar también  snackbar
+      next: () => {
         this.snackBar.open('Usuario creado correctamente', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'end',
@@ -142,15 +168,23 @@ export class FormularioUsuario {
       },
       error: (error) => {
         console.error('Error al crear usuario:', error);
+        this.snackBar.open(
+          error?.message ?? 'No se ha podido crear el usuario',
+          'Cerrar',
+          {
+            duration: 5000,
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            panelClass: ['snack-error'],
+          },
+        );
       },
     });
   }
 
   actualizarUsuario(usuario: Usuario): void {
-    console.log(usuario);
     this.usuarioServicios.updateUsuario(usuario).subscribe({
-      next: (response) => {
-        // Mostrar también  snackbar
+      next: () => {
         this.snackBar.open('Usuario actualizado correctamente', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'end',
@@ -162,10 +196,8 @@ export class FormularioUsuario {
       },
       error: (error: unknown) => {
         console.error('Error al actualizar usuario:', error);
-
         const mensaje =
-          error instanceof Error &&
-          error.message.includes('sin administradores')
+          error instanceof Error && error.message.includes('sin administradores')
             ? 'No se puede dejar la empresa sin administradores. Debe haber al menos un usuario con rol administrador.'
             : error instanceof Error && error.message
               ? error.message

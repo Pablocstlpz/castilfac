@@ -7,6 +7,7 @@ import { randomBytes } from "crypto";
 import { enviarEmailRecuperacion } from "../mailer.js";
 import { FRONTEND_URL } from "../config.js";
 import { generarAccessToken } from "../middlewares/auth.middleware.js";
+import { hashPassword } from "../utils/seguridad.js";
 
 export const getUsuarios = async (req, res) => {
   try {
@@ -93,15 +94,9 @@ export const getUsuarioPorEmpresa = async (req, res) => {
 
 export const createUsuario = async (req, res) => {
   try {
-    //recojo los datos que se pasan por el body
+    //Validaciones de formato (todos requeridos, email valido, password >= 8, rol del enum)
+    //las hace validarCrearUsuario antes del controller. Aqui: solo reglas de negocio.
     const { empresa_id, nombre, email, password, rol } = req.body;
-
-    //valido que todos los campos sean requeridos
-    if (!empresa_id || !nombre || !email || !password || !rol) {
-      return res
-        .status(400)
-        .json({ message: "Todos los campos son requeridos" });
-    }
 
     //busco la empresa por el id
     const empresa = await Empresa.findByPk(empresa_id);
@@ -109,20 +104,6 @@ export const createUsuario = async (req, res) => {
     //valido que la empresa exista
     if (!empresa) {
       return res.status(404).json({ message: "Empresa no encontrada" });
-    }
-
-    //valido que el email sea un email valido
-    if (!email.includes("@")) {
-      return res
-        .status(400)
-        .json({ message: "El email debe ser un email valido" });
-    }
-
-    //valido que la contraseña tenga al menos 8 caracteres
-    if (password.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "La contraseña debe tener al menos 8 caracteres" });
     }
 
     //valido que el email no este registrado
@@ -144,7 +125,7 @@ export const createUsuario = async (req, res) => {
     }
 
     //hasheo la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     //creo el usuario
     const usuario = await Usuario.create({
@@ -169,30 +150,10 @@ export const createUsuario = async (req, res) => {
 
 export const updateUsuario = async (req, res) => {
   try {
-    //recojo el id que se pasa por la URL
+    //Validaciones de formato las hace validarActualizarUsuario antes del controller.
+    //Aqui: solo reglas de negocio (unicidad de email, ultimo admin, password fuerte).
     const { id } = req.params;
-
-    //valido que el id sea requerido
-    if (!id) {
-      return res.status(400).json({ message: "El ID es requerido" });
-    }
-
-    //recojo los datos que se pasan por el body
     const { empresa_id, nombre, email, password, rol } = req.body;
-
-    // empresa_id, nombre, email y rol obligatorios; contraseña opcional (vacía = no cambiar)
-    if (!empresa_id || !nombre || !email || !rol) {
-      return res
-        .status(400)
-        .json({ message: "empresa_id, nombre, email y rol son requeridos" });
-    }
-
-    //valido que el email sea un email valido
-    if (!email.includes("@")) {
-      return res
-        .status(400)
-        .json({ message: "El email debe ser un email valido" });
-    }
 
     //esto me ha ayudado la ia, ya que si no siempre me fallaba porque el email es el mismo y no se actualizaba
     // comprobar que el email no está usado por OTRO usuario distinto
@@ -291,7 +252,7 @@ export const updateUsuario = async (req, res) => {
         });
       }
 
-      const hashedPassword = await bcrypt.hash(passwordNueva, 10);
+      const hashedPassword = await hashPassword(passwordNueva);
 
       //actualizo el usuario incluyendo la nueva contraseña
       const usuario = await usuarioExiste.update({
@@ -429,13 +390,8 @@ export const deleteUsuarioCorreo = async (req, res) => {
 
 export const solicitarRecuperacion = async (req, res) => {
   try {
-    //recojo el email que se pasa por el body
+    //Validacion (email requerido + formato) la hace validarRecuperarPassword.
     const { email } = req.body;
-
-    //valido que el email sea requerido
-    if (!email) {
-      return res.status(400).json({ message: "El email es requerido" });
-    }
 
     //busco el usuario por su email
     const usuario = await Usuario.findOne({ where: { email } });
@@ -472,18 +428,8 @@ export const solicitarRecuperacion = async (req, res) => {
 
 export const restablecerPassword = async (req, res) => {
   try {
-    //recojo el token y la nueva contraseña que se pasan por el body
+    //Validacion (token presente + password >= 8) la hace validarRestablecerPassword.
     const { token, password } = req.body;
-
-    //valido que el token y la contraseña sean requeridos
-    if (!token || !password) {
-      return res.status(400).json({ message: "El token y la contraseña son requeridos" });
-    }
-
-    //valido que la contraseña tenga al menos 8 caracteres
-    if (password.length < 8) {
-      return res.status(400).json({ message: "La contraseña debe tener al menos 8 caracteres" });
-    }
 
     //busco el usuario por el token de restablecimiento
     const usuario = await Usuario.findOne({ where: { reset_token: token } });
@@ -501,7 +447,7 @@ export const restablecerPassword = async (req, res) => {
     }
 
     //hasheo la nueva contraseña antes de guardarla en la base de datos
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     //actualizo la contraseña del usuario y elimino el token para que no se pueda reutilizar
     await usuario.update({ password: hashedPassword, reset_token: null, reset_token_expira: null });
@@ -518,29 +464,8 @@ export const restablecerPassword = async (req, res) => {
 
 export const getUsuarioCorreoContraseña = async (req, res) => {
   try {
-    //recojo el correo y la contraseña que se pasan por el body
+    //Validacion (correo requerido + isEmail + password >= 8) la hace validarLogin.
     const { correo, contraseña } = req.body;
-
-    //valido que el correo y la contraseña sean requeridos
-    if (!correo || !contraseña) {
-      return res
-        .status(400)
-        .json({ message: "El correo y la contraseña son requeridos" });
-    }
-
-    //valido que el correo sea un email valido
-    if (!correo.includes("@")) {
-      return res
-        .status(400)
-        .json({ message: "El correo debe ser un email valido" });
-    }
-
-    //valido que la contraseña tenga al menos 8 caracteres
-    if (contraseña.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "La contraseña debe tener al menos 8 caracteres" });
-    }
 
     //busco el usuario solo por correo (la contraseña en BD esta hasheada)
     const usuario = await Usuario.findOne({ where: { email: correo } });
@@ -599,13 +524,9 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
 //Ademas forzamos rol = 'admin' (ignoramos lo que mande el cliente).
 export const crearAdminInicial = async (req, res) => {
   try {
+    //Validacion (campos requeridos, email valido, password >= 8) la hace
+    //validarRegistroInicial antes del controller.
     const { empresa_id, nombre, email, password } = req.body;
-
-    if (!empresa_id || !nombre || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Todos los campos son requeridos" });
-    }
 
     //busco la empresa por el id
     const empresa = await Empresa.findByPk(empresa_id);
@@ -630,18 +551,6 @@ export const crearAdminInicial = async (req, res) => {
         .json({ message: "Esta empresa ya tiene un administrador inicial" });
     }
 
-    if (!email.includes("@")) {
-      return res
-        .status(400)
-        .json({ message: "El email debe ser un email valido" });
-    }
-
-    if (password.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "La contraseña debe tener al menos 8 caracteres" });
-    }
-
     //comprobacion de email unico (cubre tanto usuarios como empresas)
     const existeUsuario = await Usuario.findOne({ where: { email } });
     if (existeUsuario) {
@@ -653,7 +562,7 @@ export const crearAdminInicial = async (req, res) => {
     }
 
     //hasheo y creo. El rol se fuerza a 'admin' aunque el cliente mande otra cosa.
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
     const usuario = await Usuario.create({
       empresa_id,
       nombre,

@@ -5,6 +5,8 @@ import { Usuario } from "../models/usuario.model.js";
 import { randomUUID } from "crypto";
 import { enviarEmailVerificacion } from "../mailer.js";
 import { URL, FRONTEND_URL } from "../config.js";
+import { hashPassword } from "../utils/seguridad.js";
+import { logger } from "../utils/logger.js";
 
 export const getEmpresas = async (req, res) => {
   try {
@@ -110,66 +112,11 @@ export const createEmpresa = async (req, res) => {
       logo_url,
     } = req.body;
 
-    //valido que todos los campos sean requeridos
-    if (
-      !nombre_comercial ||
-      !razon_social ||
-      !nif ||
-      !email ||
-      !telefono ||
-      !direccion ||
-      !codigo_postal ||
-      !ciudad ||
-      !provincia
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Todos los campos son requeridos" });
-    }
-
-    //valido que el email sea un email valido
-    if (!email.includes("@")) {
-      return res
-        .status(400)
-        .json({ message: "El email debe ser un email valido" });
-    }
-
-    //valido que el nif sea un CIF válido de empresa
+    //Las validaciones de formato (campos requeridos, regex de CIF/telefono/CP,
+    //caracteres de ciudad/provincia, email valido, longitudes) las hace ahora
+    //el middleware validarCrearEmpresa antes de llegar aqui. Mantenemos en este
+    //controller solo las REGLAS DE NEGOCIO (unicidad, side effects).
     const nifMayusculas = nif.toUpperCase();
-    // CIF: letra inicial + 7 dígitos + dígito o letra final
-    if (!/^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/.test(nifMayusculas)) {
-      return res
-        .status(400)
-        .json({ message: "El CIF debe ser un CIF válido de empresa" });
-    }
-
-    //valido que el telefono sea un telefono valido
-    if (!telefono.match(/^\+?[1-9]\d{6,14}$/)) {
-      return res
-        .status(400)
-        .json({ message: "El telefono debe ser un telefono valido" });
-    }
-
-    //valido que el codigo postal sea un codigo postal valido
-    if (!codigo_postal.match(/^[0-9]{5}$/)) {
-      return res
-        .status(400)
-        .json({ message: "El codigo postal debe ser un codigo postal valido" });
-    }
-
-    //valido que la ciudad sea una ciudad valida
-    if (!ciudad.match(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)) {
-      return res
-        .status(400)
-        .json({ message: "La ciudad debe ser una ciudad valida" });
-    }
-
-    //valido que la provincia sea una provincia valida
-    if (!provincia.match(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)) {
-      return res
-        .status(400)
-        .json({ message: "La provincia debe ser una provincia valida" });
-    }
 
     // Si existe alguna empresa no verificada con el mismo NIF, email o teléfono,
     // la elimino junto a sus usuarios para permitir que el usuario pueda reintentar el registro
@@ -299,20 +246,9 @@ export const updateEmpresa = async (req, res) => {
       logo_url,
     } = req.body;
 
-    //valido que el email sea un email valido
-    if (!email.includes("@")) {
-      return res
-        .status(400)
-        .json({ message: "El email debe ser un email valido" });
-    }
-
-    //valido que el nif sea un CIF válido de empresa
+    //Las validaciones de formato las hace validarActualizarEmpresa antes del controller.
+    //Aqui solo aplicamos reglas de negocio: unicidad de email/NIF/telefono entre empresas.
     const nifUpperUpdate = nif.toUpperCase();
-    if (!/^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/.test(nifUpperUpdate)) {
-      return res
-        .status(400)
-        .json({ message: "El CIF debe ser un CIF válido de empresa" });
-    }
 
     // comprobar que el email no está usado por OTRA empresa distinta
     const existeEmpresa = await Empresa.findOne({
@@ -361,34 +297,6 @@ export const updateEmpresa = async (req, res) => {
       return res
         .status(400)
         .json({ message: "El telefono ya esta registrado" });
-    }
-
-    //valido que el telefono sea un telefono valido
-    if (!telefono.match(/^\+?[1-9]\d{6,14}$/)) {
-      return res
-        .status(400)
-        .json({ message: "El telefono debe ser un telefono valido" });
-    }
-
-    //valido que el codigo postal sea un codigo postal valido
-    if (!codigo_postal.match(/^[0-9]{5}$/)) {
-      return res
-        .status(400)
-        .json({ message: "El codigo postal debe ser un codigo postal valido" });
-    }
-
-    //valido que la ciudad sea una ciudad valida
-    if (!ciudad.match(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)) {
-      return res
-        .status(400)
-        .json({ message: "La ciudad debe ser una ciudad valida" });
-    }
-
-    //valido que la provincia sea una provincia valida
-    if (!provincia.match(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)) {
-      return res
-        .status(400)
-        .json({ message: "La provincia debe ser una provincia valida" });
     }
 
     //actualizo SOLO los campos editables por la empresa.
@@ -536,7 +444,154 @@ export const reenviarVerificacionEmpresa = async (req, res) => {
 
     res.status(200).json({ message: "Email de verificación reenviado correctamente" });
   } catch (error) {
-    console.log(error);
+    logger.error("reenviarVerificacionEmpresa", error);
     res.status(500).json({ message: "Error al reenviar el email de verificación" });
+  }
+};
+
+//-------------------------------------------------------------------------
+// REGISTRO PUBLICO TRANSACCIONAL
+//-------------------------------------------------------------------------
+//Crea empresa + admin inicial en UNA SOLA transaccion.
+//Si falla cualquier paso, se hace rollback automatico y NO queda una empresa
+//huerfana en la BD. Sustituye al patron antiguo de "crea empresa, despues
+//createUsuario y si falla intenta deleteEmpresaCorreo a mano".
+//
+//Campos esperados (todos validados antes por validarRegistroEmpresa):
+//  empresa: { nombre_comercial, razon_social, nif, email, telefono, direccion,
+//             codigo_postal, ciudad, provincia, logo_url? }
+//  admin:   { nombre, email, password }
+//
+//Devuelve la empresa creada (con el toJSON aplicado, sin token_verificacion).
+export const registroTransaccional = async (req, res) => {
+  const transaccion = await sequelize.transaction();
+
+  try {
+    const { empresa: empresaInput, admin: adminInput } = req.body;
+
+    if (!empresaInput || !adminInput) {
+      await transaccion.rollback();
+      return res
+        .status(400)
+        .json({ message: "Faltan los datos de empresa o admin" });
+    }
+
+    const nifMayusculas = String(empresaInput.nif || "").toUpperCase();
+
+    //Limpieza previa: si hay empresas no verificadas con el mismo nif/email/telefono,
+    //borramos para permitir reintento del registro (sin huerfanos: borramos tambien
+    //sus usuarios). Se hace todo dentro de la transaccion.
+    const empresasNoVerificadas = await Empresa.findAll({
+      where: {
+        email_verificado: false,
+        [Op.or]: [
+          { nif: nifMayusculas },
+          { email: empresaInput.email },
+          { telefono: empresaInput.telefono },
+        ],
+      },
+      transaction: transaccion,
+    });
+    for (const emp of empresasNoVerificadas) {
+      await Usuario.destroy({
+        where: { empresa_id: emp.id },
+        transaction: transaccion,
+      });
+      await emp.destroy({ transaction: transaccion });
+    }
+
+    //Unicidad contra empresas ya verificadas (las que sobreviven al limpiado).
+    const conflictosEmpresa = await Empresa.findOne({
+      where: {
+        [Op.or]: [
+          { email: empresaInput.email },
+          { nif: nifMayusculas },
+          { telefono: empresaInput.telefono },
+        ],
+      },
+      transaction: transaccion,
+    });
+    if (conflictosEmpresa) {
+      await transaccion.rollback();
+      return res
+        .status(400)
+        .json({ message: "Ya existe una empresa con ese email, NIF o telefono" });
+    }
+
+    //El email del admin no debe coincidir con el de un usuario existente.
+    const conflictoUsuario = await Usuario.findOne({
+      where: { email: adminInput.email },
+      transaction: transaccion,
+    });
+    if (conflictoUsuario) {
+      await transaccion.rollback();
+      return res
+        .status(400)
+        .json({ message: "Ya existe un usuario con ese email" });
+    }
+
+    const token = randomUUID();
+    const fechaVencimiento = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+
+    //Crea la empresa (suscripcion_activa = false, email_verificado = false, etc.)
+    const empresa = await Empresa.create(
+      {
+        nombre_comercial: empresaInput.nombre_comercial,
+        razon_social: empresaInput.razon_social,
+        nif: nifMayusculas,
+        email: empresaInput.email,
+        telefono: empresaInput.telefono,
+        direccion: empresaInput.direccion,
+        codigo_postal: empresaInput.codigo_postal,
+        ciudad: empresaInput.ciudad,
+        provincia: empresaInput.provincia,
+        logo_url: empresaInput.logo_url || null,
+        suscripcion_activa: false,
+        activo: true,
+        fecha_vencimiento: fechaVencimiento,
+        email_verificado: false,
+        token_verificacion: token,
+      },
+      { transaction: transaccion },
+    );
+
+    //Crea el admin (forzamos rol='admin', ignorando lo que mande el cliente).
+    const hashed = await hashPassword(adminInput.password);
+    await Usuario.create(
+      {
+        empresa_id: empresa.id,
+        nombre: adminInput.nombre,
+        email: adminInput.email,
+        password: hashed,
+        rol: "admin",
+      },
+      { transaction: transaccion },
+    );
+
+    await transaccion.commit();
+
+    //Email de verificacion FUERA de la transaccion: si falla el envio,
+    //la empresa ya esta creada y el usuario puede pedir reenvio.
+    const urlVerificacion = `${URL}/api/empresas/verificar/${token}`;
+    enviarEmailVerificacion(
+      empresaInput.email,
+      empresaInput.nombre_comercial,
+      urlVerificacion,
+    );
+
+    //toJSON del modelo filtra token_verificacion automaticamente.
+    res.status(201).json({
+      message: "Empresa y administrador creados correctamente",
+      empresa,
+    });
+  } catch (error) {
+    //Si ya hubo rollback explicito, esta segunda llamada es no-op en sequelize.
+    try {
+      await transaccion.rollback();
+    } catch {
+      //ignoramos: rollback ya aplicado
+    }
+    logger.error("registroTransaccional", error);
+    res.status(500).json({ message: "Error al registrar la empresa" });
   }
 };

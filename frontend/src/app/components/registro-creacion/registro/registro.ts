@@ -14,12 +14,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Usuario } from '../../../interfaces/usuario';
-import { UsuariosServices } from '../../../services/usuarios';
-import { Empresa } from '../../../interfaces/empresa';
-import { EmpresasServices } from '../../../services/empresas';
-import { timeout } from 'rxjs';
+import { Router, RouterLink } from '@angular/router';
+import { EmpresasServices, RegistroPayload } from '../../../services/empresas';
+import {
+  LIMITES,
+  REGEX_CIF,
+  REGEX_CODIGO_POSTAL,
+  REGEX_NOMBRE_GEOGRAFICO,
+  REGEX_NOMBRE_PERSONA,
+  REGEX_TELEFONO,
+} from '../../../shared/regex';
 
 @Component({
   selector: 'app-formulario',
@@ -38,61 +42,65 @@ import { timeout } from 'rxjs';
 })
 export class Registro {
   public userForm!: FormGroup;
-  public hidePassword: boolean = true; // Variable para controlar la visibilidad de la contraseña
+  public hidePassword: boolean = true;
 
-  // Inyectamos el servicio Router para poder redirigir al usuario a la página de creación de un nuevo usuario cuando haga clic en el botón "Nuevo Usuario"
-  private router = inject(Router); // Inyectamos el servicio Router para poder redirigir al usuario a la página de creación de un nuevo usuario cuando haga clic en el botón "Nuevo Usuario"
-  private usuarioServicios = inject(UsuariosServices); // Inyectamos el servicio UsuariosServices para poder utilizar sus métodos y gestionar los usuarios desde este componente, como crear, actualizar o eliminar usuarios.
-  private empresaServicios = inject(EmpresasServices); // Inyectamos el servicio EmpresasServices para poder utilizar sus métodos y gestionar las empresas desde este componente, como crear, actualizar o eliminar empresas.
-  private idEmpresa!: number;
+  private router = inject(Router);
+  // Ahora solo necesitamos el servicio de empresas: el endpoint transaccional
+  // se encarga tanto de crear la empresa como el admin inicial en una sola
+  // peticion. Nos ahorramos UsuariosServices y la cadena anidada de subscribes.
+  private empresaServicios = inject(EmpresasServices);
 
-  //Formulario
+  //Formulario.
+  //Usamos los regex y limites de shared/regex.ts para que las reglas del frontend
+  //coincidan EXACTAMENTE con las del validator del backend (validarCrearEmpresa).
   constructor(private fb: FormBuilder) {
     this.userForm = this.fb.group({
       //parte de las empresas y sus validaciones
       nombre_comercial: [
         '',
-        [
-          Validators.required,
-          Validators.maxLength(150),
-        ],
+        [Validators.required, Validators.maxLength(LIMITES.NOMBRE_COMERCIAL_MAX)],
       ],
-      razon_social: ['', [Validators.required, Validators.maxLength(150)]],
+      razon_social: [
+        '',
+        [Validators.required, Validators.maxLength(LIMITES.RAZON_SOCIAL_MAX)],
+      ],
+      //Regex de CIF identica al backend (antes el FE aceptaba DNI y el BE rechazaba).
       nif: [
         '',
         [
           Validators.required,
           Validators.minLength(9),
           Validators.maxLength(9),
-          Validators.pattern('^[A-Za-z][0-9]{8}$'),
+          Validators.pattern(REGEX_CIF),
         ],
       ],
-      emailEmpresa: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.required, Validators.pattern('^\\+?[1-9]\\d{6,14}$')]],
-      direccion: ['', [Validators.required, Validators.maxLength(200)]],
+      emailEmpresa: [
+        '',
+        [Validators.required, Validators.email, Validators.maxLength(LIMITES.EMAIL_MAX)],
+      ],
+      telefono: ['', [Validators.required, Validators.pattern(REGEX_TELEFONO)]],
+      direccion: [
+        '',
+        [Validators.required, Validators.maxLength(LIMITES.DIRECCION_MAX)],
+      ],
       codigo_postal: [
         '',
-        [
-          Validators.required,
-          Validators.minLength(5),
-          Validators.maxLength(5),
-          Validators.pattern('^[0-9]{5}$'),
-        ],
+        [Validators.required, Validators.pattern(REGEX_CODIGO_POSTAL)],
       ],
       ciudad: [
         '',
         [
           Validators.required,
-          Validators.maxLength(150),
-          Validators.pattern('^[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+$'),
+          Validators.maxLength(LIMITES.CIUDAD_MAX),
+          Validators.pattern(REGEX_NOMBRE_GEOGRAFICO),
         ],
       ],
       provincia: [
         '',
         [
           Validators.required,
-          Validators.maxLength(150),
-          Validators.pattern('^[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+$'),
+          Validators.maxLength(LIMITES.PROVINCIA_MAX),
+          Validators.pattern(REGEX_NOMBRE_GEOGRAFICO),
         ],
       ],
 
@@ -101,12 +109,15 @@ export class Registro {
         '',
         [
           Validators.required,
-          Validators.maxLength(150),
-          Validators.pattern('^[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+$'),
+          Validators.maxLength(LIMITES.NOMBRE_USUARIO_MAX),
+          Validators.pattern(REGEX_NOMBRE_PERSONA),
         ],
       ],
-      emailUsuario: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      emailUsuario: [
+        '',
+        [Validators.required, Validators.email, Validators.maxLength(LIMITES.EMAIL_MAX)],
+      ],
+      password: ['', [Validators.required, Validators.minLength(LIMITES.PASSWORD_MIN)]],
     });
   }
 
@@ -158,84 +169,41 @@ export class Registro {
   onSubmit(): void {
     this.router.navigate(['/creacionespera']);
 
-    //SOLO mandamos campos editables por el cliente. El backend ignora suscripcion_activa,
-    //activo, email_verificado, fecha_vencimiento y token_verificacion en este endpoint
-    //para evitar escalada de privilegios (el trial gratuito y la suscripcion los gestiona
-    //el servidor desde createEmpresa y desde el webhook de Stripe).
-    const empresa: Empresa = {
-      id: 0,
-      fecha_registro: new Date(),
-      fecha_actualizacion: new Date(),
-      nombre_comercial: this.userForm.value.nombre_comercial,
-      razon_social: this.userForm.value.razon_social,
-      nif: this.userForm.value.nif,
-      email: this.userForm.value.emailEmpresa,
-      telefono: this.userForm.value.telefono,
-      direccion: this.userForm.value.direccion,
-      codigo_postal: this.userForm.value.codigo_postal,
-      ciudad: this.userForm.value.ciudad,
-      provincia: this.userForm.value.provincia,
-      //estos cuatro los ignora el backend; los dejamos solo porque la interface Empresa
-      //sigue exigiendolos para tipado; el servidor pone los valores reales.
-      suscripcion_activa: false,
-      fecha_vencimiento: new Date(),
-      activo: true,
-      logo_url: '',
+    //Construimos el payload del endpoint TRANSACCIONAL POST /api/empresas/registro.
+    //Es UNA SOLA peticion: si falla cualquier paso (validacion, unicidad de NIF,
+    //creacion del admin...) el backend hace rollback y NO queda empresa huerfana.
+    //Adios al "addEmpresa + getEmpresaByNif + addUsuario + deleteEmpresaCorreo si falla".
+    const payload: RegistroPayload = {
+      empresa: {
+        nombre_comercial: this.userForm.value.nombre_comercial,
+        razon_social: this.userForm.value.razon_social,
+        nif: this.userForm.value.nif,
+        email: this.userForm.value.emailEmpresa,
+        telefono: this.userForm.value.telefono,
+        direccion: this.userForm.value.direccion,
+        codigo_postal: this.userForm.value.codigo_postal,
+        ciudad: this.userForm.value.ciudad,
+        provincia: this.userForm.value.provincia,
+      },
+      admin: {
+        nombre: this.userForm.value.nombre,
+        email: this.userForm.value.emailUsuario,
+        password: this.userForm.value.password,
+      },
     };
 
-    //creacion de la empresa. Ahora addEmpresa devuelve la empresa completa con su id,
-    //asi que ya no necesitamos llamar a getEmpresaByNif para resolver el id (un round-trip menos
-    //y una ruta autenticada menos en el flujo de registro).
-    this.empresaServicios.addEmpresa(empresa).subscribe({
-      next: (empresaCreada: any) => {
-        this.idEmpresa = empresaCreada.id;
-
-        //creo el usuario admin inicial. NO mandamos password al backend dentro del objeto
-        //plantilla porque el backend ya marca rol='admin' a fuego. Solo enviamos lo minimo.
-        const usuario: Usuario = {
-          id: 0,
-          empresa_id: this.idEmpresa,
-          nombre: this.userForm.value.nombre,
-          email: this.userForm.value.emailUsuario,
-          password: this.userForm.value.password,
-          rol: 'admin',
-          fecha_creacion: new Date(),
-          fecha_actualizacion: new Date(),
-          deleted_at: null,
-        };
-
-        //Usamos el endpoint PUBLICO de registro inicial. POST /usuarios ahora exige JWT.
-        this.usuarioServicios.registroInicial(usuario).subscribe({
-          next: () => {
-            const emailEmpresa = this.userForm.value.emailEmpresa;
-            this.userForm.reset();
-            setTimeout(() => {
-              this.router.navigate(['/registro-verificacion'], {
-                state: { email: emailEmpresa },
-              });
-            }, 700);
-          },
-          error: (error) => {
-            console.error('Error al crear usuario:', error);
-            setTimeout(() => {
-              this.router.navigate(['/creacionfallida']);
-            }, 700);
-
-            //rollback: si falla la creacion del usuario, intentamos borrar la empresa.
-            //IMPORTANTE: deleteEmpresaCorreo ahora exige rol superadmin (JWT), por lo que
-            //en este flujo publico va a devolver 401/403. Lo dejamos como best-effort hasta
-            //que en el Bloque 4 se haga un endpoint transaccional /empresas/registro.
-            this.empresaServicios
-              .deleteEmpresaCorreo(this.userForm.value.emailEmpresa)
-              .subscribe({
-                next: () => {},
-                error: (error) => console.error('Error al eliminar empresa (best-effort):', error),
-              });
-          },
-        });
+    this.empresaServicios.registroTransaccional(payload).subscribe({
+      next: () => {
+        const emailEmpresa = this.userForm.value.emailEmpresa;
+        this.userForm.reset();
+        setTimeout(() => {
+          this.router.navigate(['/registro-verificacion'], {
+            state: { email: emailEmpresa },
+          });
+        }, 700);
       },
       error: (error) => {
-        console.error('Error al crear empresa:', error);
+        console.error('Error al registrar empresa:', error);
         setTimeout(() => {
           this.router.navigate(['/creacionfallida']);
         }, 700);
