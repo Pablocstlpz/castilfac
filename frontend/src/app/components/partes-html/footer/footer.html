@@ -1,21 +1,21 @@
 <footer class="p-4 bg-white md:p-8 lg:p-10 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
     <div class="mx-auto max-w-screen-xl text-center">
         <a routerLink="/" class="flex justify-center items-center text-2xl font-semibold text-gray-900 dark:text-white">
-            <img src="/img/Logo-castilfac.png" alt="Logo de Castilfac" class="h-8 mr-3" />
-            Castilfac    
+            <img src="/img/Logo-castilfac.png" [attr.alt]="'footer.logoAlt' | translate" class="h-8 mr-3" />
+            {{ 'common.brand' | translate }}
         </a>
-        <p class="my-6 text-gray-500 dark:text-gray-400">Software de gestión y facturación diseñado como Proyecto de 2º de DAW.</p>
+        <p class="my-6 text-gray-500 dark:text-gray-400">{{ 'footer.tagline' | translate }}</p>
         <ul class="flex flex-wrap justify-center items-center mb-6 text-gray-900 dark:text-white">
             <li>
-                <a routerLink="/sobrenosotros" class="mr-4 hover:underline md:mr-6">Sobre nosotros</a>
+                <a routerLink="/sobrenosotros" class="mr-4 hover:underline md:mr-6">{{ 'nav.about' | translate }}</a>
             </li>
             <li>
-                <a routerLink="/planes-y-precios" class="mr-4 hover:underline md:mr-6">Planes</a>
+                <a routerLink="/planes-y-precios" class="mr-4 hover:underline md:mr-6">{{ 'nav.plans' | translate }}</a>
             </li>
             <li>
-                <a routerLink="/contacto" class="mr-4 hover:underline md:mr-6">Contacto</a>
+                <a routerLink="/contacto" class="mr-4 hover:underline md:mr-6">{{ 'nav.contact' | translate }}</a>
             </li>
         </ul>
-        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2026 <a routerLink="/" class="hover:underline">Castilfac™</a>. Todos los derechos reservados.</span>
+        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2026 <a routerLink="/" class="hover:underline">{{ 'common.brand' | translate }}™</a>. {{ 'footer.rights' | translate }}</span>
     </div>
 </footer>

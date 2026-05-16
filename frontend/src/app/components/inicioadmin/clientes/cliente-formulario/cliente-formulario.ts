@@ -18,6 +18,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Cliente } from '../../../../interfaces/cliente';
 import { ClientesServices } from '../../../../services/clientes';
 import { Authentication } from '../../../../services/authentication';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-cliente-formulario',
@@ -31,6 +32,7 @@ import { Authentication } from '../../../../services/authentication';
     MatRadioModule,
     MatSelectModule,
     MatSnackBarModule,
+    TranslatePipe,
   ],
   templateUrl: './cliente-formulario.html',
   styleUrl: './cliente-formulario.css',
@@ -44,6 +46,7 @@ export class ClienteFormulario {
   private clientesService = inject(ClientesServices);
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
   //Unificado a inject() — antes mezclabamos DI por constructor.
   private fb = inject(FormBuilder);
 
@@ -129,22 +132,30 @@ export class ClienteFormulario {
   anadirCliente(cliente: Cliente): void {
     this.clientesService.addCliente(cliente).subscribe({
       next: () => {
-        this.snackBar.open('Cliente creado correctamente', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('clients.createdSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-success'],
-        });
+          },
+        );
         this.clienteForm.reset();
         this.router.navigate(['/inicioadmin/clientes']);
       },
       error: (error: Error) => {
-        this.snackBar.open(error.message ?? 'Error al crear el cliente', 'Cerrar', {
+        this.snackBar.open(
+          error.message ?? this.translate.instant('clients.createErrorSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-error'],
-        });
+          },
+        );
       },
     });
   }
@@ -152,22 +163,30 @@ export class ClienteFormulario {
   actualizarCliente(cliente: Cliente): void {
     this.clientesService.updateCliente(cliente).subscribe({
       next: () => {
-        this.snackBar.open('Cliente actualizado correctamente', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('clients.updatedSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-success'],
-        });
+          },
+        );
         this.clienteForm.reset();
         this.router.navigate(['/inicioadmin/clientes']);
       },
       error: (error: Error) => {
-        this.snackBar.open(error.message ?? 'Error al actualizar el cliente', 'Cerrar', {
+        this.snackBar.open(
+          error.message ?? this.translate.instant('clients.updateErrorSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-error'],
-        });
+          },
+        );
       },
     });
   }

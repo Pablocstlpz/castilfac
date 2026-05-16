@@ -4,25 +4,25 @@
       class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2"
     >
       <mat-icon class="text-indigo-600">admin_panel_settings</mat-icon>
-      Centro de Mando
+      {{ 'superadmin.commandCenter' | translate }}
     </h1>
-    <p class="text-sm text-slate-500 mt-1">Gestión global del ERP CastilGlass</p>
+    <p class="text-sm text-slate-500 mt-1">{{ 'superadmin.subtitle' | translate }}</p>
   </div>
 
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
       <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-        Registros Totales
+        {{ 'superadmin.totalRecords' | translate }}
       </p>
       <h3 class="text-3xl font-black text-slate-800">{{ kpis().total }}</h3>
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-      <p class="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">En Prueba (14d)</p>
+      <p class="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">{{ 'superadmin.trial14d' | translate }}</p>
       <h3 class="text-3xl font-black text-slate-800">{{ kpis().prueba }}</h3>
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
       <p class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">
-        Clientes Premium
+        {{ 'superadmin.premiumClients' | translate }}
       </p>
       <h3 class="text-3xl font-black text-slate-800">{{ kpis().premium }}</h3>
     </div>
@@ -33,10 +33,10 @@
         <mat-icon class="text-[80px] w-[80px] h-[80px]">payments</mat-icon>
       </div>
       <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">
-        Ingresos Estimados (MRR)
+        {{ 'superadmin.estimatedMrr' | translate }}
       </p>
       <h3 class="text-3xl font-black">
-        {{ kpis().ingresos }}€<span class="text-sm font-medium text-slate-400">/mes</span>
+        {{ kpis().ingresos }}€<span class="text-sm font-medium text-slate-400">{{ 'superadmin.perMonth' | translate }}</span>
       </h3>
     </div>
   </div>
@@ -50,7 +50,7 @@
         type="text"
         [(ngModel)]="filtroBusqueda"
         (input)="filtrarEmpresas()"
-        placeholder="Buscar empresa por nombre, NIF o email..."
+        [placeholder]="'superadmin.searchPlaceholder' | translate"
         class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
       />
     </div>
@@ -62,7 +62,7 @@
         <div
           class="animate-spin h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full"
         ></div>
-        Cargando datos...
+        {{ 'superadmin.loading' | translate }}
       </div>
     } @else {
       <div class="overflow-y-auto max-h-[60vh]">
@@ -73,28 +73,28 @@
                 scope="col"
                 class="py-3.5 pl-6 pr-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
               >
-                Empresa
+                {{ 'superadmin.company' | translate }}
               </th>
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
               >
-                Email
+                {{ 'superadmin.email' | translate }}
               </th>
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
               >
-                Estado
+                {{ 'superadmin.status' | translate }}
               </th>
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
               >
-                Vencimiento
+                {{ 'superadmin.expiry' | translate }}
               </th>
               <th scope="col" class="relative py-3.5 pl-3 pr-6">
-                <span class="sr-only">Acciones</span>
+                <span class="sr-only">{{ 'superadmin.actions' | translate }}</span>
               </th>
             </tr>
           </thead>
@@ -132,21 +132,21 @@
                       class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 border border-red-200"
                     >
                       <mat-icon class="text-[14px]">error</mat-icon>
-                      Sin verificar
+                      {{ 'superadmin.unverified' | translate }}
                     </span>
                   } @else if (!empresa.activo) {
                     <span
                       class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 border border-slate-200"
                     >
                       <mat-icon class="text-[14px]">block</mat-icon>
-                      Bloqueada
+                      {{ 'superadmin.blocked' | translate }}
                     </span>
                   } @else {
                     <span
                       class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200"
                     >
                       <mat-icon class="text-[14px]">check_circle</mat-icon>
-                      OK
+                      {{ 'superadmin.ok' | translate }}
                     </span>
                   }
                 </td>
@@ -168,7 +168,7 @@
                     <button
                       (click)="verDetalle(empresa)"
                       class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                      title="Ver usuarios"
+                      [title]="'superadmin.viewUsers' | translate"
                     >
                       <mat-icon class="text-[20px]">group</mat-icon>
                     </button>
@@ -180,7 +180,7 @@
                           ? 'text-slate-400 hover:text-red-600 hover:bg-red-50'
                           : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
                       "
-                      [title]="empresa.activo ? 'Bloquear empresa' : 'Activar empresa'"
+                      [title]="empresa.activo ? ('superadmin.blockCompany' | translate) : ('superadmin.activateCompany' | translate)"
                     >
                       <mat-icon class="text-[20px]">{{
                         empresa.activo ? 'lock' : 'lock_open'
@@ -193,7 +193,7 @@
               <tr>
                 <td colspan="5" class="px-6 py-10 text-center text-slate-500">
                   <mat-icon class="text-4xl text-slate-300 mb-2">business</mat-icon>
-                  <p>No se han encontrado empresas.</p>
+                  <p>{{ 'superadmin.noCompanies' | translate }}</p>
                 </td>
               </tr>
             }
@@ -205,8 +205,9 @@
         class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between"
       >
         <span class="text-sm text-slate-500">
-          Mostrando
-          <span class="font-medium text-slate-900">{{ empresasFiltradas().length }}</span> empresas
+          {{ 'superadmin.showing' | translate }}
+          <span class="font-medium text-slate-900">{{ empresasFiltradas().length }}</span>
+          {{ 'superadmin.companies' | translate }}
         </span>
       </div>
     }
@@ -235,18 +236,18 @@
         <div class="p-6 overflow-y-auto flex-1">
           <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-8">
             <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-widest mb-3">
-              Acciones de Suscripción
+              {{ 'superadmin.subscriptionActions' | translate }}
             </h4>
             <button
               (click)="extenderSuscripcion(empresaSeleccionada()!)"
               class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
             >
-              <mat-icon class="text-[18px]">add_task</mat-icon> Pasar a Premium (+30 días)
+              <mat-icon class="text-[18px]">add_task</mat-icon> {{ 'superadmin.extendPremium' | translate }}
             </button>
           </div>
 
           <h4 class="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
-            <mat-icon class="text-slate-400">group</mat-icon> Usuarios de la cuenta
+            <mat-icon class="text-slate-400">group</mat-icon> {{ 'superadmin.accountUsers' | translate }}
           </h4>
 
           <div class="space-y-3">
@@ -272,7 +273,7 @@
             }
             @if (usuariosActivos().length === 0) {
               <p class="text-sm text-slate-500 text-center py-4 italic">
-                No hay usuarios registrados.
+                {{ 'superadmin.noUsers' | translate }}
               </p>
             }
           </div>

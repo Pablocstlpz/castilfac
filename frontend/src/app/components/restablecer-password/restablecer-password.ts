@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UsuariosServices } from '../../services/usuarios';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-restablecer-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, TranslatePipe],
   templateUrl: './restablecer-password.html',
 })
 export class RestablecerPassword {
@@ -20,6 +21,7 @@ export class RestablecerPassword {
   private snackBar = inject(MatSnackBar);
   // Inyectamos el servicio UsuariosServices para poder llamar al backend y solicitar el correo de recuperacion de contraseña
   private usuarioServicios = inject(UsuariosServices);
+  private translate = inject(TranslateService);
 
   // Variable para almacenar el email que el usuario introduce en el formulario
   public email: string = '';
@@ -33,7 +35,11 @@ export class RestablecerPassword {
 
     //valido que el email sea valido antes de hacer la peticion al backend
     if (!this.email || !this.email.includes('@')) {
-      this.snackBar.open('Por favor, introduce un correo electrónico válido.', 'Cerrar', { duration: 3000 });
+      this.snackBar.open(
+        this.translate.instant('resetPassword.emailInvalid'),
+        this.translate.instant('common.close'),
+        { duration: 3000 },
+      );
       return;
     }
 

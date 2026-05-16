@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { DatePipe, DecimalPipe, NgClass, TitleCasePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Presupuestos as PresupuestosService } from '../../../services/presupuestos';
@@ -10,10 +10,11 @@ import { Authentication } from '../../../services/authentication';
 import { PdfService } from '../../../services/pdf';
 import { Presupuesto } from '../../../interfaces/presupuesto';
 import { Cliente } from '../../../interfaces/cliente';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-presupuestos',
-  imports: [MatIcon, DatePipe, DecimalPipe, NgClass, TitleCasePipe, FormsModule, RouterLink],
+  imports: [MatIcon, DatePipe, DecimalPipe, NgClass, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './presupuestos.html',
   styleUrl: './presupuestos.css',
 })
@@ -23,6 +24,7 @@ export class Presupuestos {
   private authentication = inject(Authentication);
   private pdfService = inject(PdfService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   public presupuestos = signal<Presupuesto[]>([]);
   public clientes = signal<Cliente[]>([]);
@@ -97,6 +99,30 @@ export class Presupuestos {
   getTipoCliente(id: number): string {
     const cliente = this.clientes().find((c) => c.id == id);
     return cliente?.tipo_cliente ?? '';
+  }
+
+  etiquetaTipoCliente(tipo: string): string {
+    if (!tipo) return '';
+    const keys: Record<string, string> = {
+      particular: 'clients.typeParticular',
+      empresa: 'clients.typeCompany',
+      vip: 'clients.typeVip',
+      mayorista: 'clients.typeWholesaler',
+    };
+    const key = keys[tipo];
+    return key ? this.translate.instant(key) : tipo;
+  }
+
+  etiquetaEstadoPresupuesto(estado: string): string {
+    const keys: Record<string, string> = {
+      borrador: 'quotes.statusDraft',
+      enviado: 'quotes.statusSent',
+      aprobado: 'quotes.statusApproved',
+      rechazado: 'quotes.statusRejected',
+      caducado: 'quotes.statusExpired',
+    };
+    const key = keys[estado];
+    return key ? this.translate.instant(key) : estado;
   }
 
   verDetalle(id: number): void {

@@ -5,10 +5,10 @@
         class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3"
       >
         <mat-icon class="text-blue-600 text-3xl">inventory_2</mat-icon>
-        Catálogo y Precios
+        {{ 'catalogue.title' | translate }}
       </h1>
       <p class="text-slate-500 mt-2">
-        Gestiona el catálogo de materiales y los precios de tu empresa.
+        {{ 'catalogue.subtitle' | translate }}
       </p>
     </div>
     <button
@@ -17,7 +17,7 @@
       type="button"
     >
       <mat-icon class="text-sm h-5 w-5">add</mat-icon>
-      Nuevo Material
+      {{ 'catalogue.newMaterial' | translate }}
     </button>
   </div>
 
@@ -30,7 +30,7 @@
         type="text"
         [ngModel]="busqueda()"
         (ngModelChange)="busqueda.set($event); filtrarMateriales()"
-        placeholder="Buscar por código, nombre o proveedor..."
+        [placeholder]="'catalogue.searchPlaceholder' | translate"
         class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
       />
     </div>
@@ -40,7 +40,7 @@
       (ngModelChange)="filtroCategoria.set($event); filtrarMateriales()"
       class="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-8 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="todas">Todos</option>
+      <option value="todas">{{ 'catalogue.allCategories' | translate }}</option>
       @for (cat of categorias(); track cat.id) {
         <option [value]="cat.id">{{ cat.nombre }}</option>
       }
@@ -53,7 +53,7 @@
         (ngModelChange)="mostrarInactivos.set($event); filtrarMateriales()"
         class="rounded text-blue-600 focus:ring-blue-500 border-slate-300"
       />
-      <span class="text-xs font-bold text-slate-600 uppercase">Ver Inactivos</span>
+      <span class="text-xs font-bold text-slate-600 uppercase">{{ 'catalogue.showInactive' | translate }}</span>
     </label>
   </div>
 
@@ -65,36 +65,36 @@
         <thead class="bg-slate-50 sticky top-0 z-10">
           <tr>
             <th class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Código
+              {{ 'catalogue.colCode' | translate }}
             </th>
             <th class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Material
+              {{ 'catalogue.colMaterial' | translate }}
             </th>
             <th class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Unidad
+              {{ 'catalogue.colUnit' | translate }}
             </th>
             <th
               class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
             >
-              Coste Base
+              {{ 'catalogue.colBaseCost' | translate }}
             </th>
             <th
               class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
             >
-              PVP Empresa
+              {{ 'catalogue.colCompanyPvp' | translate }}
             </th>
             <th
               class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center"
             >
-              Merma
+              {{ 'catalogue.colWaste' | translate }}
             </th>
             <th class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Proveedor
+              {{ 'catalogue.colSupplier' | translate }}
             </th>
             <th
               class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center"
             >
-              Estado
+              {{ 'catalogue.colStatus' | translate }}
             </th>
             <th class="px-2 py-3"></th>
           </tr>
@@ -133,7 +133,7 @@
                   } @else {
                     <mat-icon class="text-[14px]">category</mat-icon>
                   }
-                  {{ item.tipo_unidad.replace('_', ' ') | titlecase }}
+                  {{ etiquetaTipoUnidad(item.tipo_unidad) }}
                 </div>
               </td>
 
@@ -146,7 +146,6 @@
 
               <td data-label="PVP Empresa" class="px-2 py-3 text-right">
                 @if (materialEditandoId() === item.id) {
-                  <!-- Modo edición en línea: muestra input con botones de guardar y cancelar -->
                   <div class="flex items-center justify-end gap-1">
                     <input
                       type="number"
@@ -159,7 +158,7 @@
                     <button
                       (click)="guardarNuevoPvp(item, precioEnEdicion())"
                       class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded"
-                      title="Guardar precio"
+                      [attr.title]="'catalogue.savePrice' | translate"
                       type="button"
                     >
                       <mat-icon class="text-sm">check</mat-icon>
@@ -167,14 +166,13 @@
                     <button
                       (click)="cancelarEdicionPvp()"
                       class="p-1 text-red-500 hover:text-red-600 hover:bg-red-50 rounded"
-                      title="Cancelar edición"
+                      [attr.title]="'catalogue.cancelEdit' | translate"
                       type="button"
                     >
                       <mat-icon class="text-sm">close</mat-icon>
                     </button>
                   </div>
                 } @else {
-                  <!-- Modo visualización: muestra precio con icono de edición al pasar el ratón -->
                   <div class="flex items-center justify-end gap-1">
                     <span
                       class="text-sm font-bold"
@@ -186,7 +184,7 @@
                       @if (item.precio_venta <= item.precio_base) {
                         <mat-icon
                           class="text-[12px] align-middle ml-1"
-                          title="Margen negativo o cero"
+                          [attr.title]="'catalogue.negativeMargin' | translate"
                           >warning</mat-icon
                         >
                       }
@@ -194,7 +192,7 @@
                     <button
                       (click)="activarEdicionPvp(item)"
                       class="p-1 text-slate-400 hover:text-blue-600 rounded hover:bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Editar precio PVP"
+                      [attr.title]="'catalogue.editPvp' | translate"
                       type="button"
                     >
                       <mat-icon class="text-[14px]">edit</mat-icon>
@@ -215,12 +213,12 @@
                 @if (item.activo !== false) {
                   <span
                     class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-200"
-                    >Activo</span
+                    >{{ 'catalogue.active' | translate }}</span
                   >
                 } @else {
                   <span
                     class="bg-slate-200 text-slate-600 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-slate-300"
-                    >Inactivo</span
+                    >{{ 'catalogue.inactive' | translate }}</span
                   >
                 }
               </td>
@@ -231,7 +229,7 @@
                 >
                   <button
                     class="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-blue-50"
-                    title="Ver Historial"
+                    [attr.title]="'catalogue.viewHistory' | translate"
                     [routerLink]="[
                       '/inicioadmin/catalogo-y-precios/material/historial-precios',
                       item.id,
@@ -242,7 +240,7 @@
                   <button
                     [routerLink]="['/inicioadmin/catalogo-y-precios/material/editar', item.id]"
                     class="p-1.5 text-slate-400 hover:text-indigo-600 rounded hover:bg-indigo-50"
-                    title="Editar Completo"
+                    [attr.title]="'catalogue.editFull' | translate"
                     type="button"
                   >
                     <mat-icon class="text-sm">edit</mat-icon>
@@ -255,7 +253,10 @@
                         ? 'text-slate-400 hover:text-red-600 hover:bg-red-50'
                         : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
                     "
-                    [title]="item.activo !== false ? 'Desactivar' : 'Activar'"
+                    [attr.title]="
+                      (item.activo !== false ? 'catalogue.deactivate' : 'catalogue.activate')
+                        | translate
+                    "
                   >
                     <mat-icon class="text-sm">{{
                       item.activo !== false ? 'block' : 'check_circle'
@@ -268,8 +269,8 @@
             <tr>
               <td colspan="9" class="px-6 py-12 text-center text-slate-500">
                 <mat-icon class="text-4xl text-slate-300 mb-2">inventory_2</mat-icon>
-                <p class="font-bold">No se han encontrado materiales</p>
-                <p class="text-sm">Prueba a ajustar los filtros o el término de búsqueda.</p>
+                <p class="font-bold">{{ 'catalogue.emptyTitle' | translate }}</p>
+                <p class="text-sm">{{ 'catalogue.emptyHint' | translate }}</p>
               </td>
             </tr>
           }
@@ -279,9 +280,9 @@
 
     <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
       <span class="text-sm text-slate-500">
-        Mostrando
+        {{ 'catalogue.showing' | translate }}
         <span class="font-medium text-slate-900">{{ materialesFiltrados().length }}</span>
-        materiales
+        {{ 'catalogue.materialsCount' | translate }}
       </span>
     </div>
   </div>

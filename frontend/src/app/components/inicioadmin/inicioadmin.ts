@@ -7,10 +7,11 @@ import { UsuariosServices } from '../../services/usuarios';
 import { PedidosServices } from '../../services/pedidos';
 import { Presupuestos as PresupuestosService } from '../../services/presupuestos';
 import { Presupuesto } from '../../interfaces/presupuesto';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-inicioadmin',
-  imports: [MatIconModule, CommonModule, DecimalPipe, RouterLink],
+  imports: [MatIconModule, CommonModule, DecimalPipe, RouterLink, TranslatePipe],
   templateUrl: './inicioadmin.html',
   styleUrl: './inicioadmin.css',
 })

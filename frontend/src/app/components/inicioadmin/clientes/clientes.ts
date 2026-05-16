@@ -7,10 +7,11 @@ import { Router } from '@angular/router';
 import { Cliente } from '../../../interfaces/cliente';
 import { ClientesServices } from '../../../services/clientes';
 import { Authentication } from '../../../services/authentication';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-clientes',
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, TranslatePipe],
   templateUrl: './clientes.html',
   styleUrl: './clientes.css',
 })
@@ -18,6 +19,7 @@ export class Clientes {
   private clientesService = inject(ClientesServices);
   private authentication = inject(Authentication);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   public clientesArray = signal<Cliente[]>([]);
   public busqueda = signal<string>('');
@@ -60,14 +62,14 @@ export class Clientes {
 
   eliminarCliente(id: number): void {
     Swal.fire({
-      title: '¿Eliminar cliente?',
-      text: 'Esta acción no se puede deshacer.',
+      title: this.translate.instant('clients.deleteTitle'),
+      text: this.translate.instant('clients.deleteText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc2626',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
+      confirmButtonText: this.translate.instant('clients.confirmDelete'),
+      cancelButtonText: this.translate.instant('common.cancel'),
     }).then((result) => {
       if (!result.isConfirmed) return;
 
@@ -76,8 +78,8 @@ export class Clientes {
           const usuario = this.authentication.obtenerUsuarioSesion();
           if (usuario) this.cargarClientes(usuario.empresa_id);
           void Swal.fire({
-            title: 'Eliminado',
-            text: 'El cliente ha sido eliminado correctamente.',
+            title: this.translate.instant('clients.deletedTitle'),
+            text: this.translate.instant('clients.deletedText'),
             icon: 'success',
             confirmButtonColor: '#2563eb',
           });
@@ -85,7 +87,7 @@ export class Clientes {
         error: (err: Error) => {
           void Swal.fire({
             title: 'Error',
-            text: err.message ?? 'No se pudo eliminar el cliente.',
+            text: err.message ?? this.translate.instant('clients.deleteError'),
             icon: 'error',
             confirmButtonColor: '#2563eb',
           });

@@ -8,10 +8,11 @@ import { DatePipe } from '@angular/common';
 import { UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-gestion-personal',
-  imports: [MatIcon, DatePipe, UpperCasePipe, FormsModule],
+  imports: [MatIcon, DatePipe, UpperCasePipe, FormsModule, TranslatePipe],
   templateUrl: './gestion-personal.html',
   styleUrl: './gestion-personal.css',
 })
@@ -19,6 +20,7 @@ export class GestionPersonal {
   private usuariosServices = inject(UsuariosServices);
   private authentication = inject(Authentication);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   public usuarios = signal<Usuario[]>([]);
   public busqueda = signal<string>('');
@@ -51,14 +53,14 @@ export class GestionPersonal {
   //funcion para borrar un usuario
   borrarUsuario(id: number): void {
     Swal.fire({
-      title: '¿Eliminar empleado?',
-      text: 'Esta acción no se puede deshacer.',
+      title: this.translate.instant('staff.deleteTitle'),
+      text: this.translate.instant('staff.deleteText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc2626',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
+      confirmButtonText: this.translate.instant('staff.confirmDelete'),
+      cancelButtonText: this.translate.instant('common.cancel'),
     }).then((result) => {
       if (!result.isConfirmed) {
         return;
@@ -71,8 +73,8 @@ export class GestionPersonal {
               this.obtenerUsuarios(admin.empresa_id);
             }
             void Swal.fire({
-              title: 'Eliminado',
-              text: 'El empleado se ha eliminado correctamente.',
+              title: this.translate.instant('staff.deletedTitle'),
+              text: this.translate.instant('staff.deletedText'),
               icon: 'success',
               confirmButtonColor: '#2563eb',
             });
@@ -81,7 +83,7 @@ export class GestionPersonal {
         error: (err: Error) => {
           void Swal.fire({
             title: 'Error',
-            text: err.message ?? 'No se pudo eliminar el empleado ya que hay datos asociados a él.',
+            text: err.message ?? this.translate.instant('staff.deleteError'),
             icon: 'error',
               confirmButtonColor: '#2563eb',
             });

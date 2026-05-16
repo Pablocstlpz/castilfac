@@ -4,19 +4,19 @@
 >
   <div class="h-16 flex items-center px-6 border-b border-slate-700 bg-slate-950">
     <mat-icon class="text-blue-500 mr-2">business</mat-icon>
-    <span class="flex-1 text-lg font-bold tracking-wider">CASTILFAC</span>
+    <span class="flex-1 text-lg font-bold tracking-wider">{{ 'common.brand' | translate | uppercase }}</span>
     <button
       type="button"
       class="md:hidden rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
       (click)="cerrarMenuMovil()"
-      aria-label="Cerrar menú"
+      [attr.aria-label]="'nav.closeMenu' | translate"
     >
       <mat-icon class="text-[22px]">close</mat-icon>
     </button>
   </div>
 
   <div class="p-6 border-b border-slate-800">
-    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Conectado como</p>
+    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">{{ 'admin.connectedAs' | translate }}</p>
     <div class="flex items-center gap-3">
       <div
         class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md"
@@ -24,16 +24,16 @@
         AD
       </div>
       <div>
-        <p class="font-bold text-sm">Administrador</p>
+        <p class="font-bold text-sm">{{ 'admin.adminRole' | translate }}</p>
         <p class="text-xs text-emerald-400 flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Gerencia
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> {{ 'admin.management' | translate }}
         </p>
       </div>
     </div>
   </div>
 
   <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Principal</p>
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">{{ 'admin.main' | translate }}</p>
 
     <a
       routerLink="/inicioadmin"
@@ -44,7 +44,7 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>dashboard</mat-icon>
-      <span class="font-medium text-sm">Panel de Control</span>
+      <span class="font-medium text-sm">{{ 'admin.dashboard' | translate }}</span>
     </a>
 
     <a
@@ -56,7 +56,7 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>request_quote</mat-icon>
-      <span class="font-medium text-sm">Pedidos</span>
+      <span class="font-medium text-sm">{{ 'admin.orders' | translate }}</span>
     </a>
 
     <a
@@ -68,11 +68,11 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>category</mat-icon>
-      <span class="font-medium text-sm">Catalogo y Precios</span>
+      <span class="font-medium text-sm">{{ 'admin.catalogue' | translate }}</span>
     </a>
 
     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-2">
-      Administracion
+      {{ 'admin.administration' | translate }}
     </p>
 
     <a
@@ -84,7 +84,7 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>groups</mat-icon>
-      <span class="font-medium text-sm">Gestion de Personal</span>
+      <span class="font-medium text-sm">{{ 'admin.staff' | translate }}</span>
     </a>
 
     <a
@@ -96,7 +96,7 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>person</mat-icon>
-      <span class="font-medium text-sm">Clientes</span>
+      <span class="font-medium text-sm">{{ 'admin.clients' | translate }}</span>
     </a>
 
     <a
@@ -108,7 +108,7 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>description</mat-icon>
-      <span class="font-medium text-sm">Presupuestos</span>
+      <span class="font-medium text-sm">{{ 'admin.quotes' | translate }}</span>
     </a>
 
     <a
@@ -120,7 +120,7 @@
       (click)="cerrarMenuMovil()"
     >
       <mat-icon>account_balance</mat-icon>
-      <span class="font-medium text-sm">Finanzas</span>
+      <span class="font-medium text-sm">{{ 'admin.finance' | translate }}</span>
     </a>
   </nav>
 </aside>

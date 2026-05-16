@@ -1,5 +1,4 @@
 <div class="h-screen overflow-y-auto p-4 sm:p-8 bg-slate-50 pb-32 font-sans">
-  <!-- Toast de éxito -->
   @if (mensajeExito()) {
     <div
       class="fixed top-6 right-6 z-50 bg-emerald-600 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-lg flex items-center gap-2"
@@ -10,7 +9,6 @@
   }
 
   @if (pedido()) {
-    <!-- CABECERA -->
     <div class="mb-6 flex items-center gap-4">
       <button
         (click)="volverAtras()"
@@ -40,13 +38,13 @@
             }"
             class="px-3 py-1 rounded-full text-[11px] font-extrabold border tracking-wider uppercase"
           >
-            {{ pedido()!.estado_fabricacion }}
+            {{ etiquetaEstadoFabricacion(pedido()!.estado_fabricacion) | uppercase }}
           </span>
         </h1>
         <p class="text-sm text-slate-500 mt-1">
-          Cliente:
+          {{ 'orders.clientLabel' | translate }}
           <span class="font-bold text-slate-700">{{
-            pedido()!.cliente_nombre || 'Sin nombre'
+            pedido()!.cliente_nombre || ('orders.noName' | translate)
           }}</span>
           @if (pedido()!.cliente_direccion) {
             | {{ pedido()!.cliente_direccion }}
@@ -55,26 +53,23 @@
       </div>
     </div>
 
-    <!-- GRID PRINCIPAL -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- ========== COLUMNA IZQUIERDA (2/3) ========== -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Fechas del pedido -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
             <mat-icon class="text-slate-400">info</mat-icon>
-            Información del Pedido
+            {{ 'orders.orderInfo' | translate }}
           </h2>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha Pedido</p>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ 'orders.orderDate' | translate }}</p>
               <p class="text-sm font-semibold text-slate-700 mt-1">
                 {{ pedido()!.fecha_pedido | date: 'dd/MM/yyyy' }}
               </p>
             </div>
             <div>
               <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Inicio Estimado
+                {{ 'orders.estimatedStart' | translate }}
               </p>
               <p class="text-sm font-semibold text-slate-700 mt-1">
                 {{
@@ -86,7 +81,7 @@
             </div>
             <div>
               <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Entrega Estimada
+                {{ 'orders.estimatedDelivery' | translate }}
               </p>
               <p class="text-sm font-semibold text-slate-700 mt-1">
                 {{
@@ -97,7 +92,7 @@
               </p>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Entrega Real</p>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ 'orders.actualDelivery' | translate }}</p>
               <p class="text-sm font-semibold text-slate-700 mt-1">
                 {{
                   pedido()!.fecha_entrega_real
@@ -107,7 +102,7 @@
               </p>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Instalación</p>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ 'orders.installation' | translate }}</p>
               <p class="text-sm font-semibold text-slate-700 mt-1">
                 {{
                   pedido()!.fecha_instalacion
@@ -117,7 +112,7 @@
               </p>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Operario</p>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ 'orders.operator' | translate }}</p>
               <p class="text-sm font-semibold text-slate-700 mt-1">
                 {{ getNombreOperario(pedido()!.operario_asignado_id) }}
               </p>
@@ -125,7 +120,6 @@
           </div>
         </div>
 
-        <!-- Detalle del presupuesto vinculado -->
         @if (presupuesto()) {
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div
@@ -133,7 +127,7 @@
             >
               <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <mat-icon class="text-slate-400">description</mat-icon>
-                Presupuesto Vinculado
+                {{ 'orders.linkedQuote' | translate }}
               </h2>
               <button
                 (click)="verPresupuesto(presupuesto()!.id)"
@@ -143,23 +137,22 @@
               </button>
             </div>
             <div class="p-6">
-              <!-- Desglose de costes -->
               <div class="space-y-3 mb-5">
                 <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span class="text-sm text-slate-500">Coste materiales</span>
+                  <span class="text-sm text-slate-500">{{ 'orders.materialCost' | translate }}</span>
                   <span class="text-sm font-semibold text-slate-700">
                     {{ presupuesto()!.coste_materiales | number: '1.2-2' }} €
                   </span>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span class="text-sm text-slate-500">Coste mano de obra</span>
+                  <span class="text-sm text-slate-500">{{ 'orders.laborCost' | translate }}</span>
                   <span class="text-sm font-semibold text-slate-700">
                     {{ presupuesto()!.coste_mano_obra | number: '1.2-2' }} €
                   </span>
                 </div>
                 @if (presupuesto()!.otros_costes) {
                   <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span class="text-sm text-slate-500">Otros costes</span>
+                    <span class="text-sm text-slate-500">{{ 'orders.otherCosts' | translate }}</span>
                     <span class="text-sm font-semibold text-slate-700">
                       {{ presupuesto()!.otros_costes | number: '1.2-2' }} €
                     </span>
@@ -168,7 +161,7 @@
                 @if (presupuesto()!.descuento_aplicado) {
                   <div class="flex justify-between items-center py-2 border-b border-slate-100">
                     <span class="text-sm text-slate-500">
-                      Descuento
+                      {{ 'orders.discount' | translate }}
                       @if (presupuesto()!.motivo_descuento) {
                         <span class="text-xs text-slate-400 ml-1"
                           >({{ presupuesto()!.motivo_descuento }})</span
@@ -181,18 +174,17 @@
                   </div>
                 }
                 <div class="flex justify-between items-center pt-2">
-                  <span class="text-sm font-bold text-slate-800">Precio final</span>
+                  <span class="text-sm font-bold text-slate-800">{{ 'orders.finalPrice' | translate }}</span>
                   <span class="text-lg font-extrabold text-slate-900">
                     {{ presupuesto()!.precio_final | number: '1.2-2' }} €
                   </span>
                 </div>
               </div>
 
-              <!-- Notas del presupuesto -->
               @if (presupuesto()!.notas_cliente) {
                 <div class="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
                   <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">
-                    Notas para el cliente
+                    {{ 'orders.clientNotes' | translate }}
                   </p>
                   <p class="text-sm text-slate-700">{{ presupuesto()!.notas_cliente }}</p>
                 </div>
@@ -200,7 +192,7 @@
               @if (presupuesto()!.notas_internas) {
                 <div class="mt-3 bg-amber-50 rounded-xl p-4 border border-amber-100">
                   <p class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">
-                    Notas internas
+                    {{ 'orders.internalNotes' | translate }}
                   </p>
                   <p class="text-sm text-slate-700">{{ presupuesto()!.notas_internas }}</p>
                 </div>
@@ -209,16 +201,15 @@
           </div>
         }
 
-        <!-- Notas del pedido / operario -->
         <div class="bg-amber-50 rounded-2xl shadow-sm border border-amber-200 p-6">
           <h2 class="text-sm font-bold text-amber-800 flex items-center gap-2 mb-3">
             <mat-icon class="text-amber-600">edit_note</mat-icon>
-            Notas del Pedido
+            {{ 'orders.orderNotes' | translate }}
           </h2>
           <textarea
             [(ngModel)]="notasPedido"
             rows="4"
-            placeholder="Añade notas o instrucciones para el operario..."
+            [placeholder]="'orders.orderNotesPlaceholder' | translate"
             class="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:ring-amber-400 focus:border-amber-400 resize-none"
           ></textarea>
           <div class="flex justify-end mt-3">
@@ -226,15 +217,13 @@
               (click)="guardarNotas()"
               class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold rounded-lg transition-colors"
             >
-              Guardar notas
+              {{ 'orders.saveNotes' | translate }}
             </button>
           </div>
         </div>
       </div>
 
-      <!-- ========== COLUMNA DERECHA (1/3) ========== -->
       <div class="space-y-6">
-        <!-- Panel de cobro — arriba para que sea visible sin scroll -->
         <div
           class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 text-white relative overflow-hidden"
         >
@@ -244,18 +233,18 @@
             account_balance_wallet
           </mat-icon>
 
-          <h2 class="text-base font-bold mb-4 relative z-10">Estado de Cobro</h2>
+          <h2 class="text-base font-bold mb-4 relative z-10">{{ 'orders.paymentStatus' | translate }}</h2>
 
           <div class="relative z-10">
             <div class="flex justify-between items-end mb-2">
               <div>
-                <p class="text-xs text-slate-400">Total Acordado</p>
+                <p class="text-xs text-slate-400">{{ 'orders.agreedTotal' | translate }}</p>
                 <p class="text-xl font-bold">
                   {{ pedido()!.importe_acordado | number: '1.2-2' }} €
                 </p>
               </div>
               <div class="text-right">
-                <p class="text-xs text-slate-400">Pagado</p>
+                <p class="text-xs text-slate-400">{{ 'orders.paid' | translate }}</p>
                 <p class="text-lg font-bold text-emerald-400">
                   {{ pedido()!.importe_pagado | number: '1.2-2' }} €
                 </p>
@@ -274,7 +263,7 @@
               <input
                 type="number"
                 [(ngModel)]="nuevoPago"
-                placeholder="Importe..."
+                [placeholder]="'orders.amountPlaceholder' | translate"
                 class="w-28 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
               />
               <button
@@ -282,99 +271,96 @@
                 [disabled]="nuevoPago <= 0"
                 class="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold rounded-lg transition-colors"
               >
-                Cobrar
+                {{ 'orders.charge' | translate }}
               </button>
               <button
                 (click)="registrarCobroTotal()"
                 [disabled]="yaLiquidado()"
                 class="px-3 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
-                title="Registrar el importe pendiente completo"
+                [attr.title]="'orders.settleFullTitle' | translate"
               >
-                Liquidar
+                {{ 'orders.settle' | translate }}
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Panel de gestión -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <h2 class="text-base font-bold text-slate-800 mb-5 flex items-center gap-2">
             <mat-icon class="text-slate-400">tune</mat-icon>
-            Gestion del Pedido
+            {{ 'orders.orderManagement' | translate }}
           </h2>
 
           <div class="space-y-5">
-            <!-- Cambiar estado -->
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"
-                >Cambiar Estado</label
-              >
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{
+                'orders.changeStatus' | translate
+              }}</label>
               <div class="grid grid-cols-2 gap-2">
                 <button
                   (click)="cambiarEstado('pendiente')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'pendiente'"
                   class="py-2 text-xs font-bold rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all ring-amber-500 ring-offset-1"
                 >
-                  PENDIENTE
+                  {{ 'orders.btnPending' | translate }}
                 </button>
                 <button
                   (click)="cambiarEstado('en_fabricacion')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'en_fabricacion'"
                   class="py-2 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all ring-blue-500 ring-offset-1"
                 >
-                  FABRICANDO
+                  {{ 'orders.btnManufacturing' | translate }}
                 </button>
                 <button
                   (click)="cambiarEstado('fabricado')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'fabricado'"
                   class="py-2 text-xs font-bold rounded-lg border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 transition-all ring-sky-500 ring-offset-1"
                 >
-                  FABRICADO
+                  {{ 'orders.btnManufactured' | translate }}
                 </button>
                 <button
                   (click)="cambiarEstado('entregado')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'entregado'"
                   class="py-2 text-xs font-bold rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition-all ring-cyan-500 ring-offset-1"
                 >
-                  ENTREGADO
+                  {{ 'orders.btnDelivered' | translate }}
                 </button>
                 <button
                   (click)="cambiarEstado('instalado')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'instalado'"
                   class="py-2 text-xs font-bold rounded-lg border border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 transition-all ring-fuchsia-500 ring-offset-1"
                 >
-                  INSTALADO
+                  {{ 'orders.btnInstalled' | translate }}
                 </button>
                 <button
                   (click)="cambiarEstado('finalizado')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'finalizado'"
                   class="py-2 text-xs font-bold rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all ring-emerald-500 ring-offset-1"
                 >
-                  FINALIZADO
+                  {{ 'orders.btnCompleted' | translate }}
                 </button>
                 <button
                   (click)="cambiarEstado('cancelado')"
                   [class.ring-2]="pedido()!.estado_fabricacion === 'cancelado'"
                   class="col-span-2 py-2 text-xs font-bold rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all ring-red-500 ring-offset-1"
                 >
-                  CANCELADO
+                  {{ 'orders.btnCancelled' | translate }}
                 </button>
               </div>
             </div>
 
             <hr class="border-slate-100" />
 
-            <!-- Asignar operario -->
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"
-                >Asignar a Operario</label
-              >
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{
+                'orders.assignOperator' | translate
+              }}</label>
               <select
                 (change)="asignarOperario($event)"
                 class="w-full p-2.5 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
               >
                 <option value="null" [selected]="pedido()!.operario_asignado_id === null">
-                  Sin asignar
+                  {{ 'orders.unassigned' | translate }}
                 </option>
                 @for (op of usuarios(); track op.id) {
                   <option [value]="op.id" [selected]="pedido()!.operario_asignado_id === op.id">
@@ -386,14 +372,13 @@
 
             <hr class="border-slate-100" />
 
-            <!-- Fechas de entrega e instalación -->
             <div>
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Fechas de Entrega e Instalación
+                {{ 'orders.deliveryInstallDates' | translate }}
               </label>
               <div class="space-y-3">
                 <div>
-                  <p class="text-xs text-slate-400 mb-1">Entrega real</p>
+                  <p class="text-xs text-slate-400 mb-1">{{ 'orders.actualDeliveryDate' | translate }}</p>
                   <input
                     type="date"
                     [(ngModel)]="fechaEntregaReal"
@@ -401,7 +386,7 @@
                   />
                 </div>
                 <div>
-                  <p class="text-xs text-slate-400 mb-1">Instalación</p>
+                  <p class="text-xs text-slate-400 mb-1">{{ 'orders.installation' | translate }}</p>
                   <input
                     type="date"
                     [(ngModel)]="fechaInstalacion"
@@ -412,7 +397,7 @@
                   (click)="guardarFechas()"
                   class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition-colors"
                 >
-                  Guardar fechas
+                  {{ 'orders.saveDates' | translate }}
                 </button>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 // Interfaces basadas en tu modelo
 export interface Empresa {
@@ -38,13 +39,14 @@ export interface Usuario {
 @Component({
   selector: 'app-superadmin',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatSnackBarModule, FormsModule],
+  imports: [CommonModule, MatIconModule, MatSnackBarModule, FormsModule, TranslatePipe],
   templateUrl: './iniciosuperadmin.html',
   styleUrl: './iniciosuperadmin.css',
 })
 export class InicioSuperadmin implements OnInit {
   private http = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
   private apiUrl = 'http://localhost:3000/api'; // Ajusta a tu URL de entorno
 
   // Estado del componente
@@ -79,7 +81,11 @@ export class InicioSuperadmin implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.snackBar.open('Error al cargar empresas', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(
+          this.translate.instant('superadmin.loadError'),
+          this.translate.instant('common.close'),
+          { duration: 3000 },
+        );
         this.cargando.set(false);
       },
     });
@@ -138,7 +144,11 @@ export class InicioSuperadmin implements OnInit {
     this.http.get<Usuario[]>(`${this.apiUrl}/usuarios/empresa/${empresa.id}`).subscribe({
       next: (usuarios) => this.usuariosActivos.set(usuarios),
       error: () =>
-        this.snackBar.open('No hay usuarios o hubo un error', 'Cerrar', { duration: 2000 }),
+        this.snackBar.open(
+          this.translate.instant('superadmin.usersError'),
+          this.translate.instant('common.close'),
+          { duration: 2000 },
+        ),
     });
   }
 
@@ -159,14 +169,20 @@ export class InicioSuperadmin implements OnInit {
     this.http.put(`${this.apiUrl}/empresas/${empresa.id}`, payload).subscribe({
       next: () => {
         empresa.activo = nuevoEstado;
-        this.snackBar.open(`Empresa ${nuevoEstado ? 'activada' : 'desactivada'}`, 'OK', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          this.translate.instant(nuevoEstado ? 'superadmin.companyActivated' : 'superadmin.companyDeactivated'),
+          this.translate.instant('common.ok'),
+          { duration: 3000 },
+        );
         this.calcularKPIs(this.empresas()); // Recalcular ingresos
       },
       error: (err) => {
         console.error(err);
-        this.snackBar.open('Error al cambiar el estado', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(
+          this.translate.instant('superadmin.statusChangeError'),
+          this.translate.instant('common.close'),
+          { duration: 3000 },
+        );
       },
     });
   }
@@ -184,13 +200,19 @@ export class InicioSuperadmin implements OnInit {
     this.http.put(`${this.apiUrl}/empresas/${empresa.id}`, payload).subscribe({
       next: () => {
         empresa.fecha_vencimiento = nuevaFecha;
-        this.snackBar.open('Suscripción extendida 30 días (Pasa a Premium)', 'Genial', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          this.translate.instant('superadmin.subscriptionExtended'),
+          this.translate.instant('superadmin.great'),
+          { duration: 3000 },
+        );
         this.calcularKPIs(this.empresas());
       },
       error: () =>
-        this.snackBar.open('Error al extender suscripción', 'Cerrar', { duration: 3000 }),
+        this.snackBar.open(
+          this.translate.instant('superadmin.extendError'),
+          this.translate.instant('common.close'),
+          { duration: 3000 },
+        ),
     });
   }
 }

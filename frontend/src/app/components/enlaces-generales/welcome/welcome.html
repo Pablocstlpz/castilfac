@@ -1,24 +1,25 @@
 <section class="bg-white dark:bg-gray-900">
     <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-12">
         <a routerLink="/company" class="inline-flex justify-between items-center py-1 px-1 pr-4 mb-7 text-sm text-gray-700 bg-gray-100 rounded-full dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" role="alert">
-            <span class="text-xs bg-primary-600 rounded-full text-white px-4 py-1.5 mr-3">Nuevo</span> <span class="text-sm font-medium">El proyecto Castilfac ya está online. Conócenos.</span> 
+            <span class="text-xs bg-primary-600 rounded-full text-white px-4 py-1.5 mr-3">{{ 'welcome.badgeNew' | translate }}</span>
+            <span class="text-sm font-medium">{{ 'welcome.badgeText' | translate }}</span>
             <svg class="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
         </a>
         <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
-            El software de facturación para la <span class="text-transparent bg-clip-text bg-gradient-to-r to-primary-600 from-blue-400">carpintería metálica</span>
+            {{ 'welcome.title' | translate }} <span class="text-transparent bg-clip-text bg-gradient-to-r to-primary-600 from-blue-400">{{ 'welcome.titleHighlight' | translate }}</span>
         </h1>
         <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">
-            Calcula escandallos, genera presupuestos al instante y gestiona tu taller de aluminio y PVC desde un solo lugar. Olvídate del papel y las hojas de cálculo complejas.
+            {{ 'welcome.subtitle' | translate }}
         </p>
         <div class="flex flex-col mb-8 lg:mb-16 space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
             <a routerLink="/registro" class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900 transition-colors">
-                Prueba gratis de 14 días
+                {{ 'welcome.ctaTrial' | translate }}
                 <svg class="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
             </a>
             <a routerLink="/planes-y-precios" class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800 transition-colors">
                 <svg class="mr-2 -ml-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path></svg>
-                Ver planes y precios
-            </a>  
+                {{ 'welcome.ctaPricing' | translate }}
+            </a>
         </div>
     </div>
 </section>
@@ -26,30 +27,30 @@
 <section class="bg-gray-50 dark:bg-gray-800">
     <div class="py-8 px-4 mx-auto max-w-screen-xl sm:py-16 lg:px-6">
         <div class="max-w-screen-md mb-8 lg:mb-16">
-            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">Diseñado específicamente para tu taller</h2>
-            <p class="text-gray-500 sm:text-xl dark:text-gray-400">Castilfac entiende el idioma de los instaladores y fabricantes. Hemos creado herramientas pensadas para ahorrarte horas de cálculos manuales.</p>
+            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">{{ 'welcome.sectionTitle' | translate }}</h2>
+            <p class="text-gray-500 sm:text-xl dark:text-gray-400">{{ 'welcome.sectionSubtitle' | translate }}</p>
         </div>
         <div class="space-y-8 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-12 md:space-y-0">
             <div>
                 <div class="flex justify-center items-center mb-4 w-10 h-10 rounded-full bg-primary-100 lg:h-12 lg:w-12 dark:bg-primary-900">
                     <svg class="w-5 h-5 text-primary-600 lg:w-6 lg:h-6 dark:text-primary-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
                 </div>
-                <h3 class="mb-2 text-xl font-bold dark:text-white">Presupuestos Rápidos</h3>
-                <p class="text-gray-500 dark:text-gray-400">Genera presupuestos profesionales en PDF con tu logo, listos para enviar al cliente por correo o WhatsApp con un solo clic.</p>
+                <h3 class="mb-2 text-xl font-bold dark:text-white">{{ 'welcome.feature1Title' | translate }}</h3>
+                <p class="text-gray-500 dark:text-gray-400">{{ 'welcome.feature1Desc' | translate }}</p>
             </div>
             <div>
                 <div class="flex justify-center items-center mb-4 w-10 h-10 rounded-full bg-primary-100 lg:h-12 lg:w-12 dark:bg-primary-900">
                     <svg class="w-5 h-5 text-primary-600 lg:w-6 lg:h-6 dark:text-primary-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"></path></svg>
                 </div>
-                <h3 class="mb-2 text-xl font-bold dark:text-white">Motor de Escandallos</h3>
-                <p class="text-gray-500 dark:text-gray-400">Calcula al milímetro cortes de perfiles, mermas, herrajes y metros cuadrados de cristal para saber exactamente tu coste real.</p>
+                <h3 class="mb-2 text-xl font-bold dark:text-white">{{ 'welcome.feature2Title' | translate }}</h3>
+                <p class="text-gray-500 dark:text-gray-400">{{ 'welcome.feature2Desc' | translate }}</p>
             </div>
             <div>
                 <div class="flex justify-center items-center mb-4 w-10 h-10 rounded-full bg-primary-100 lg:h-12 lg:w-12 dark:bg-primary-900">
                     <svg class="w-5 h-5 text-primary-600 lg:w-6 lg:h-6 dark:text-primary-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path></svg>
                 </div>
-                <h3 class="mb-2 text-xl font-bold dark:text-white">Control de Stock</h3>
-                <p class="text-gray-500 dark:text-gray-400">Lleva un registro de todo tu material. Que nunca te falte perfilería a mitad de una obra importante.</p>
+                <h3 class="mb-2 text-xl font-bold dark:text-white">{{ 'welcome.feature3Title' | translate }}</h3>
+                <p class="text-gray-500 dark:text-gray-400">{{ 'welcome.feature3Desc' | translate }}</p>
             </div>
         </div>
     </div>

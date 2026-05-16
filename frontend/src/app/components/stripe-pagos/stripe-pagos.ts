@@ -5,11 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Authentication } from '../../services/authentication';
 import { StripeServices } from '../../services/stripe';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-stripe-pagos',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, RouterLink, MatIconModule, MatSnackBarModule, TranslatePipe],
   templateUrl: './stripe-pagos.html',
   styleUrl: './stripe-pagos.css',
 })
@@ -18,6 +19,7 @@ export class StripePagos implements OnInit {
   private snackBar = inject(MatSnackBar);
   private auth = inject(Authentication);
   private stripeServices = inject(StripeServices);
+  private translate = inject(TranslateService);
 
   public procesando = signal<boolean>(false);
   public pagoExitoso = signal<boolean>(false);
@@ -54,7 +56,11 @@ export class StripePagos implements OnInit {
   activarSuscripcion() {
     // valido que haya empresa en sesion antes de llamar a stripe
     if (!this.empresa_id) {
-      this.snackBar.open('No se pudo identificar la empresa', 'OK', { duration: 3000 });
+      this.snackBar.open(
+        this.translate.instant('stripe.companyNotFound'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
       return;
     }
 
@@ -67,9 +73,11 @@ export class StripePagos implements OnInit {
       },
       error: () => {
         this.procesando.set(false);
-        this.snackBar.open('Error al iniciar el proceso de pago. Inténtalo de nuevo.', 'OK', {
-          duration: 5000,
-        });
+        this.snackBar.open(
+          this.translate.instant('stripe.paymentError'),
+          this.translate.instant('common.ok'),
+          { duration: 5000 },
+        );
       },
     });
   }

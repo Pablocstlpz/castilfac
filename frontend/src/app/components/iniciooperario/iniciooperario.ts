@@ -10,10 +10,11 @@ import { PdfService } from '../../services/pdf';
 import { Pedido } from '../../interfaces/pedido';
 import { Signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-iniciooperario',
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, TranslatePipe],
   templateUrl: './iniciooperario.html',
   styleUrl: './iniciooperario.css',
 })
@@ -26,6 +27,7 @@ export class Iniciooperario {
   private pdfService = inject(PdfService);
   public pedidosArray = signal<Pedido[]>([]);
   private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
 
   ngOnInit(): void {
     this.obtenerPedidosEnFabricacion();
@@ -47,12 +49,17 @@ export class Iniciooperario {
   verHojaFabricacion(presupuestoId: number): void {
     this.presupuestosService.getPresupuesto(presupuestoId).subscribe({
       next: (pres) => this.pdfService.generarHojaFabricacion(pres, []),
-      error: () => this.snackBar.open('No se pudo cargar la hoja de fabricacion', 'Cerrar', {
-        duration: 3000,
-        panelClass: 'snackbar-error',
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
-      }),
+      error: () =>
+        this.snackBar.open(
+          this.translate.instant('operario.sheetLoadError'),
+          this.translate.instant('common.close'),
+          {
+            duration: 3000,
+            panelClass: 'snackbar-error',
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+          },
+        ),
     });
   }
 
@@ -62,21 +69,29 @@ export class Iniciooperario {
       this.pedidosServices.marcarComoFabricado(id).subscribe({
         next: () => {
           this.obtenerPedidosEnFabricacion();
-          this.snackBar.open('Pedido marcado como fabricado', 'Cerrar', {
-            duration: 3000,
-            panelClass: 'snackbar-success',
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
-          });
+          this.snackBar.open(
+            this.translate.instant('operario.orderMarkedFabricated'),
+            this.translate.instant('common.close'),
+            {
+              duration: 3000,
+              panelClass: 'snackbar-success',
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+            },
+          );
         },
         error: (err) => {
           console.error(err);
-          this.snackBar.open(err?.message ?? 'No se pudo marcar el pedido', 'Cerrar', {
-            duration: 4000,
-            panelClass: 'snackbar-error',
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
-          });
+          this.snackBar.open(
+            err?.message ?? this.translate.instant('operario.markOrderError'),
+            this.translate.instant('common.close'),
+            {
+              duration: 4000,
+              panelClass: 'snackbar-error',
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+            },
+          );
         },
       });
     } catch (error) {

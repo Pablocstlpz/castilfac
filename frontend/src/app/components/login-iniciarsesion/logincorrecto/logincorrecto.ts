@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink, Router, RouterModule } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Authentication } from '../../../services/authentication';
 import { inject } from '@angular/core';
 import { EmpresasServices } from '../../../services/empresas';
@@ -10,7 +11,7 @@ import { ComprobarUsuarioEmpresa } from '../../../services/comprobar-usuario-emp
 
 @Component({
   selector: 'app-logincorrecto',
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, TranslatePipe],
   templateUrl: './logincorrecto.html',
   styleUrl: './logincorrecto.css',
 })

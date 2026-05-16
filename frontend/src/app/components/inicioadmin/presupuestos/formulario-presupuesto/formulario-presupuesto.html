@@ -12,11 +12,15 @@
           <mat-icon class="text-white text-3xl">request_quote</mat-icon>
         </div>
         <div class="min-w-0">
-          <h1 class="text-2xl font-bold text-white m-0">
-            {{ id ? 'Editar Presupuesto (V' + presupuesto.version + ')' : 'Nuevo Presupuesto' }}
-          </h1>
+          @if (id) {
+            <h1 class="text-2xl font-bold text-white m-0">
+              {{ 'quotes.formEditTitle' | translate: { version: presupuesto.version } }}
+            </h1>
+          } @else {
+            <h1 class="text-2xl font-bold text-white m-0">{{ 'quotes.formNewTitle' | translate }}</h1>
+          }
           <p class="text-blue-100 text-sm mt-1">
-            Calculadora de costes, mermas y márgenes comerciales
+            {{ 'quotes.formSubtitle' | translate }}
           </p>
         </div>
       </div>
@@ -25,7 +29,7 @@
         <span
           class="bg-white/20 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-white/30 shadow-sm"
         >
-          Versión: {{ presupuesto.version }}
+          {{ 'quotes.version' | translate }}: {{ presupuesto.version }}
         </span>
       }
     </div>
@@ -39,7 +43,7 @@
             <label
               class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block flex items-center gap-1"
             >
-              <mat-icon class="text-sm text-blue-500">person</mat-icon> Cliente Responsable *
+              <mat-icon class="text-sm text-blue-500">person</mat-icon> {{ 'quotes.responsibleClient' | translate }}
             </label>
             <select
               [(ngModel)]="presupuesto.cliente_id"
@@ -48,7 +52,7 @@
               required
               class="w-full p-3 bg-white border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold"
             >
-              <option [ngValue]="null" disabled>Selecciona un cliente de la lista...</option>
+              <option [ngValue]="null" disabled>{{ 'quotes.selectClient' | translate }}</option>
               @for (c of clientesLista; track c.id) {
                 <option [value]="c.id">{{ c.nombre_empresa_o_particular }}</option>
               }
@@ -58,8 +62,8 @@
             <label
               class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block flex items-center gap-1"
             >
-              <mat-icon class="text-sm text-blue-500">calendar_month</mat-icon> Validez del
-              Presupuesto
+              <mat-icon class="text-sm text-blue-500">calendar_month</mat-icon>
+              {{ 'quotes.validUntil' | translate }}
             </label>
             <input
               type="date"
@@ -74,7 +78,7 @@
           <h2
             class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2"
           >
-            <mat-icon class="text-blue-500 text-sm">view_list</mat-icon> Líneas de Fabricación
+            <mat-icon class="text-blue-500 text-sm">view_list</mat-icon> {{ 'quotes.fabricationLines' | translate }}
           </h2>
 
           @for (el of presupuesto.elementos; track $index; let i = $index) {
@@ -91,7 +95,7 @@
                     required
                     class="bg-slate-700 border-none text-white text-sm font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
                   >
-                    <option [ngValue]="null" disabled>Tipo de Producto...</option>
+                    <option [ngValue]="null" disabled>{{ 'quotes.productType' | translate }}</option>
                     @for (cat of categoriasLista; track cat.id) {
                       <option [value]="cat.nombre">{{ cat.nombre }}</option>
                     }
@@ -100,7 +104,7 @@
                   <input
                     [(ngModel)]="el.descripcion"
                     name="desc_{{ i }}"
-                    placeholder="Ej: Ventana corredera Salón..."
+                    [placeholder]="'quotes.lineDescPlaceholder' | translate"
                     class="flex-1 bg-transparent border-b border-slate-600 text-white font-bold text-lg outline-none placeholder-slate-500 w-full focus:border-blue-400"
                   />
                 </div>
@@ -109,7 +113,7 @@
                   <div
                     class="text-right flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700"
                   >
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Tiempo(min):</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">{{ 'quotes.timeMinutes' | translate }}</span>
                     <input
                       type="number"
                       [(ngModel)]="el.tiempo_estimado_minutos"
@@ -122,7 +126,7 @@
                     type="button"
                     (click)="eliminarElemento(i)"
                     class="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors flex items-center justify-center"
-                    title="Borrar línea"
+                    [attr.title]="'quotes.deleteLine' | translate"
                   >
                     <mat-icon>delete_outline</mat-icon>
                   </button>
@@ -133,7 +137,7 @@
                 class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white border-b border-slate-100"
               >
                 <div>
-                  <label class="text-[10px] font-bold text-slate-400 uppercase">Ancho (m)</label
+                  <label class="text-[10px] font-bold text-slate-400 uppercase">{{ 'quotes.widthM' | translate }}</label
                   ><input
                     type="number"
                     [(ngModel)]="el.medida_ancho"
@@ -143,7 +147,7 @@
                   />
                 </div>
                 <div>
-                  <label class="text-[10px] font-bold text-slate-400 uppercase">Alto (m)</label
+                  <label class="text-[10px] font-bold text-slate-400 uppercase">{{ 'quotes.heightM' | translate }}</label
                   ><input
                     type="number"
                     [(ngModel)]="el.medida_alto"
@@ -153,7 +157,7 @@
                   />
                 </div>
                 <div>
-                  <label class="text-[10px] font-bold text-slate-400 uppercase">Cantidad</label
+                  <label class="text-[10px] font-bold text-slate-400 uppercase">{{ 'quotes.quantity' | translate }}</label
                   ><input
                     type="number"
                     [(ngModel)]="el.cantidad"
@@ -163,7 +167,7 @@
                   />
                 </div>
                 <div class="flex flex-col justify-end">
-                  <p class="text-[10px] font-bold text-slate-400 uppercase">Total Pieza</p>
+                  <p class="text-[10px] font-bold text-slate-400 uppercase">{{ 'quotes.pieceTotal' | translate }}</p>
                   <p class="text-xl font-black text-slate-800">
                     {{ el.coste_linea || 0 | number: '1.2-2' }}€
                   </p>
@@ -173,15 +177,14 @@
               <div class="p-4 bg-white border-b border-slate-100">
                 <label
                   class="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-1"
-                  ><mat-icon class="text-[14px] w-[14px] h-[14px]">edit_note</mat-icon> Notas de
-                  Fabricación para Taller</label
+                  ><mat-icon class="text-[14px] w-[14px] h-[14px]">edit_note</mat-icon> {{ 'quotes.fabNotes' | translate }}</label
                 >
                 <input
                   type="text"
                   [(ngModel)]="el.notas_fabricacion"
                   name="notas_fab_{{ i }}"
                   class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ej: Prestar atención al descuadre..."
+                  [placeholder]="'quotes.fabNotesPlaceholder' | translate"
                 />
               </div>
 
@@ -199,9 +202,9 @@
                           class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded inline-block mt-1"
                         >
                           {{ mat.cantidad_calculada || 0 | number: '1.2-2' }} {{ mat.tipo_unidad }}
-                          <span class="text-slate-400 ml-1"
-                            >(Inc. merma {{ mat.factor_desperdicio }}%)</span
-                          >
+                          <span class="text-slate-400 ml-1">{{
+                            'quotes.wasteIncluded' | translate: { pct: mat.factor_desperdicio }
+                          }}</span>
                         </p>
                       </div>
                       <div class="flex items-center gap-4">
@@ -225,7 +228,7 @@
                     #selectorMat
                     class="flex-1 p-3 border border-slate-300 rounded-xl bg-white outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">+ Selecciona material / cristal para añadir...</option>
+                    <option value="">{{ 'quotes.selectMaterial' | translate }}</option>
                     @for (m of materialesLista; track m.id) {
                       <option [value]="m.id">
                         {{ m.nombre }} ({{ m.precio_venta }}€ / {{ m.tipo_unidad }})
@@ -237,7 +240,7 @@
                     (click)="agregarMaterial(el, selectorMat.value); selectorMat.value = ''"
                     class="bg-blue-100 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-200 transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
-                    <mat-icon>add</mat-icon> Añadir Material
+                    <mat-icon>add</mat-icon> {{ 'quotes.addMaterial' | translate }}
                   </button>
                 </div>
               </div>
@@ -249,7 +252,7 @@
             (click)="agregarElemento()"
             class="w-full py-5 border-2 border-dashed border-blue-200 bg-blue-50/50 text-blue-600 rounded-2xl font-black hover:bg-blue-100 hover:border-blue-300 transition-all uppercase tracking-widest flex justify-center items-center gap-2"
           >
-            <mat-icon>add_circle_outline</mat-icon> Añadir Nuevo Producto / Ventana
+            <mat-icon>add_circle_outline</mat-icon> {{ 'quotes.addProduct' | translate }}
           </button>
         </div>
 
@@ -260,11 +263,11 @@
             <h3
               class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2"
             >
-              <mat-icon class="text-[16px] w-[16px] h-[16px]">build</mat-icon> Taller y Extras
+              <mat-icon class="text-[16px] w-[16px] h-[16px]">build</mat-icon> {{ 'quotes.workshopExtras' | translate }}
             </h3>
             <div>
               <label class="text-[10px] font-bold text-blue-500 uppercase block mb-1"
-                >Precio Hora Taller (€/h)</label
+                >{{ 'quotes.hourlyRate' | translate }}</label
               >
               <input
                 type="number"
@@ -276,7 +279,7 @@
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1"
-                >Gastos Extra (€)</label
+                >{{ 'quotes.extraCosts' | translate }}</label
               >
               <input
                 type="number"
@@ -292,11 +295,11 @@
             <h3
               class="text-xs font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2"
             >
-              <mat-icon class="text-[16px] w-[16px] h-[16px]">trending_up</mat-icon> Rentabilidad
+              <mat-icon class="text-[16px] w-[16px] h-[16px]">trending_up</mat-icon> {{ 'quotes.profitability' | translate }}
             </h3>
             <div>
               <label class="text-[10px] font-bold text-emerald-500 uppercase block mb-1"
-                >Margen Comercial (%)</label
+                >{{ 'quotes.marginPct' | translate }}</label
               >
               <input
                 type="number"
@@ -308,7 +311,7 @@
             </div>
             <div class="bg-white p-3 border border-slate-200 rounded-lg mt-2">
               <span class="text-[10px] font-bold text-slate-400 uppercase block"
-                >Precio Base (Sin desc.)</span
+                >{{ 'quotes.basePriceNoDisc' | translate }}</span
               >
               <span class="text-lg font-black text-slate-800"
                 >{{ presupuesto.precio_sin_descuento || 0 | number: '1.2-2' }}€</span
@@ -320,12 +323,12 @@
             <h3
               class="text-xs font-black text-indigo-500 uppercase tracking-widest flex items-center gap-2"
             >
-              <mat-icon class="text-[16px] w-[16px] h-[16px]">local_offer</mat-icon> Descuento a
-              Cliente
+              <mat-icon class="text-[16px] w-[16px] h-[16px]">local_offer</mat-icon>
+              {{ 'quotes.clientDiscount' | translate }}
             </h3>
             <div>
               <label class="text-[10px] font-bold text-indigo-400 uppercase block mb-1"
-                >Rebaja Aplicada (%)</label
+                >{{ 'quotes.discountApplied' | translate }}</label
               >
               <input
                 type="number"
@@ -337,14 +340,14 @@
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1"
-                >Motivo / Promoción</label
+                >{{ 'quotes.discountReason' | translate }}</label
               >
               <input
                 type="text"
                 [(ngModel)]="presupuesto.motivo_descuento"
                 name="motivo_descuento"
                 class="w-full p-2.5 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Ej: Ficha de cliente o VIP"
+                [placeholder]="'quotes.discountReasonPlaceholder' | translate"
               />
             </div>
           </div>
@@ -353,28 +356,27 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase flex items-center gap-2 mb-2"
-              ><mat-icon class="text-[16px] w-[16px] h-[16px]">lock</mat-icon> Notas Internas
-              (Privado)</label
+              ><mat-icon class="text-[16px] w-[16px] h-[16px]">lock</mat-icon> {{ 'quotes.internalNotes' | translate }}</label
             >
             <textarea
               [(ngModel)]="presupuesto.notas_internas"
               name="notas_int"
               rows="3"
               class="w-full p-4 border border-slate-300 rounded-2xl outline-none text-sm italic focus:ring-2 focus:ring-slate-400"
-              placeholder="Anotaciones generales para el taller..."
+              [placeholder]="'quotes.internalNotesPlaceholder' | translate"
             ></textarea>
           </div>
           <div>
             <label class="text-xs font-bold text-blue-600 uppercase flex items-center gap-2 mb-2"
-              ><mat-icon class="text-[16px] w-[16px] h-[16px]">visibility</mat-icon> Notas para el
-              Cliente</label
+              ><mat-icon class="text-[16px] w-[16px] h-[16px]">visibility</mat-icon>
+              {{ 'quotes.clientNotes' | translate }}</label
             >
             <textarea
               [(ngModel)]="presupuesto.notas_cliente"
               name="notas_cli"
               rows="3"
               class="w-full p-4 border border-blue-200 bg-blue-50/50 rounded-2xl outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500"
-              placeholder="Textos que saldrán impresos en el PDF del presupuesto..."
+              [placeholder]="'quotes.clientNotesPlaceholder' | translate"
             ></textarea>
           </div>
         </div>
@@ -385,7 +387,7 @@
           <div class="flex gap-4 sm:gap-8 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
             <div class="min-w-fit">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Mat. + Extras
+                {{ 'quotes.matExtras' | translate }}
               </p>
               <p class="text-xl font-bold text-slate-800">
                 {{
@@ -396,7 +398,7 @@
             </div>
             <div class="min-w-fit border-l border-slate-200 pl-4 sm:pl-8">
               <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">
-                Taller ({{ totalMinutosFabricacion }}m)
+                {{ 'quotes.workshop' | translate: { minutes: totalMinutosFabricacion } }}
               </p>
               <p class="text-xl font-bold text-blue-700">
                 {{ presupuesto.coste_mano_obra || 0 | number: '1.2-2' }}€
@@ -404,7 +406,7 @@
             </div>
             <div class="min-w-fit border-l border-slate-200 pl-4 sm:pl-8">
               <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-                TOTAL A FACTURAR
+                {{ 'quotes.totalToInvoice' | translate }}
               </p>
               <p class="text-3xl sm:text-4xl font-black text-slate-900">
                 {{ presupuesto.precio_final || 0 | number: '1.2-2' }}€
@@ -419,7 +421,7 @@
               (click)="cancelar()"
               class="flex-1 md:flex-none h-14 px-6 border-slate-300 font-bold text-slate-500 uppercase tracking-wider rounded-xl"
             >
-              Cancelar
+              {{ 'common.cancel' | translate }}
             </button>
             <button
               mat-flat-button
@@ -429,7 +431,11 @@
               class="flex-1 md:flex-none h-14 px-8 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold shadow-lg shadow-blue-200 uppercase tracking-wider rounded-xl flex items-center justify-center gap-2"
             >
               <mat-icon>save</mat-icon>
-              {{ id ? 'Actualizar (V' + (presupuesto.version + 1) + ')' : 'Guardar' }}
+              @if (id) {
+                {{ 'quotes.updateVersion' | translate: { version: presupuesto.version + 1 } }}
+              } @else {
+                {{ 'common.save' | translate }}
+              }
             </button>
           </div>
         </div>

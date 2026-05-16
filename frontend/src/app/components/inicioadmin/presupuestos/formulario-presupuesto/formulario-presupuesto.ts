@@ -18,11 +18,12 @@ import { ClientesServices } from '../../../../services/clientes';
 import { Materiales } from '../../../../services/materiales';
 import { Presupuestos } from '../../../../services/presupuestos';
 import { Categorias } from '../../../../services/categorias';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-presupuesto-formulario',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule, TranslatePipe],
   templateUrl: './formulario-presupuesto.html',
   styleUrl: './formulario-presupuesto.css',
 })
@@ -38,6 +39,7 @@ export class FormularioPresupuesto implements OnInit {
   private presupuestosService = inject(Presupuestos);
   private categoriasService = inject(Categorias);
   private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
 
   // Arrays tipados con tus interfaces
   public clientesLista: Cliente[] = [];
@@ -121,7 +123,7 @@ export class FormularioPresupuesto implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.snackBar.open('Error al cargar el presupuesto', 'Cerrar', {
+        this.snackBar.open(this.translate.instant('quotes.loadError'), this.translate.instant('common.close'), {
           duration: 3000,
           panelClass: ['snack-error'],
         });
@@ -135,7 +137,9 @@ export class FormularioPresupuesto implements OnInit {
     if (clienteSel) {
       this.presupuesto.descuento_aplicado = clienteSel.descuento_fijo || 0;
       this.presupuesto.motivo_descuento =
-        this.presupuesto.descuento_aplicado > 0 ? 'Descuento comercial por ficha de cliente' : '';
+        this.presupuesto.descuento_aplicado > 0
+          ? this.translate.instant('quotes.clientDiscountReason')
+          : '';
       this.recalcularTodo();
     }
   }
@@ -238,7 +242,7 @@ export class FormularioPresupuesto implements OnInit {
 
   onSubmit(): void {
     if (!this.presupuesto.cliente_id || this.presupuesto.elementos.length === 0) {
-      this.snackBar.open('Debes seleccionar un cliente y añadir al menos un elemento.', 'Cerrar', {
+      this.snackBar.open(this.translate.instant('quotes.validationClientElement'), this.translate.instant('common.close'), {
         duration: 3000,
         panelClass: ['snack-error'],
       });
@@ -250,14 +254,14 @@ export class FormularioPresupuesto implements OnInit {
 
       this.presupuestosService.updatePresupuesto(this.id, this.presupuesto).subscribe({
         next: () => {
-          this.snackBar.open('Presupuesto actualizado correctamente', 'Cerrar', {
+          this.snackBar.open(this.translate.instant('quotes.updatedSnack'), this.translate.instant('common.close'), {
             duration: 3000,
             panelClass: ['snack-success'],
           });
           this.router.navigate(['/inicioadmin/presupuestos']);
         },
         error: (err: Error) => {
-          this.snackBar.open(err.message ?? 'Error al actualizar', 'Cerrar', {
+          this.snackBar.open(err.message ?? this.translate.instant('quotes.updateErrorSnack'), this.translate.instant('common.close'), {
             duration: 3000,
             panelClass: ['snack-error'],
           });
@@ -266,14 +270,14 @@ export class FormularioPresupuesto implements OnInit {
     } else {
       this.presupuestosService.addPresupuesto(this.presupuesto).subscribe({
         next: () => {
-          this.snackBar.open('Presupuesto creado correctamente', 'Cerrar', {
+          this.snackBar.open(this.translate.instant('quotes.createdSnack'), this.translate.instant('common.close'), {
             duration: 3000,
             panelClass: ['snack-success'],
           });
           this.router.navigate(['/inicioadmin/presupuestos']);
         },
         error: (err: Error) => {
-          this.snackBar.open(err.message ?? 'Error al crear', 'Cerrar', {
+          this.snackBar.open(err.message ?? this.translate.instant('quotes.createErrorSnack'), this.translate.instant('common.close'), {
             duration: 3000,
             panelClass: ['snack-error'],
           });

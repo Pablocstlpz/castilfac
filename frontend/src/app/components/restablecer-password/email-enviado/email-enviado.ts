@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UsuariosServices } from '../../../services/usuarios';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-email-enviado',
   standalone: true,
-  imports: [MatIconModule, MatSnackBarModule],
+  imports: [MatIconModule, MatSnackBarModule, TranslatePipe],
   templateUrl: './email-enviado.html'
 })
 export class EmailEnviado implements OnInit {
@@ -17,6 +18,7 @@ export class EmailEnviado implements OnInit {
   private snackBar = inject(MatSnackBar);
   // Inyectamos el servicio UsuariosServices para poder reenviar el correo de recuperacion si el usuario no lo ha recibido
   private usuarioServicios = inject(UsuariosServices);
+  private translate = inject(TranslateService);
 
   // Guardamos el email que viene del state de la navegacion anterior para poder reenviarlo
   private email = '';
@@ -49,11 +51,11 @@ export class EmailEnviado implements OnInit {
         //desactivo el estado de carga
         this.cargando.set(false);
         //muestro un mensaje de exito al usuario
-        this.snackBar.open('¡Correo reenviado! Comprueba de nuevo tu bandeja.', 'Genial', {
-          duration: 4000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom'
-        });
+        this.snackBar.open(
+          this.translate.instant('resetPassword.resendSuccess'),
+          this.translate.instant('resetPassword.resendOk'),
+          { duration: 4000, horizontalPosition: 'center', verticalPosition: 'bottom' },
+        );
       },
       error: (error) => {
         //enseño error
@@ -61,11 +63,11 @@ export class EmailEnviado implements OnInit {
         //desactivo el estado de carga
         this.cargando.set(false);
         //muestro el mismo mensaje de exito para no revelar si el email existe o no en la base de datos
-        this.snackBar.open('¡Correo reenviado! Comprueba de nuevo tu bandeja.', 'Genial', {
-          duration: 4000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom'
-        });
+        this.snackBar.open(
+          this.translate.instant('resetPassword.resendSuccess'),
+          this.translate.instant('resetPassword.resendOk'),
+          { duration: 4000, horizontalPosition: 'center', verticalPosition: 'bottom' },
+        );
       }
     });
   }

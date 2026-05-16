@@ -5,10 +5,10 @@
         class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3"
       >
         <mat-icon class="text-blue-600 text-3xl">precision_manufacturing</mat-icon>
-        Control de Produccion
+        {{ 'orders.title' | translate }}
       </h1>
       <p class="text-slate-500 mt-2">
-        Seguimiento en tiempo real de los trabajos en taller y estados de pago.
+        {{ 'orders.subtitle' | translate }}
       </p>
     </div>
   </div>
@@ -22,7 +22,7 @@
         type="text"
         [ngModel]="busqueda()"
         (ngModelChange)="busqueda.set($event)"
-        placeholder="Buscar por nº pedido o cliente..."
+        [placeholder]="'orders.searchPlaceholder' | translate"
         class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
       />
     </div>
@@ -32,14 +32,14 @@
       (ngModelChange)="filtroEstado.set($event)"
       class="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="todos">Todos</option>
-      <option value="pendiente">Pendiente</option>
-      <option value="en_fabricacion">En Fabricación</option>
-      <option value="fabricado">Fabricado</option>
-      <option value="entregado">Entregado</option>
-      <option value="instalado">Instalado</option>
-      <option value="finalizado">Finalizado</option>
-      <option value="cancelado">Cancelado</option>
+      <option value="todos">{{ 'common.all' | translate }}</option>
+      <option value="pendiente">{{ 'orders.statusPending' | translate }}</option>
+      <option value="en_fabricacion">{{ 'orders.statusInProduction' | translate }}</option>
+      <option value="fabricado">{{ 'orders.statusManufactured' | translate }}</option>
+      <option value="entregado">{{ 'orders.statusDelivered' | translate }}</option>
+      <option value="instalado">{{ 'orders.statusInstalled' | translate }}</option>
+      <option value="finalizado">{{ 'orders.statusCompleted' | translate }}</option>
+      <option value="cancelado">{{ 'orders.statusCancelled' | translate }}</option>
     </select>
   </div>
 
@@ -51,27 +51,27 @@
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Pedido / Cliente
+              {{ 'orders.colOrderClient' | translate }}
             </th>
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Estado Fabricacion
+              {{ 'orders.colFabStatus' | translate }}
             </th>
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Operario Asignado
+              {{ 'orders.colOperator' | translate }}
             </th>
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Cobro
+              {{ 'orders.colPayment' | translate }}
             </th>
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Entrega
+              {{ 'orders.colDelivery' | translate }}
             </th>
             <th class="relative px-6 py-4"></th>
           </tr>
@@ -107,7 +107,7 @@
                   }"
                   class="inline-flex items-center justify-center w-32.5 px-2.5 py-1.5 rounded-full text-[11px] font-extrabold border tracking-wider"
                 >
-                  {{ pedido.estado_fabricacion | uppercase }}
+                  {{ etiquetaEstadoFabricacion(pedido.estado_fabricacion) | uppercase }}
                 </span>
               </td>
 
@@ -170,7 +170,7 @@
             <tr>
               <td colspan="6" class="px-6 py-10 text-center text-slate-500">
                 <mat-icon class="text-4xl text-slate-300 mb-2">inventory_2</mat-icon>
-                <p>No se han encontrado pedidos.</p>
+                <p>{{ 'orders.empty' | translate }}</p>
               </td>
             </tr>
           }
@@ -180,8 +180,9 @@
 
     <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
       <span class="text-sm text-slate-500">
-        Mostrando
-        <span class="font-medium text-slate-900">{{ pedidos().length }}</span> pedidos
+        {{ 'orders.showing' | translate }}
+        <span class="font-medium text-slate-900">{{ pedidos().length }}</span>
+        {{ 'orders.ordersCount' | translate }}
       </span>
     </div>
   </div>

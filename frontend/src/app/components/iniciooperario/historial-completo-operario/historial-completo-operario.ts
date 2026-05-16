@@ -7,10 +7,11 @@ import { Usuario } from '../../../interfaces/usuario';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-historial-completo-operario',
-  imports: [MatIcon, DatePipe, RouterLink],
+  imports: [MatIcon, DatePipe, RouterLink, TranslatePipe],
   templateUrl: './historial-completo-operario.html',
   styleUrl: './historial-completo-operario.css',
 })

@@ -8,9 +8,9 @@
       </div>
       <div>
         <h1 class="text-xl font-bold text-white m-0 tracking-tight">
-          {{ id ? 'Editar Usuario' : 'Nuevo Usuario' }}
+          {{ (id ? 'staff.formEditTitle' : 'staff.formNewTitle') | translate }}
         </h1>
-        <p class="text-blue-100 text-sm mt-0.5">Completa los datos para gestionar un usuario en el sistema</p>
+        <p class="text-blue-100 text-sm mt-0.5">{{ 'staff.formSubtitle' | translate }}</p>
       </div>
     </div>
 
@@ -19,24 +19,24 @@
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">
 
           <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Nombre completo</mat-label>
+            <mat-label>{{ 'staff.fullNameLabel' | translate }}</mat-label>
             <span matTextPrefix><mat-icon class="text-slate-400 mr-2">badge</mat-icon></span>
             <input
               matInput
               formControlName="nombre"
-              placeholder="Ej: Paco González"
+              [placeholder]="'staff.namePlaceholder' | translate"
               autocomplete="name"
             />
             @if (nombre.errors?.['required'] && nombre.touched) {
-              <mat-error>El nombre es requerido</mat-error>
+              <mat-error>{{ 'staff.nameRequired' | translate }}</mat-error>
             }
             @if (nombre.errors?.['maxlength'] && nombre.touched) {
-              <mat-error>Máximo 100 caracteres</mat-error>
+              <mat-error>{{ 'staff.nameMaxLength' | translate }}</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Correo electrónico</mat-label>
+            <mat-label>{{ 'clients.emailLabel' | translate }}</mat-label>
             <span matTextPrefix><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span>
             <input
               matInput
@@ -46,15 +46,15 @@
               autocomplete="email"
             />
             @if (email.errors?.['required'] && email.touched) {
-              <mat-error>El correo es requerido</mat-error>
+              <mat-error>{{ 'staff.emailRequired' | translate }}</mat-error>
             }
             @if (email.errors?.['email'] && email.touched) {
-              <mat-error>Formato de correo inválido</mat-error>
+              <mat-error>{{ 'clients.emailInvalid' | translate }}</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Contraseña</mat-label>
+            <mat-label>{{ 'staff.passwordLabel' | translate }}</mat-label>
             <span matTextPrefix><mat-icon class="text-slate-400 mr-2">key</mat-icon></span>
             <input
               matInput
@@ -64,21 +64,21 @@
               autocomplete="new-password"
             />
             @if (password.errors?.['required'] && password.touched) {
-              <mat-error>La contraseña es requerida</mat-error>
+              <mat-error>{{ 'staff.passwordRequired' | translate }}</mat-error>
             }
             @if (password.errors?.['minlength'] && password.touched) {
-              <mat-error>Mínimo 6 caracteres</mat-error>
+              <mat-error>{{ 'staff.passwordMinLength' | translate }}</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Rol</mat-label>
-            <mat-select formControlName="rol" placeholder="Selecciona un rol">
-              <mat-option value="operario">Operario</mat-option>
-              <mat-option value="admin">Administrador</mat-option>
+            <mat-label>{{ 'staff.roleLabel' | translate }}</mat-label>
+            <mat-select formControlName="rol" [placeholder]="'staff.rolePlaceholder' | translate">
+              <mat-option value="operario">{{ 'staff.roleOperator' | translate }}</mat-option>
+              <mat-option value="admin">{{ 'staff.roleAdmin' | translate }}</mat-option>
             </mat-select>
             @if (rol.errors?.['required'] && rol.touched) {
-              <mat-error>El rol es requerido</mat-error>
+              <mat-error>{{ 'staff.roleRequired' | translate }}</mat-error>
             }
           </mat-form-field>
 
@@ -87,7 +87,7 @@
         <footer
           class="-mx-8 mt-6 border-t border-slate-200/90 bg-linear-to-b from-slate-50 to-slate-100/70 px-8 py-6"
           role="group"
-          aria-label="Acciones del formulario"
+          [attr.aria-label]="'common.actions' | translate"
         >
           <div class="flex gap-3">
             <button
@@ -97,7 +97,7 @@
               class="rounded-xl! flex min-h-11 flex-1 items-center justify-center gap-2 bg-white px-4 text-slate-700 hover:bg-slate-50"
             >
               <mat-icon class="text-slate-500 h-5 w-5 text-[20px] leading-5">arrow_back</mat-icon>
-              <span>Volver</span>
+              <span>{{ 'common.back' | translate }}</span>
             </button>
 
             <button
@@ -106,7 +106,7 @@
               (click)="onReset()"
               class="rounded-xl! flex min-h-11 flex-1 items-center justify-center bg-white px-4 text-slate-600 hover:bg-slate-50"
             >
-              Limpiar
+              {{ 'staff.clear' | translate }}
             </button>
 
             <button
@@ -117,7 +117,7 @@
               class="rounded-xl! flex min-h-11 flex-2 items-center justify-center gap-2 font-semibold shadow-md shadow-blue-900/15 transition-shadow hover:shadow-lg hover:shadow-blue-900/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
             >
               <mat-icon class="h-5 w-5 text-[20px] leading-5">save</mat-icon>
-              <span>{{ id ? 'Actualizar' : 'Guardar' }}</span>
+              <span>{{ (id ? 'staff.update' : 'common.save') | translate }}</span>
             </button>
           </div>
         </footer>

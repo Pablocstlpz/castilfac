@@ -5,11 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UsuariosServices } from '../../../services/usuarios';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-password-nueva',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, TranslatePipe],
   templateUrl: './password-nueva.html',
 })
 export class PasswordNueva implements OnInit {
@@ -22,6 +23,7 @@ export class PasswordNueva implements OnInit {
   private snackBar = inject(MatSnackBar);
   // Inyectamos el servicio UsuariosServices para poder llamar al backend y restablecer la contraseña con el token
   private usuarioServicios = inject(UsuariosServices);
+  private translate = inject(TranslateService);
 
   // Variables del formulario de nueva contraseña
   public password = '';
@@ -43,7 +45,11 @@ export class PasswordNueva implements OnInit {
 
       //si no hay token, el enlace no es valido, aviso al usuario
       if (!this.tokenRecuperacion) {
-        this.snackBar.open('Enlace no válido o caducado.', 'Cerrar', { duration: 4000 });
+        this.snackBar.open(
+          this.translate.instant('resetPassword.linkInvalid'),
+          this.translate.instant('common.close'),
+          { duration: 4000 },
+        );
       }
     });
   }
@@ -61,7 +67,11 @@ export class PasswordNueva implements OnInit {
 
     //valido que tengamos token antes de hacer la peticion
     if (!this.tokenRecuperacion) {
-      this.snackBar.open('Enlace no válido o caducado. Solicita uno nuevo.', 'Cerrar', { duration: 4000 });
+      this.snackBar.open(
+        this.translate.instant('resetPassword.linkInvalidNew'),
+        this.translate.instant('common.close'),
+        { duration: 4000 },
+      );
       return;
     }
 
@@ -83,7 +93,11 @@ export class PasswordNueva implements OnInit {
         //desactivo el estado de carga
         this.cargando.set(false);
         //muestro el mensaje de error que devuelve el backend (token expirado, no valido, etc)
-        this.snackBar.open(error.message || 'El enlace no es válido o ha caducado.', 'Cerrar', { duration: 5000 });
+        this.snackBar.open(
+          error.message || this.translate.instant('resetPassword.linkExpired'),
+          this.translate.instant('common.close'),
+          { duration: 5000 },
+        );
       }
     });
   }

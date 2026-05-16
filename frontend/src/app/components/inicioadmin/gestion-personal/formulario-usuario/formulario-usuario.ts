@@ -23,6 +23,7 @@ import {
   LIMITES,
   REGEX_NOMBRE_PERSONA,
 } from '../../../../shared/regex';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-formulario-usuario',
@@ -35,6 +36,7 @@ import {
     MatOptionModule,
     MatSelectModule,
     MatSnackBarModule,
+    TranslatePipe,
   ],
   templateUrl: './formulario-usuario.html',
 })
@@ -47,6 +49,7 @@ export class FormularioUsuario {
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
+  private translate = inject(TranslateService);
   private fb = inject(FormBuilder);
 
   //Si esta seteado estamos editando; si es null/undefined estamos creando.
@@ -158,25 +161,29 @@ export class FormularioUsuario {
   anadirUsuario(usuarioNuevo: Usuario): void {
     this.usuarioServicios.addUsuario(usuarioNuevo).subscribe({
       next: () => {
-        this.snackBar.open('Usuario creado correctamente', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('staff.createdSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-success'],
-        });
+          },
+        );
         this.userForm.reset();
         this.router.navigate(['/inicioadmin/gestion-personal']);
       },
       error: (error) => {
         console.error('Error al crear usuario:', error);
         this.snackBar.open(
-          error?.message ?? 'No se ha podido crear el usuario',
-          'Cerrar',
+          error?.message ?? this.translate.instant('staff.createErrorSnack'),
+          this.translate.instant('common.close'),
           {
-            duration: 5000,
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
-            panelClass: ['snack-error'],
+          duration: 5000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['snack-error'],
           },
         );
       },
@@ -186,12 +193,16 @@ export class FormularioUsuario {
   actualizarUsuario(usuario: Usuario): void {
     this.usuarioServicios.updateUsuario(usuario).subscribe({
       next: () => {
-        this.snackBar.open('Usuario actualizado correctamente', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('staff.updatedSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-success'],
-        });
+          },
+        );
         this.userForm.reset();
         this.router.navigate(['/inicioadmin/gestion-personal']);
       },
@@ -199,12 +210,12 @@ export class FormularioUsuario {
         console.error('Error al actualizar usuario:', error);
         const mensaje =
           error instanceof Error && error.message.includes('sin administradores')
-            ? 'No se puede dejar la empresa sin administradores. Debe haber al menos un usuario con rol administrador.'
+            ? this.translate.instant('staff.noAdminsError')
             : error instanceof Error && error.message
               ? error.message
-              : 'No se ha podido actualizar el usuario';
+              : this.translate.instant('staff.updateErrorSnack');
 
-        this.snackBar.open(mensaje, 'Cerrar', {
+        this.snackBar.open(mensaje, this.translate.instant('common.close'), {
           duration: 5000,
           horizontalPosition: 'end',
           verticalPosition: 'top',

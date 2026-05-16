@@ -13,11 +13,12 @@ import { PedidosServices } from '../../../../services/pedidos';
 import { UsuariosServices } from '../../../../services/usuarios';
 import { Authentication } from '../../../../services/authentication';
 import { PdfService } from '../../../../services/pdf';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-presupuesto-detalle',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, TranslatePipe],
   templateUrl: './presupuesto-detalle.html',
   styleUrl: './presupuesto-detalle.css',
 })
@@ -31,6 +32,7 @@ export class PresupuestoDetalle implements OnInit {
   private usuariosService = inject(UsuariosServices);
   private authentication = inject(Authentication);
   private pdfService = inject(PdfService);
+  private translate = inject(TranslateService);
 
   public presupuesto = signal<Presupuesto | null>(null);
   public operarios = signal<Usuario[]>([]);
@@ -42,15 +44,17 @@ export class PresupuestoDetalle implements OnInit {
   public fechaInicioEstimada: string = '';
   public fechaEntregaEstimada: string = '';
 
-  public estadosDisponibles: { valor: Presupuesto['estado']; etiqueta: string }[] = [
-    { valor: 'borrador', etiqueta: 'Borrador' },
-    { valor: 'enviado', etiqueta: 'Enviado' },
-    { valor: 'aprobado', etiqueta: 'Aprobado' },
-    { valor: 'rechazado', etiqueta: 'Rechazado' },
-    { valor: 'caducado', etiqueta: 'Caducado' },
-  ];
+  public estadosDisponibles: { valor: Presupuesto['estado']; etiqueta: string }[] = [];
 
   ngOnInit(): void {
+    this.estadosDisponibles = [
+      { valor: 'borrador', etiqueta: this.translate.instant('quotes.statusDraft') },
+      { valor: 'enviado', etiqueta: this.translate.instant('quotes.statusSent') },
+      { valor: 'aprobado', etiqueta: this.translate.instant('quotes.statusApproved') },
+      { valor: 'rechazado', etiqueta: this.translate.instant('quotes.statusRejected') },
+      { valor: 'caducado', etiqueta: this.translate.instant('quotes.statusExpired') },
+    ];
+
     this.route.params.subscribe((params) => {
       const idPresupuesto = params['id'];
 
@@ -58,7 +62,7 @@ export class PresupuestoDetalle implements OnInit {
         this.cargarPresupuesto(Number(idPresupuesto));
         this.comprobarSiTienePedido(Number(idPresupuesto));
       } else {
-        this.mostrarErrorYVolver('No se ha encontrado el ID del presupuesto en la URL');
+        this.mostrarErrorYVolver(this.translate.instant('quotes.noQuoteId'));
       }
     });
 
@@ -75,7 +79,7 @@ export class PresupuestoDetalle implements OnInit {
     this.presupuestosService.getPresupuesto(id).subscribe({
       next: (datos) => this.presupuesto.set(datos),
       error: (err) => {
-        const mensaje = err.message || 'El presupuesto no existe o hubo un error de conexión';
+        const mensaje = err.message || this.translate.instant('quotes.quoteLoadError');
         this.mostrarErrorYVolver(mensaje);
       },
     });
@@ -97,11 +101,11 @@ export class PresupuestoDetalle implements OnInit {
 
     this.presupuestosService.patchEstadoPresupuesto(pres.id, nuevoEstado).subscribe({
       next: () => {
-        this.snackBar.open('Estado actualizado correctamente', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('quotes.statusUpdated'), this.translate.instant('common.close'), { duration: 3000 });
       },
       error: (err) => {
         this.presupuesto.set({ ...pres, estado: estadoAnterior });
-        this.snackBar.open(err.message || 'Error al cambiar el estado', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(err.message || this.translate.instant('quotes.statusChangeError'), this.translate.instant('common.close'), { duration: 3000 });
       },
     });
   }
@@ -136,11 +140,11 @@ export class PresupuestoDetalle implements OnInit {
         this.cambiarEstado('aprobado');
         this.tienePedido.set(true);
         this.cerrarModalPedido();
-        this.snackBar.open('Pedido creado correctamente', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('quotes.orderCreated'), this.translate.instant('common.close'), { duration: 3000 });
         this.router.navigate(['/inicioadmin/pedidos']);
       },
       error: (err) => {
-        this.snackBar.open(err.message || 'Error al crear el pedido', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(err.message || this.translate.instant('quotes.orderCreateError'), this.translate.instant('common.close'), { duration: 3000 });
       },
     });
   }
@@ -158,8 +162,20 @@ export class PresupuestoDetalle implements OnInit {
   }
 
   mostrarErrorYVolver(mensaje: string): void {
-    this.snackBar.open(mensaje, 'Entendido', { duration: 4000 });
+    this.snackBar.open(mensaje, this.translate.instant('common.understood'), { duration: 4000 });
     this.volver();
+  }
+
+  etiquetaEstadoPresupuesto(estado: string): string {
+    const keys: Record<string, string> = {
+      borrador: 'quotes.statusDraft',
+      enviado: 'quotes.statusSent',
+      aprobado: 'quotes.statusApproved',
+      rechazado: 'quotes.statusRejected',
+      caducado: 'quotes.statusExpired',
+    };
+    const key = keys[estado];
+    return key ? this.translate.instant(key) : estado;
   }
 
   volver(): void {

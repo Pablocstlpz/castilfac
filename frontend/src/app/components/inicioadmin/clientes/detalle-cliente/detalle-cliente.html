@@ -11,9 +11,9 @@
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div>
-          <h1 class="text-2xl font-black text-slate-900 tracking-tight">Ficha del Cliente</h1>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ 'clients.detailTitle' | translate }}</h1>
           <p class="text-sm text-slate-500 font-medium">
-            Gestión integral y condiciones personalizadas
+            {{ 'clients.detailSubtitle' | translate }}
           </p>
         </div>
       </div>
@@ -23,7 +23,7 @@
           (click)="editarCliente()"
           class="flex-1 sm:flex-none px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
         >
-          <mat-icon class="text-lg">edit</mat-icon> Editar
+          <mat-icon class="text-lg">edit</mat-icon> {{ 'common.edit' | translate }}
         </button>
       </div>
     </div>
@@ -40,7 +40,7 @@
             {{ cliente().nombre_empresa_o_particular }}
           </h2>
           <p class="text-sm font-mono text-slate-500 mb-4">
-            {{ cliente().nif_cif || 'Sin NIF definido' }}
+            {{ cliente().nif_cif || ('clients.noNif' | translate) }}
           </p>
 
           <span
@@ -49,7 +49,7 @@
               getTipoColor(cliente().tipo_cliente)
             "
           >
-            {{ cliente().tipo_cliente }}
+            {{ etiquetaTipoCliente(cliente().tipo_cliente) }}
           </span>
         </div>
 
@@ -57,7 +57,7 @@
           <h3
             class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"
           >
-            <mat-icon class="text-sm">contact_phone</mat-icon> Contacto y Ubicación
+            <mat-icon class="text-sm">contact_phone</mat-icon> {{ 'clients.contactLocation' | translate }}
           </h3>
 
           <div class="space-y-5">
@@ -66,7 +66,7 @@
                 <mat-icon class="text-lg">mail</mat-icon>
               </div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Email</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">{{ 'clients.emailLabel' | translate }}</p>
                 <p class="text-sm font-bold text-slate-700 truncate">
                   {{ cliente().email || '---' }}
                 </p>
@@ -78,7 +78,7 @@
                 <mat-icon class="text-lg">phone</mat-icon>
               </div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Teléfono</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">{{ 'clients.phoneLabel' | translate }}</p>
                 <p class="text-sm font-bold text-slate-700">{{ cliente().telefono || '---' }}</p>
               </div>
             </div>
@@ -88,9 +88,9 @@
                 <mat-icon class="text-lg">location_on</mat-icon>
               </div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Dirección Fiscal</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">{{ 'clients.fiscalAddress' | translate }}</p>
                 <p class="text-sm font-medium text-slate-600 leading-relaxed">
-                  {{ cliente().direccion || 'No especificada' }}
+                  {{ cliente().direccion || ('clients.notSpecified' | translate) }}
                 </p>
               </div>
             </div>
@@ -105,7 +105,7 @@
           >
             <mat-icon class="absolute -right-4 -bottom-4 text-8xl opacity-10">percent</mat-icon>
             <h3 class="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-2">
-              Descuento Comercial
+              {{ 'clients.commercialDiscount' | translate }}
             </h3>
             <div class="flex items-baseline gap-1">
               <span class="text-4xl font-black">{{
@@ -114,8 +114,7 @@
               <span class="text-xl font-bold text-indigo-200">%</span>
             </div>
             <p class="text-[10px] text-indigo-100 mt-4 leading-tight italic opacity-80">
-              Este descuento se aplica automáticamente a todos los presupuestos generados para este
-              cliente.
+              {{ 'clients.discountAutoHint' | translate }}
             </p>
           </div>
 
@@ -123,26 +122,26 @@
             class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between"
           >
             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
-              Actividad
+              {{ 'clients.activity' | translate }}
             </h3>
             <div class="space-y-3">
               <div class="flex justify-between items-center py-2 border-b border-slate-50">
-                <span class="text-sm text-slate-500">Pedidos Totales</span>
+                <span class="text-sm text-slate-500">{{ 'clients.totalOrders' | translate }}</span>
                 <span class="text-sm font-black text-slate-800">{{ pedidosCliente().length }}</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-50">
-                <span class="text-sm text-slate-500">Saldo Pendiente</span>
+                <span class="text-sm text-slate-500">{{ 'clients.pendingBalance' | translate }}</span>
                 <span class="text-sm font-black text-red-600"
                   >{{ getSaldoPendiente() | number: '1.2-2' }} €</span
                 >
               </div>
               <div class="flex justify-between items-center py-2">
-                <span class="text-sm text-slate-500">Última Compra</span>
+                <span class="text-sm text-slate-500">{{ 'clients.lastPurchase' | translate }}</span>
                 <span class="text-sm font-bold text-slate-800">
                   @if (getUltimaCompra()) {
                     {{ getUltimaCompra() | date: 'dd MMM yyyy' }}
                   } @else {
-                    Sin pedidos
+                    {{ 'clients.noOrders' | translate }}
                   }
                 </span>
               </div>
@@ -153,10 +152,10 @@
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-50 flex justify-between items-center">
             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">
-              Últimos Pedidos
+              {{ 'clients.recentOrders' | translate }}
             </h3>
             <span class="text-xs text-slate-400 font-medium"
-              >{{ pedidosCliente().length }} en total</span
+              >{{ pedidosCliente().length }} {{ 'clients.totalCount' | translate }}</span
             >
           </div>
           <div class="overflow-x-auto">
@@ -164,12 +163,12 @@
               <thead class="bg-slate-50">
                 <tr>
                   <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">
-                    Referencia
+                    {{ 'clients.colReference' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">Fecha</th>
-                  <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">Estado</th>
+                  <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">{{ 'clients.colDate' | translate }}</th>
+                  <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase">{{ 'clients.colStatus' | translate }}</th>
                   <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase text-right">
-                    Total
+                    {{ 'clients.colTotal' | translate }}
                   </th>
                 </tr>
               </thead>
@@ -188,7 +187,7 @@
                           'px-2 py-0.5 rounded-full text-[9px] font-black ' +
                           getEstadoColor(pedido.estado_fabricacion)
                         "
-                        >{{ pedido.estado_fabricacion | uppercase }}</span
+                        >{{ etiquetaEstadoPedido(pedido.estado_fabricacion) | uppercase }}</span
                       >
                     </td>
                     <td
@@ -201,7 +200,7 @@
                 } @empty {
                   <tr>
                     <td colspan="4" class="px-6 py-8 text-center text-sm text-slate-400">
-                      No hay pedidos registrados para este cliente
+                      {{ 'clients.noOrdersForClient' | translate }}
                     </td>
                   </tr>
                 }

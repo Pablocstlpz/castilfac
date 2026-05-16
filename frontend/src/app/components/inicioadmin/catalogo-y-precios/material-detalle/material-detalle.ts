@@ -13,6 +13,7 @@ import { Categoria } from '../../../../interfaces/categoria';
 import { Materiales } from '../../../../services/materiales';
 import { Categorias } from '../../../../services/categorias';
 import { Authentication } from '../../../../services/authentication';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-material-formulario',
@@ -25,6 +26,7 @@ import { Authentication } from '../../../../services/authentication';
     MatOptionModule,
     MatButtonModule,
     MatSnackBarModule,
+    TranslatePipe,
   ],
   templateUrl: './material-detalle.html',
   styleUrl: './material-detalle.css',
@@ -36,6 +38,7 @@ export class MaterialDetalle {
   private categoriasService = inject(Categorias); // Inyectamos el servicio Categorias para poder utilizar sus metodos
   private authentication = inject(Authentication); // Inyectamos el servicio Authentication para poder utilizar sus metodos
   private snackBar = inject(MatSnackBar); // Inyectamos el servicio MatSnackBar para poder utilizar sus metodos
+  private translate = inject(TranslateService);
   private fb = inject(FormBuilder); // Inyectamos el servicio FormBuilder para poder utilizar sus metodos
 
   //signal con las categorias disponibles para el select
@@ -138,21 +141,29 @@ export class MaterialDetalle {
   crearMaterial(empresa_id: number, material: Material): void {
     this.materialesService.addMaterial(empresa_id, material).subscribe({
       next: () => {
-        this.snackBar.open('Material creado correctamente', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('catalogue.createdSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-success'],
-        });
+          },
+        );
         this.router.navigate(['/inicioadmin/catalogo-y-precios']);
       },
       error: (error: Error) => {
-        this.snackBar.open(error.message ?? 'Error al crear el material', 'Cerrar', {
+        this.snackBar.open(
+          error.message ?? this.translate.instant('catalogue.createErrorSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-error'],
-        });
+          },
+        );
       },
     });
   }
@@ -161,21 +172,29 @@ export class MaterialDetalle {
   actualizarMaterial(empresa_id: number, material: Material): void {
     this.materialesService.updateMaterial(empresa_id, material).subscribe({
       next: () => {
-        this.snackBar.open('Material actualizado correctamente', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('catalogue.updatedSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-success'],
-        });
+          },
+        );
         this.router.navigate(['/inicioadmin/catalogo-y-precios']);
       },
       error: (error: Error) => {
-        this.snackBar.open(error.message ?? 'Error al actualizar el material', 'Cerrar', {
+        this.snackBar.open(
+          error.message ?? this.translate.instant('catalogue.updateErrorSnack'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
           panelClass: ['snack-error'],
-        });
+          },
+        );
       },
     });
   }

@@ -15,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { EmpresasServices, RegistroPayload } from '../../../services/empresas';
 import {
   LIMITES,
@@ -36,6 +37,7 @@ import {
     MatOptionModule,
     MatSelectModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './registro.html',
   styleUrl: './registro.css',

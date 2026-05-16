@@ -5,10 +5,10 @@
         class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3"
       >
         <mat-icon class="text-blue-600 text-3xl">request_quote</mat-icon>
-        Presupuestos
+        {{ 'quotes.title' | translate }}
       </h1>
       <p class="text-slate-500 mt-2">
-        Gestiona las ofertas enviadas a clientes y conviértelas en órdenes de trabajo.
+        {{ 'quotes.subtitle' | translate }}
       </p>
     </div>
     <div class="mt-4 sm:mt-0">
@@ -17,7 +17,7 @@
         routerLink="/inicioadmin/presupuestos/nuevo"
       >
         <mat-icon class="text-sm h-5 w-5">add_circle</mat-icon>
-        Nuevo Presupuesto
+        {{ 'quotes.newQuote' | translate }}
       </button>
     </div>
   </div>
@@ -27,7 +27,7 @@
       class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
     >
       <div>
-        <p class="text-sm font-medium text-slate-500">Total Borradores</p>
+        <p class="text-sm font-medium text-slate-500">{{ 'quotes.statDrafts' | translate }}</p>
         <p class="text-2xl font-bold text-slate-800">{{ statBorradores() }}</p>
       </div>
       <div
@@ -42,7 +42,7 @@
       class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
     >
       <div>
-        <p class="text-sm font-medium text-slate-500">Ptes. de Respuesta</p>
+        <p class="text-sm font-medium text-slate-500">{{ 'quotes.statPending' | translate }}</p>
         <p class="text-2xl font-bold text-slate-800">{{ statPendientesRespuesta() }}</p>
       </div>
       <div class="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
@@ -54,7 +54,7 @@
       class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
     >
       <div>
-        <p class="text-sm font-medium text-slate-500">Aprobados (Mes)</p>
+        <p class="text-sm font-medium text-slate-500">{{ 'quotes.statApprovedMonth' | translate }}</p>
         <p class="text-2xl font-bold text-emerald-600">{{ statAprobadosMes() }}</p>
       </div>
       <div
@@ -68,7 +68,7 @@
       class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
     >
       <div>
-        <p class="text-sm font-medium text-slate-500">Tasa de Éxito</p>
+        <p class="text-sm font-medium text-slate-500">{{ 'quotes.statSuccessRate' | translate }}</p>
         <p class="text-2xl font-bold text-slate-800">{{ statTasaExito() }}%</p>
       </div>
       <div
@@ -88,7 +88,7 @@
         type="text"
         [ngModel]="busqueda()"
         (ngModelChange)="busqueda.set($event)"
-        placeholder="Buscar por referencia o cliente..."
+        [placeholder]="'quotes.searchPlaceholder' | translate"
         class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
       />
     </div>
@@ -98,11 +98,11 @@
       (ngModelChange)="filtroEstado.set($event)"
       class="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="todos">Todos</option>
-      <option value="borrador">Borrador</option>
-      <option value="enviado">Enviado</option>
-      <option value="aprobado">Aprobado</option>
-      <option value="rechazado">Rechazado</option>
+      <option value="todos">{{ 'common.all' | translate }}</option>
+      <option value="borrador">{{ 'quotes.statusDraft' | translate }}</option>
+      <option value="enviado">{{ 'quotes.statusSent' | translate }}</option>
+      <option value="aprobado">{{ 'quotes.statusApproved' | translate }}</option>
+      <option value="rechazado">{{ 'quotes.statusRejected' | translate }}</option>
     </select>
   </div>
 
@@ -115,28 +115,28 @@
               scope="col"
               class="py-3.5 pl-6 pr-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Referencia / Fecha
+              {{ 'quotes.colRefDate' | translate }}
             </th>
             <th
               scope="col"
               class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Cliente
+              {{ 'quotes.colClient' | translate }}
             </th>
             <th
               scope="col"
               class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Importe Final
+              {{ 'quotes.colFinalAmount' | translate }}
             </th>
             <th
               scope="col"
               class="px-3 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
             >
-              Estado
+              {{ 'quotes.colStatus' | translate }}
             </th>
             <th scope="col" class="relative py-3.5 pl-3 pr-6">
-              <span class="sr-only">Acciones</span>
+              <span class="sr-only">{{ 'common.actions' | translate }}</span>
             </th>
           </tr>
         </thead>
@@ -157,7 +157,7 @@
                   {{ getNombreCliente(p.cliente_id) }}
                 </div>
                 <div class="text-xs text-slate-500 capitalize">
-                  {{ getTipoCliente(p.cliente_id) }}
+                  {{ etiquetaTipoCliente(getTipoCliente(p.cliente_id)) }}
                 </div>
               </td>
 
@@ -165,7 +165,7 @@
                 <div class="text-sm font-bold text-slate-800">
                   {{ p.precio_final | number: '1.2-2' }} €
                 </div>
-                <div class="text-xs text-slate-400">IVA no incluido</div>
+                <div class="text-xs text-slate-400">{{ 'quotes.vatExcluded' | translate }}</div>
               </td>
 
               <td data-label="Estado" class="whitespace-nowrap px-3 py-4">
@@ -189,7 +189,7 @@
                       'bg-amber-500': p.estado === 'caducado',
                     }"
                   ></span>
-                  {{ p.estado | titlecase }}
+                  {{ etiquetaEstadoPresupuesto(p.estado) }}
                 </span>
               </td>
 
@@ -203,21 +203,21 @@
                   <button
                     [routerLink]="['/inicioadmin/presupuestos/editar', p.id]"
                     class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Editar"
+                    [attr.title]="'quotes.edit' | translate"
                   >
                     <mat-icon class="text-[20px]">edit</mat-icon>
                   </button>
                   <button
                     (click)="verDetalle(p.id)"
                     class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                    title="Ver detalles"
+                    [attr.title]="'quotes.viewDetails' | translate"
                   >
                     <mat-icon class="text-[20px]">visibility</mat-icon>
                   </button>
                   <button
                     (click)="descargarPDF(p.id)"
                     class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Descargar Hoja de Fabricacion"
+                    [attr.title]="'quotes.downloadSheet' | translate"
                   >
                     <mat-icon class="text-[20px]">picture_as_pdf</mat-icon>
                   </button>
@@ -228,7 +228,7 @@
             <tr>
               <td colspan="5" class="px-6 py-10 text-center text-slate-500">
                 <mat-icon class="text-4xl text-slate-300 mb-2">request_quote</mat-icon>
-                <p>No se han encontrado presupuestos.</p>
+                <p>{{ 'quotes.empty' | translate }}</p>
               </td>
             </tr>
           }
@@ -238,9 +238,9 @@
 
     <div class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between">
       <span class="text-sm text-slate-500">
-        Mostrando
+        {{ 'quotes.showing' | translate }}
         <span class="font-medium text-slate-900">{{ presupuestosFiltrados().length }}</span>
-        presupuestos
+        {{ 'quotes.quotesCount' | translate }}
       </span>
     </div>
   </div>

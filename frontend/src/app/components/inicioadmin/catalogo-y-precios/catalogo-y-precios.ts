@@ -1,7 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { DecimalPipe, TitleCasePipe, NgClass } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Categorias } from '../../../services/categorias';
@@ -9,10 +9,11 @@ import { Materiales } from '../../../services/materiales';
 import { Authentication } from '../../../services/authentication';
 import { MaterialConPrecio } from '../../../interfaces/material';
 import { Categoria } from '../../../interfaces/categoria';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [FormsModule, MatIconModule, DecimalPipe, TitleCasePipe, NgClass, RouterLink, MatSnackBarModule],
+  imports: [FormsModule, MatIconModule, DecimalPipe, NgClass, RouterLink, MatSnackBarModule, TranslatePipe],
   templateUrl: './catalogo-y-precios.html',
   styleUrl: './catalogo-y-precios.css',
 })
@@ -21,6 +22,7 @@ export class CatalogoYPrecios {
   private materialesService = inject(Materiales);
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
 
   // Signal con todos los materiales ya enriquecidos que llegan del backend
   private _materiales = signal<MaterialConPrecio[]>([]);
@@ -74,6 +76,18 @@ export class CatalogoYPrecios {
       this.totalMateriales.set(data.length);
       this.filtrarMateriales();
     });
+  }
+
+  etiquetaTipoUnidad(tipo: string): string {
+    const keys: Record<string, string> = {
+      metros_lineales: 'catalogue.unitLinear',
+      metros_cuadrados: 'catalogue.unitSquare',
+      unidades: 'catalogue.unitEach',
+      kilogramos: 'catalogue.unitKg',
+      litros: 'catalogue.unitLiters',
+    };
+    const key = keys[tipo];
+    return key ? this.translate.instant(key) : tipo;
   }
 
   // Función para filtrar los materiales según los filtros activos en cada momento
@@ -143,14 +157,20 @@ export class CatalogoYPrecios {
 
     // Verifico que existe sesión activa antes de intentar la actualización
     if (!usuarioSesion) {
-      this.snackBar.open('Error: No hay sesión de usuario activa.', 'Cerrar', { duration: 3000 });
+      this.snackBar.open(this.translate.instant('catalogue.noSession'), this.translate.instant('common.close'), {
+        duration: 3000,
+      });
       return;
     }
 
     // Verifico que el precio introducido es un número válido y mayor que cero
     const precioNuevoNumerico = Number(precioNuevo);
     if (isNaN(precioNuevoNumerico) || precioNuevoNumerico <= 0) {
-      this.snackBar.open('El precio debe ser un número mayor que cero.', 'Cerrar', { duration: 3000 });
+      this.snackBar.open(
+        this.translate.instant('catalogue.priceMustBePositive'),
+        this.translate.instant('common.close'),
+        { duration: 3000 },
+      );
       return;
     }
 
@@ -182,13 +202,17 @@ export class CatalogoYPrecios {
           this.cancelarEdicionPvp();
 
           // Informo al usuario de que el precio se ha guardado correctamente
-          this.snackBar.open('Precio PVP actualizado correctamente.', 'Cerrar', { duration: 3000 });
+          this.snackBar.open(
+            this.translate.instant('catalogue.pvpUpdated'),
+            this.translate.instant('common.close'),
+            { duration: 3000 },
+          );
         },
         error: (error) => {
           // Informo al usuario del error ocurrido durante la actualización
           this.snackBar.open(
-            `Error al actualizar el precio: ${error.message}`,
-            'Cerrar',
+            this.translate.instant('catalogue.pvpUpdateError', { message: error.message }),
+            this.translate.instant('common.close'),
             { duration: 5000 },
           );
         },

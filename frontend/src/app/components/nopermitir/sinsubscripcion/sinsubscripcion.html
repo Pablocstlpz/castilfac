@@ -9,31 +9,31 @@
       </div>
   
       <h2 class="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">
-        Suscripcion Inactiva
+        {{ 'errors.noSubscriptionTitle' | translate }}
       </h2>
       
       <p class="text-slate-600 mb-8 leading-relaxed">
-        El acceso a CastilFac se encuentra temporalmente suspendido para tu taller debido a que el periodo de facturacion ha finalizado.
+        {{ 'errors.noSubscriptionMsg' | translate }}
       </p>
   
       <div class="bg-blue-50 rounded-lg p-4 mb-8 text-sm text-blue-800 border border-blue-100 text-left">
         <div class="flex items-center gap-2 mb-2">
           <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-          <span class="font-semibold">Tus datos estan a salvo</span>
+          <span class="font-semibold">{{ 'errors.dataSafe' | translate }}</span>
         </div>
         <p class="ml-7 text-blue-700">
-          No te preocupes. Tu catalogo de materiales, clientes y presupuestos siguen guardados de forma segura en nuestros servidores esperando tu regreso.
+          {{ 'errors.dataSafeMsg' | translate }}
         </p>
       </div>
   
       <div class="space-y-3">
         <button class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2">
-          Contactar para renovar
+          {{ 'errors.contactRenew' | translate }}
         </button>
         
         <a href="/login" 
            class="inline-block w-full bg-white hover:bg-slate-50 text-slate-600 font-medium py-3 px-4 rounded-lg border border-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200">
-          Cerrar sesion
+          {{ 'nav.logout' | translate }}
         </a>
       </div>
   

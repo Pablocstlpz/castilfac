@@ -1,15 +1,24 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
+import { RouterOutlet } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
+import { AppLanguage, LanguageService } from '../../../services/language.service';
 import { BarraLateral } from '../barra-lateral/barra-lateral';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterOutlet, BarraLateral, MatIcon],
+  imports: [RouterOutlet, BarraLateral, MatIcon, TranslatePipe],
   templateUrl: './admin-layout.html',
 })
 export class AdminLayout {
+  private readonly language = inject(LanguageService);
+
+  readonly idiomaActual = signal<AppLanguage>('es');
   public menuMovilAbierto = false;
+
+  constructor() {
+    this.idiomaActual.set(this.language.currentLang);
+  }
 
   abrirMenuMovil() {
     this.menuMovilAbierto = true;
@@ -17,5 +26,9 @@ export class AdminLayout {
 
   cerrarMenuMovil() {
     this.menuMovilAbierto = false;
+  }
+
+  cambiarIdioma(lang: AppLanguage): void {
+    void this.language.setLanguage(lang).then(() => this.idiomaActual.set(lang));
   }
 }

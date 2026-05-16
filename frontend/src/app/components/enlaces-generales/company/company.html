@@ -2,11 +2,10 @@
   <div class="bg-blue-600 py-16 sm:py-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <h1 class="text-3xl font-extrabold text-white sm:text-5xl tracking-tight mb-4">
-        Sobre CastilFac
+        {{ 'company.heroTitle' | translate }}
       </h1>
       <p class="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
-        Transformando la gestion de los talleres de carpinteria metalica a traves de la tecnologia y
-        la innovacion.
+        {{ 'company.heroSubtitle' | translate }}
       </p>
     </div>
   </div>
@@ -29,26 +28,19 @@
                 d="M13 10V3L4 14h7v7l9-11h-7z"
               ></path>
             </svg>
-            Nuestra Mision
+            {{ 'company.missionTitle' | translate }}
           </h2>
           <p class="text-slate-600 leading-relaxed mb-6">
-            CastilFac nace con un objetivo claro: digitalizar y optimizar el flujo de trabajo de los
-            profesionales del aluminio y el cristal. Historicamente, la creacion de presupuestos y
-            el despiece de materiales ha sido un proceso manual, lento y propenso a errores de
-            calculo que cuestan dinero a los talleres.
+            {{ 'company.missionP1' | translate }}
           </p>
           <p class="text-slate-600 leading-relaxed">
-            Esta plataforma SaaS centraliza clientes, tarifas y calculos matematicos complejos en
-            una interfaz limpia e intuitiva, permitiendo a los talleres centrarse en lo que mejor
-            saben hacer: fabricar e instalar.
+            {{ 'company.missionP2' | translate }}
           </p>
         </div>
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
-          <h3 class="text-lg font-bold text-slate-800 mb-4">El Origen del Proyecto</h3>
+          <h3 class="text-lg font-bold text-slate-800 mb-4">{{ 'company.originTitle' | translate }}</h3>
           <p class="text-slate-600 text-sm leading-relaxed mb-4">
-            Este software ha sido desarrollado integramente como Proyecto de Fin de Grado (TFG) para
-            el Ciclo Formativo de Grado Superior en Desarrollo de Aplicaciones Multiplataforma
-            (2DAM).
+            {{ 'company.originP1' | translate }}
           </p>
           <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
             <div
@@ -57,15 +49,15 @@
               IES
             </div>
             <div>
-              <p class="font-bold text-slate-900">IES Trassierra</p>
-              <p class="text-xs text-slate-500">Cordoba, Andalucia</p>
+              <p class="font-bold text-slate-900">{{ 'company.schoolName' | translate }}</p>
+              <p class="text-xs text-slate-500">{{ 'company.schoolLocation' | translate }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">Arquitectura y Tecnologias</h2>
+    <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">{{ 'company.archTitle' | translate }}</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div
@@ -83,20 +75,19 @@
             ></path>
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Frontend</h3>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">{{ 'company.frontendTitle' | translate }}</h3>
         <p class="text-slate-600 text-sm leading-relaxed mb-4">
-          Interfaz de usuario reactiva, rapida y modular (SPA), diseñada para ofrecer la mejor
-          experiencia en cualquier dispositivo.
+          {{ 'company.frontendDesc' | translate }}
         </p>
         <ul class="space-y-2 text-sm text-slate-700 font-medium">
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-red-500 rounded-full"></span> Angular 17+
+            <span class="w-2 h-2 bg-red-500 rounded-full"></span> {{ 'company.techAngular' | translate }}
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-blue-400 rounded-full"></span> Tailwind CSS
+            <span class="w-2 h-2 bg-blue-400 rounded-full"></span> {{ 'company.techTailwind' | translate }}
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-purple-500 rounded-full"></span> Angular Material
+            <span class="w-2 h-2 bg-purple-500 rounded-full"></span> {{ 'company.techMaterial' | translate }}
           </li>
         </ul>
       </div>
@@ -116,20 +107,19 @@
             ></path>
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Backend & API</h3>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">{{ 'company.backendTitle' | translate }}</h3>
         <p class="text-slate-600 text-sm leading-relaxed mb-4">
-          Servidor robusto que gestiona la logica de negocio, el calculo de presupuestos y la
-          seguridad mediante tokens JWT y CORS.
+          {{ 'company.backendDesc' | translate }}
         </p>
         <ul class="space-y-2 text-sm text-slate-700 font-medium">
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-green-600 rounded-full"></span> Node.js
+            <span class="w-2 h-2 bg-green-600 rounded-full"></span> {{ 'company.techNode' | translate }}
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-slate-800 rounded-full"></span> Express.js
+            <span class="w-2 h-2 bg-slate-800 rounded-full"></span> {{ 'company.techExpress' | translate }}
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-yellow-500 rounded-full"></span> JSON Web Tokens (JWT)
+            <span class="w-2 h-2 bg-yellow-500 rounded-full"></span> {{ 'company.techJwt' | translate }}
           </li>
         </ul>
       </div>
@@ -149,20 +139,19 @@
             ></path>
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Base de Datos</h3>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">{{ 'company.dbTitle' | translate }}</h3>
         <p class="text-slate-600 text-sm leading-relaxed mb-4">
-          Arquitectura Multi-Tenant estructurada para garantizar el aislamiento y la privacidad de
-          los datos de cada taller registrado.
+          {{ 'company.dbDesc' | translate }}
         </p>
         <ul class="space-y-2 text-sm text-slate-700 font-medium">
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-blue-800 rounded-full"></span> MySQL Relacional
+            <span class="w-2 h-2 bg-blue-800 rounded-full"></span> {{ 'company.techMysql' | translate }}
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-slate-400 rounded-full"></span> Borrado Logico (Seguridad)
+            <span class="w-2 h-2 bg-slate-400 rounded-full"></span> {{ 'company.techSoftDelete' | translate }}
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-teal-500 rounded-full"></span> Encriptacion bcrypt
+            <span class="w-2 h-2 bg-teal-500 rounded-full"></span> {{ 'company.techBcrypt' | translate }}
           </li>
         </ul>
       </div>

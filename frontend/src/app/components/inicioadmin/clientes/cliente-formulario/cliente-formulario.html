@@ -12,10 +12,10 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-2xl font-bold text-white m-0">
-          {{ id ? 'Editar Cliente' : 'Nuevo Cliente' }}
+          {{ (id ? 'clients.formEditTitle' : 'clients.formNewTitle') | translate }}
         </h1>
         <p class="text-blue-100 text-sm mt-1">
-          Completa los datos para gestionar un cliente en el sistema
+          {{ 'clients.formSubtitle' | translate }}
         </p>
       </div>
     </div>
@@ -29,36 +29,40 @@
               class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2"
             >
               <mat-icon class="text-blue-500 text-sm">person</mat-icon>
-              Datos Principales
+              {{ 'clients.sectionMain' | translate }}
             </h2>
 
             <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Nombre de Empresa o Particular</mat-label>
+              <mat-label>{{ 'clients.nameLabel' | translate }}</mat-label>
               <span matTextPrefix><mat-icon class="text-slate-400 mr-2">badge</mat-icon></span>
               <input
                 matInput
                 formControlName="nombre_empresa_o_particular"
-                placeholder="Ej: Construcciones Garcia SL"
+                [placeholder]="'clients.namePlaceholder' | translate"
               />
               @if (
                 nombre_empresa_o_particular.errors?.['required'] &&
                 nombre_empresa_o_particular.touched
               ) {
-                <mat-error>El nombre es requerido</mat-error>
+                <mat-error>{{ 'clients.nameRequired' | translate }}</mat-error>
               }
               @if (nombre_empresa_o_particular.errors?.['maxlength']) {
-                <mat-error>Máximo 200 caracteres</mat-error>
+                <mat-error>{{ 'clients.nameMaxLength' | translate }}</mat-error>
               }
             </mat-form-field>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>NIF / CIF</mat-label>
-                <input matInput formControlName="nif_cif" placeholder="Ej: B12345678" />
+                <mat-label>{{ 'clients.nifLabel' | translate }}</mat-label>
+                <input
+                  matInput
+                  formControlName="nif_cif"
+                  [placeholder]="'clients.nifPlaceholder' | translate"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Teléfono</mat-label>
+                <mat-label>{{ 'clients.phoneLabel' | translate }}</mat-label>
                 <span matTextPrefix><mat-icon class="text-slate-400 mr-2">phone</mat-icon></span>
                 <input
                   matInput
@@ -70,13 +74,13 @@
             </div>
 
             <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Correo Electrónico</mat-label>
+              <mat-label>{{ 'clients.emailLabel' | translate }}</mat-label>
               <span matTextPrefix
                 ><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span
               >
               <input matInput type="email" formControlName="email" placeholder="info@empresa.com" />
               @if (email.errors?.['email'] && email.touched) {
-                <mat-error>Formato de correo inválido</mat-error>
+                <mat-error>{{ 'clients.emailInvalid' | translate }}</mat-error>
               }
             </mat-form-field>
           </div>
@@ -88,24 +92,30 @@
                 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2"
               >
                 <mat-icon class="text-blue-500 text-sm">local_offer</mat-icon>
-                Condiciones Comerciales
+                {{ 'clients.sectionCommercial' | translate }}
               </h2>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div>
                   <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                    Tipo de Cliente *
+                    {{ 'clients.clientTypeLabel' | translate }}
                   </p>
                   <mat-radio-group formControlName="tipo_cliente" class="flex flex-col gap-2">
-                    <mat-radio-button value="particular">Particular</mat-radio-button>
-                    <mat-radio-button value="empresa">Empresa</mat-radio-button>
-                    <mat-radio-button value="vip">VIP</mat-radio-button>
-                    <mat-radio-button value="mayorista">Mayorista</mat-radio-button>
+                    <mat-radio-button value="particular">{{
+                      'clients.typeParticular' | translate
+                    }}</mat-radio-button>
+                    <mat-radio-button value="empresa">{{
+                      'clients.typeCompany' | translate
+                    }}</mat-radio-button>
+                    <mat-radio-button value="vip">{{ 'clients.typeVip' | translate }}</mat-radio-button>
+                    <mat-radio-button value="mayorista">{{
+                      'clients.typeWholesaler' | translate
+                    }}</mat-radio-button>
                   </mat-radio-group>
                 </div>
 
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Descuento Base</mat-label>
+                  <mat-label>{{ 'clients.discountLabel' | translate }}</mat-label>
                   <input
                     matInput
                     type="number"
@@ -114,7 +124,7 @@
                     placeholder="0.00"
                   />
                   <span matTextSuffix>%</span>
-                  <mat-hint>Se aplicará a sus presupuestos</mat-hint>
+                  <mat-hint>{{ 'clients.discountHint' | translate }}</mat-hint>
                 </mat-form-field>
               </div>
             </div>
@@ -124,11 +134,11 @@
                 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2"
               >
                 <mat-icon class="text-blue-500 text-sm">location_on</mat-icon>
-                Ubicación
+                {{ 'clients.sectionLocation' | translate }}
               </h2>
 
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Dirección Fiscal / Facturación</mat-label>
+                <mat-label>{{ 'clients.addressLabel' | translate }}</mat-label>
                 <span matTextPrefix
                   ><mat-icon class="text-slate-400 mr-2">location_on</mat-icon></span
                 >
@@ -136,7 +146,7 @@
                   matInput
                   formControlName="direccion"
                   rows="3"
-                  placeholder="Calle, Número, Código Postal, Ciudad..."
+                  [placeholder]="'clients.addressPlaceholder' | translate"
                 ></textarea>
               </mat-form-field>
             </div>
@@ -145,7 +155,7 @@
 
         <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-slate-200">
           <button mat-stroked-button type="button" (click)="cancelar()" class="px-6">
-            Cancelar
+            {{ 'common.cancel' | translate }}
           </button>
           <button
             mat-flat-button
@@ -155,7 +165,7 @@
             class="bg-blue-600 hover:bg-blue-700 px-6 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
           >
             <mat-icon class="mr-1">save</mat-icon>
-            {{ id ? 'Actualizar Cliente' : 'Guardar Cliente' }}
+            {{ (id ? 'clients.updateClient' : 'clients.saveClient') | translate }}
           </button>
         </div>
       </form>

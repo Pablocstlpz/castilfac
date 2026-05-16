@@ -10,11 +10,11 @@
       </div>
       <div>
         @if (id) {
-          <h1 class="text-2xl font-bold text-white m-0">Editar Material</h1>
-          <p class="text-indigo-100 text-sm mt-1">Modifica los datos del material en el catálogo</p>
+          <h1 class="text-2xl font-bold text-white m-0">{{ 'catalogue.editMaterial' | translate }}</h1>
+          <p class="text-indigo-100 text-sm mt-1">{{ 'catalogue.editMaterialSubtitle' | translate }}</p>
         } @else {
-          <h1 class="text-2xl font-bold text-white m-0">Nuevo Material</h1>
-          <p class="text-indigo-100 text-sm mt-1">Completa los datos para dar de alta este material en el catálogo</p>
+          <h1 class="text-2xl font-bold text-white m-0">{{ 'catalogue.newMaterialTitle' | translate }}</h1>
+          <p class="text-indigo-100 text-sm mt-1">{{ 'catalogue.newMaterialSubtitle' | translate }}</p>
         }
       </div>
     </div>
@@ -27,58 +27,66 @@
             <h2
               class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2"
             >
-              <mat-icon class="text-indigo-500 text-sm">info</mat-icon> Información General
+              <mat-icon class="text-indigo-500 text-sm">info</mat-icon> {{ 'catalogue.sectionGeneral' | translate }}
             </h2>
 
             <div class="grid grid-cols-1 gap-4">
 
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Nombre del Material</mat-label>
+                <mat-label>{{ 'catalogue.materialNameLabel' | translate }}</mat-label>
                 <span matTextPrefix><mat-icon class="text-slate-400 mr-2">label</mat-icon></span>
-                <input matInput formControlName="nombre" placeholder="Ej: Perfil Aluminio Blanco 60mm" />
+                <input
+                  matInput
+                  formControlName="nombre"
+                  [placeholder]="'catalogue.materialNamePlaceholder' | translate"
+                />
                 @if (materialForm.get('nombre')?.errors?.['required'] && materialForm.get('nombre')?.touched) {
-                  <mat-error>El nombre es requerido</mat-error>
+                  <mat-error>{{ 'clients.nameRequired' | translate }}</mat-error>
                 }
                 @if (materialForm.get('nombre')?.errors?.['maxlength']) {
-                  <mat-error>Máximo 200 caracteres</mat-error>
+                  <mat-error>{{ 'clients.nameMaxLength' | translate }}</mat-error>
                 }
               </mat-form-field>
 
               <div class="grid grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Código Interno</mat-label>
+                  <mat-label>{{ 'catalogue.internalCodeLabel' | translate }}</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">tag</mat-icon></span>
-                  <input matInput formControlName="codigo_interno" placeholder="Ej: PERF-BL-60" />
+                  <input
+                    matInput
+                    formControlName="codigo_interno"
+                    [placeholder]="'catalogue.internalCodePlaceholder' | translate"
+                  />
                   @if (materialForm.get('codigo_interno')?.errors?.['maxlength']) {
-                    <mat-error>Máximo 50 caracteres</mat-error>
+                    <mat-error>{{ 'catalogue.internalCodeMaxLength' | translate }}</mat-error>
                   }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Categoría</mat-label>
+                  <mat-label>{{ 'catalogue.categoryLabel' | translate }}</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">category</mat-icon></span>
                   <mat-select formControlName="categoria_id">
                     @if (!id) {
-                      <mat-option [value]="null" disabled>Selecciona una categoría</mat-option>
+                      <mat-option [value]="null" disabled>{{ 'catalogue.selectCategory' | translate }}</mat-option>
                     }
                     @for (cat of categorias(); track cat.id) {
                       <mat-option [value]="cat.id">{{ cat.nombre }}</mat-option>
                     }
                   </mat-select>
                   @if (materialForm.get('categoria_id')?.errors?.['required'] && materialForm.get('categoria_id')?.touched) {
-                    <mat-error>La categoría es requerida</mat-error>
+                    <mat-error>{{ 'catalogue.categoryRequired' | translate }}</mat-error>
                   }
                 </mat-form-field>
               </div>
 
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Descripción técnica</mat-label>
+                <mat-label>{{ 'catalogue.descriptionLabel' | translate }}</mat-label>
                 <span matTextPrefix><mat-icon class="text-slate-400 mr-2">description</mat-icon></span>
                 <textarea
                   matInput
                   formControlName="descripcion"
                   rows="3"
-                  placeholder="Añade detalles extra del material..."
+                  [placeholder]="'catalogue.descriptionPlaceholder' | translate"
                 ></textarea>
               </mat-form-field>
 
@@ -86,8 +94,8 @@
                 class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl"
               >
                 <div>
-                  <p class="text-sm font-bold text-slate-800">Material Activo</p>
-                  <p class="text-xs text-slate-500">Visible para añadir en presupuestos</p>
+                  <p class="text-sm font-bold text-slate-800">{{ 'catalogue.materialActive' | translate }}</p>
+                  <p class="text-xs text-slate-500">{{ 'catalogue.materialActiveHint' | translate }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" formControlName="activo" class="sr-only peer" />
@@ -105,48 +113,48 @@
               <h2
                 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2"
               >
-                <mat-icon class="text-emerald-500 text-sm">payments</mat-icon> Detalles y Precios
+                <mat-icon class="text-emerald-500 text-sm">payments</mat-icon> {{ 'catalogue.sectionPrices' | translate }}
               </h2>
 
               <div class="bg-emerald-50/50 p-6 rounded-xl border border-emerald-100 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                   <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Precio Base Coste</mat-label>
+                    <mat-label>{{ 'catalogue.basePriceLabel' | translate }}</mat-label>
                     <span matTextPrefix><mat-icon class="text-slate-400 mr-2">euro</mat-icon></span>
                     <input matInput type="number" step="0.0001" formControlName="precio_base" placeholder="0.00" />
                     @if (materialForm.get('precio_base')?.errors?.['required'] && materialForm.get('precio_base')?.touched) {
-                      <mat-error>El precio es requerido</mat-error>
+                      <mat-error>{{ 'catalogue.priceRequired' | translate }}</mat-error>
                     }
                     @if (materialForm.get('precio_base')?.errors?.['min']) {
-                      <mat-error>No puede ser negativo</mat-error>
+                      <mat-error>{{ 'catalogue.priceNotNegative' | translate }}</mat-error>
                     }
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Merma Rec. (%)</mat-label>
+                    <mat-label>{{ 'catalogue.wasteLabel' | translate }}</mat-label>
                     <span matTextPrefix><mat-icon class="text-slate-400 mr-2">percent</mat-icon></span>
                     <input matInput type="number" formControlName="porcentaje_merma_recomendado" placeholder="10.00" />
                     @if (materialForm.get('porcentaje_merma_recomendado')?.errors?.['min']) {
-                      <mat-error>Mínimo 0%</mat-error>
+                      <mat-error>{{ 'catalogue.wasteMin' | translate }}</mat-error>
                     }
                     @if (materialForm.get('porcentaje_merma_recomendado')?.errors?.['max']) {
-                      <mat-error>Máximo 100%</mat-error>
+                      <mat-error>{{ 'catalogue.wasteMax' | translate }}</mat-error>
                     }
                   </mat-form-field>
                 </div>
 
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Tipo de Unidad de Medida</mat-label>
+                  <mat-label>{{ 'catalogue.unitTypeLabel' | translate }}</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">straighten</mat-icon></span>
                   <mat-select formControlName="tipo_unidad">
-                    <mat-option value="metros_lineales">Metros Lineales (ml)</mat-option>
-                    <mat-option value="metros_cuadrados">Metros Cuadrados (m²)</mat-option>
-                    <mat-option value="unidades">Por Unidad (Ud)</mat-option>
-                    <mat-option value="kilogramos">Kilogramos (kg)</mat-option>
-                    <mat-option value="litros">Litros (l)</mat-option>
+                    <mat-option value="metros_lineales">{{ 'catalogue.unitLinear' | translate }}</mat-option>
+                    <mat-option value="metros_cuadrados">{{ 'catalogue.unitSquare' | translate }}</mat-option>
+                    <mat-option value="unidades">{{ 'catalogue.unitEach' | translate }}</mat-option>
+                    <mat-option value="kilogramos">{{ 'catalogue.unitKg' | translate }}</mat-option>
+                    <mat-option value="litros">{{ 'catalogue.unitLiters' | translate }}</mat-option>
                   </mat-select>
                   @if (materialForm.get('tipo_unidad')?.errors?.['required']) {
-                    <mat-error>Selecciona una unidad</mat-error>
+                    <mat-error>{{ 'catalogue.selectUnit' | translate }}</mat-error>
                   }
                 </mat-form-field>
               </div>
@@ -156,25 +164,33 @@
               <h2
                 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2"
               >
-                <mat-icon class="text-amber-500 text-sm">local_shipping</mat-icon> Proveedor
+                <mat-icon class="text-amber-500 text-sm">local_shipping</mat-icon> {{ 'catalogue.sectionSupplier' | translate }}
               </h2>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Nombre Proveedor</mat-label>
+                  <mat-label>{{ 'catalogue.supplierNameLabel' | translate }}</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">business</mat-icon></span>
-                  <input matInput formControlName="proveedor" placeholder="Ej: Aluminios del Sur" />
+                  <input
+                    matInput
+                    formControlName="proveedor"
+                    [placeholder]="'catalogue.supplierNamePlaceholder' | translate"
+                  />
                   @if (materialForm.get('proveedor')?.errors?.['maxlength']) {
-                    <mat-error>Máximo 150 caracteres</mat-error>
+                    <mat-error>{{ 'register.max150' | translate }}</mat-error>
                   }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full">
-                  <mat-label>Ref. del Proveedor</mat-label>
+                  <mat-label>{{ 'catalogue.supplierRefLabel' | translate }}</mat-label>
                   <span matTextPrefix><mat-icon class="text-slate-400 mr-2">badge</mat-icon></span>
-                  <input matInput formControlName="referencia_proveedor" placeholder="Ej: PROV-1234" />
+                  <input
+                    matInput
+                    formControlName="referencia_proveedor"
+                    [placeholder]="'catalogue.supplierRefPlaceholder' | translate"
+                  />
                   @if (materialForm.get('referencia_proveedor')?.errors?.['maxlength']) {
-                    <mat-error>Máximo 100 caracteres</mat-error>
+                    <mat-error>{{ 'catalogue.supplierRefMaxLength' | translate }}</mat-error>
                   }
                 </mat-form-field>
               </div>
@@ -193,7 +209,7 @@
               (click)="cancelar()"
               class="w-full sm:w-auto text-slate-600 border-slate-300 hover:bg-slate-50 px-6 py-2"
             >
-              Cancelar
+              {{ 'common.cancel' | translate }}
             </button>
 
             <button
@@ -203,7 +219,11 @@
               [disabled]="materialForm.invalid"
               class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
-              @if (id) { Guardar Cambios } @else { Crear Material }
+              @if (id) {
+                {{ 'catalogue.saveChanges' | translate }}
+              } @else {
+                {{ 'catalogue.createMaterial' | translate }}
+              }
             </button>
           </div>
         </div>

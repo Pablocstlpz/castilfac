@@ -1,9 +1,9 @@
 <section class="bg-white dark:bg-gray-900 min-h-screen">
     <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
         
-        <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white">Contacta con nosotros</h2>
+        <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white">{{ 'contact.title' | translate }}</h2>
         <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-400 sm:text-xl">
-            ¿Tienes alguna duda sobre Castilfac, quieres solicitar una demo personalizada o necesitas reportar un problema? Estamos aquí para ayudarte.
+            {{ 'contact.subtitle' | translate }}
         </p>
         
         <div class="flex flex-col items-center justify-center mb-12 space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
@@ -15,24 +15,24 @@
   
         <div class="flex items-center mb-8">
             <div class="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
-            <span class="px-4 text-sm text-gray-500 dark:text-gray-400 font-medium">O usa nuestro formulario</span>
+            <span class="px-4 text-sm text-gray-500 dark:text-gray-400 font-medium">{{ 'contact.divider' | translate }}</span>
             <div class="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
         </div>
   
         <form action="mailto:castilfac@gmail.com" method="post" enctype="text/plain" class="space-y-8">
             <div>
-                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tu correo electrónico</label>
-                <input type="email" id="email" name="correo" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light transition-colors" placeholder="taller@ejemplo.com" required>
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ 'contact.emailLabel' | translate }}</label>
+                <input type="email" id="email" name="correo" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light transition-colors" [attr.placeholder]="'contact.emailPlaceholder' | translate" required>
             </div>
             <div>
-                <label for="subject" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Asunto</label>
-                <input type="text" id="subject" name="asunto" class="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light transition-colors" placeholder="¿En qué podemos ayudarte?" required>
+                <label for="subject" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ 'contact.subjectLabel' | translate }}</label>
+                <input type="text" id="subject" name="asunto" class="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light transition-colors" [attr.placeholder]="'contact.subjectPlaceholder' | translate" required>
             </div>
             <div class="sm:col-span-2">
-                <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Mensaje</label>
-                <textarea id="message" name="mensaje" rows="6" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg shadow-sm border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 transition-colors" placeholder="Explícanos los detalles de tu consulta..."></textarea>
+                <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">{{ 'contact.messageLabel' | translate }}</label>
+                <textarea id="message" name="mensaje" rows="6" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg shadow-sm border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 transition-colors" [attr.placeholder]="'contact.messagePlaceholder' | translate"></textarea>
             </div>
-            <button type="submit" class="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 transition-colors">Enviar mensaje</button>
+            <button type="submit" class="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 transition-colors">{{ 'contact.submit' | translate }}</button>
         </form>
         
     </div>

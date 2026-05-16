@@ -2,16 +2,16 @@
   <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
     <div class="flex items-center md:hidden gap-2">
       <mat-icon class="text-blue-600">business</mat-icon>
-      <span class="font-bold text-slate-800">CastilFac</span>
+      <span class="font-bold text-slate-800">{{ 'common.brand' | translate }}</span>
     </div>
 
-    <h1 class="hidden md:block text-xl font-bold text-slate-800">Resumen del Taller</h1>
+    <h1 class="hidden md:block text-xl font-bold text-slate-800">{{ 'admin.workshopSummary' | translate }}</h1>
 
     <div class="flex items-center gap-4">
       <button
         class="hidden sm:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm"
       >
-        <mat-icon class="text-sm">add</mat-icon> Nuevo Presupuesto
+        <mat-icon class="text-sm">add</mat-icon> {{ 'admin.newQuote' | translate }}
       </button>
     </div>
   </header>
@@ -22,7 +22,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-slate-500 text-sm font-medium">Presupuestos (Mes)</h3>
+          <h3 class="text-slate-500 text-sm font-medium">{{ 'admin.quotesMonth' | translate }}</h3>
           <div class="p-2 bg-blue-50 rounded-lg">
             <mat-icon class="text-blue-600">request_quote</mat-icon>
           </div>
@@ -36,28 +36,27 @@
             <mat-icon class="text-sm">{{
               (porcentajeCambioMes() ?? 0) >= 0 ? 'trending_up' : 'trending_down'
             }}</mat-icon>
-            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}% que el
-            mes pasado
+            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}% {{ 'admin.vsLastMonth' | translate }}
           </p>
         } @else {
-          <p class="text-sm text-slate-400 mt-2 font-medium">Sin datos del mes anterior</p>
+          <p class="text-sm text-slate-400 mt-2 font-medium">{{ 'admin.noPreviousMonthData' | translate }}</p>
         }
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-slate-500 text-sm font-medium">Trabajos Activos</h3>
+          <h3 class="text-slate-500 text-sm font-medium">{{ 'admin.activeJobs' | translate }}</h3>
           <div class="p-2 bg-amber-50 rounded-lg">
             <mat-icon class="text-amber-600">precision_manufacturing</mat-icon>
           </div>
         </div>
         <p class="text-3xl font-bold text-slate-800">{{ numeroPedidos() }}</p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">En estado de fabricacion</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">{{ 'admin.inFabrication' | translate }}</p>
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-slate-500 text-sm font-medium">Ingresos Estimados</h3>
+          <h3 class="text-slate-500 text-sm font-medium">{{ 'admin.estimatedRevenue' | translate }}</h3>
           <div class="p-2 bg-emerald-50 rounded-lg">
             <mat-icon class="text-emerald-600">euro</mat-icon>
           </div>
@@ -65,22 +64,22 @@
         <p class="text-3xl font-bold text-slate-800">
           {{ ingresosEstimados() | number: '1.0-0' }}€
         </p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">Presupuestos aprobados</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">{{ 'admin.approvedQuotes' | translate }}</p>
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-slate-500 text-sm font-medium">Personal Activo</h3>
+          <h3 class="text-slate-500 text-sm font-medium">{{ 'admin.activeStaff' | translate }}</h3>
           <div class="p-2 bg-purple-50 rounded-lg">
             <mat-icon class="text-purple-600">groups</mat-icon>
           </div>
         </div>
         <p class="text-3xl font-bold text-slate-800">{{ numeroUsuarios() }}</p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">Operarios en el sistema</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">{{ 'admin.operatorsInSystem' | translate }}</p>
       </div>
     </div>
 
-    <h2 class="text-lg font-bold text-slate-800 mb-4">Accesos Rapidos</h2>
+    <h2 class="text-lg font-bold text-slate-800 mb-4">{{ 'admin.quickAccess' | translate }}</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pb-8 sm:pb-0">
       <div
         class="bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
@@ -94,9 +93,9 @@
           </div>
           <div>
             <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-              Crear Presupuesto
+              {{ 'admin.createQuote' | translate }}
             </h4>
-            <p class="text-xs text-slate-500 mt-0.5">Diseñar ventanas, puertas...</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ 'admin.createQuoteDesc' | translate }}</p>
           </div>
         </div>
       </div>
@@ -113,9 +112,9 @@
           </div>
           <div>
             <h4 class="font-bold text-slate-800 group-hover:text-slate-800 transition-colors">
-              Gestion de Personal
+              {{ 'admin.staff' | translate }}
             </h4>
-            <p class="text-xs text-slate-500 mt-0.5">Gestione los operarios de la empresa</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ 'admin.staffDesc' | translate }}</p>
           </div>
         </div>
       </div>
@@ -132,9 +131,9 @@
           </div>
           <div>
             <h4 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">
-              Actualizar Precios
+              {{ 'admin.updatePrices' | translate }}
             </h4>
-            <p class="text-xs text-slate-500 mt-0.5">Modificar precios de los materiales</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ 'admin.updatePricesDesc' | translate }}</p>
           </div>
         </div>
       </div>

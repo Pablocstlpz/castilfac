@@ -12,10 +12,11 @@ import { Presupuestos } from '../../../../services/presupuestos';
 import { Pedido } from '../../../../interfaces/pedido';
 import { Usuario } from '../../../../interfaces/usuario';
 import { Presupuesto } from '../../../../interfaces/presupuesto';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-detalle-pedido',
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, TranslatePipe],
   templateUrl: './detalle-pedido.html',
   styleUrl: './detalle-pedido.css',
 })
@@ -27,6 +28,7 @@ export class DetallePedido implements OnInit {
   private usuariosService = inject(UsuariosServices);
   private authentication = inject(Authentication);
   private presupuestosService = inject(Presupuestos);
+  private translate = inject(TranslateService);
 
   //signals principales
   public pedido = signal<Pedido | null>(null);
@@ -114,7 +116,7 @@ export class DetallePedido implements OnInit {
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
       next: (response) => {
         console.log(response.message);
-        this.mostrarExito('Estado actualizado correctamente');
+        this.mostrarExito(this.translate.instant('orders.statusUpdated'));
       },
       error: (err) => {
         console.log(err);
@@ -135,7 +137,7 @@ export class DetallePedido implements OnInit {
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
       next: (response) => {
         console.log(response.message);
-        this.mostrarExito('Operario asignado correctamente');
+        this.mostrarExito(this.translate.instant('orders.operatorAssigned'));
       },
       error: (err) => {
         console.log(err);
@@ -154,7 +156,7 @@ export class DetallePedido implements OnInit {
 
     //valido que no se supere el importe acordado
     if (totalPagado > acordado) {
-      alert('El importe pagado no puede superar el total acordado.');
+      alert(this.translate.instant('orders.paymentExceeds'));
       return;
     }
 
@@ -166,7 +168,7 @@ export class DetallePedido implements OnInit {
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
       next: (response) => {
         console.log(response.message);
-        this.mostrarExito('Cobro registrado correctamente');
+        this.mostrarExito(this.translate.instant('orders.paymentRegistered'));
       },
       error: (err) => {
         console.log(err);
@@ -185,7 +187,7 @@ export class DetallePedido implements OnInit {
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
       next: (response) => {
         console.log(response.message);
-        this.mostrarExito('Pedido liquidado correctamente');
+        this.mostrarExito(this.translate.instant('orders.orderSettled'));
       },
       error: (err) => console.log(err),
     });
@@ -208,7 +210,7 @@ export class DetallePedido implements OnInit {
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
       next: (response) => {
         console.log(response.message);
-        this.mostrarExito('Notas guardadas correctamente');
+        this.mostrarExito(this.translate.instant('orders.notesSaved'));
       },
       error: (err) => {
         console.log(err);
@@ -230,7 +232,7 @@ export class DetallePedido implements OnInit {
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
       next: (response) => {
         console.log(response.message);
-        this.mostrarExito('Fechas actualizadas correctamente');
+        this.mostrarExito(this.translate.instant('orders.datesUpdated'));
       },
       error: (err) => {
         console.log(err);
@@ -245,9 +247,23 @@ export class DetallePedido implements OnInit {
   }
 
   getNombreOperario(id: number | null): string {
-    if (!id) return 'Sin asignar';
+    if (!id) return this.translate.instant('orders.unassigned');
     const operario = this.usuarios().find((u) => u.id === id);
-    return operario ? operario.nombre : 'Sin asignar';
+    return operario ? operario.nombre : this.translate.instant('orders.unassigned');
+  }
+
+  etiquetaEstadoFabricacion(estado: string): string {
+    const keys: Record<string, string> = {
+      pendiente: 'orders.statusPending',
+      en_fabricacion: 'orders.statusInProduction',
+      fabricado: 'orders.statusManufactured',
+      entregado: 'orders.statusDelivered',
+      instalado: 'orders.statusInstalled',
+      finalizado: 'orders.statusCompleted',
+      cancelado: 'orders.statusCancelled',
+    };
+    const key = keys[estado];
+    return key ? this.translate.instant(key) : estado;
   }
 
   calcularPorcentajePago(): number {

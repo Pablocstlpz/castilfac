@@ -3,7 +3,7 @@
     <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:hidden">
       <div class="flex items-center gap-2">
         <mat-icon class="text-blue-600">handyman</mat-icon>
-        <span class="font-bold text-slate-800">CastilFac Operario</span>
+        <span class="font-bold text-slate-800">{{ 'operario.mobileBrand' | translate }}</span>
       </div>
       <button class="text-slate-500"><mat-icon>menu</mat-icon></button>
     </header>
@@ -11,9 +11,9 @@
     <div class="flex-1 overflow-y-auto p-5 sm:p-8 pb-6 sm:pb-8">
       <div class="mb-8">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Trabajos Pendientes
+          {{ 'operario.pendingJobs' | translate }}
         </h1>
-        <p class="text-slate-500 mt-1">Revisa las hojas de fabricacion y los planos asignados.</p>
+        <p class="text-slate-500 mt-1">{{ 'operario.pendingSubtitle' | translate }}</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -32,11 +32,11 @@
                     {{ pedido.estado_fabricacion }}
                   </span>
                   <span class="text-sm font-semibold text-slate-500"
-                    >Ref: {{ pedido.numero_pedido }}</span
+                    >{{ 'operario.ref' | translate }} {{ pedido.numero_pedido }}</span
                   >
                 </div>
                 <span class="text-sm text-slate-400 flex items-center gap-1"
-                  ><mat-icon class="text-sm">event</mat-icon> Entrega:
+                  ><mat-icon class="text-sm">event</mat-icon> {{ 'operario.delivery' | translate }}
                   {{ pedido.fecha_entrega_estimada }}</span
                 >
               </div>
@@ -45,11 +45,11 @@
                 <h3 class="text-xl font-bold text-slate-800 mb-2">{{ pedido.cliente_nombre }}</h3>
                 <p class="text-slate-600 text-sm mb-6 flex items-start gap-2">
                   <mat-icon class="text-slate-400 text-sm mt-0.5">location_on</mat-icon>
-                  Ubicación:
+                  {{ 'operario.location' | translate }}
                   @if (pedido.cliente_direccion) {
                     {{ pedido.cliente_direccion }}
                   } @else {
-                    Direccion no disponible
+                    {{ 'operario.addressUnavailable' | translate }}
                   }
                 </p>
 
@@ -59,7 +59,7 @@
                     (click)="verHojaFabricacion(pedido.presupuesto_id)"
                   >
                     <mat-icon class="text-red-500">picture_as_pdf</mat-icon>
-                    Ver Plano / PDF
+                    {{ 'operario.viewPdf' | translate }}
                   </button>
                 </div>
                 <div>
@@ -68,7 +68,7 @@
                     (click)="marcarFabricado(pedido.id)"
                   >
                     <mat-icon>check_circle</mat-icon>
-                    Marcar como Fabricado
+                    {{ 'operario.markFabricated' | translate }}
                   </button>
                 </div>
               </div>
@@ -76,7 +76,7 @@
           }
         } @else {
           <div class="flex items-center justify-center">
-            <p class="text-slate-500 text-center">No hay pedidos pendientes</p>
+            <p class="text-slate-500 text-center">{{ 'operario.noPending' | translate }}</p>
           </div>
         }
       </div>

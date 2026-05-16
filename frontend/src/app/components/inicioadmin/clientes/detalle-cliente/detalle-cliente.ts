@@ -6,10 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { ClientesServices } from '../../../../services/clientes';
 import { PedidosServices } from '../../../../services/pedidos';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-detalle-cliente',
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, TranslatePipe],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
 })
@@ -20,6 +21,7 @@ export class DetalleCliente {
   private clientesService = inject(ClientesServices);
   private pedidosService = inject(PedidosServices);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   // Signal para almacenar el cliente
   public cliente = signal<any>(null);
@@ -99,5 +101,30 @@ export class DetalleCliente {
       cancelado: 'bg-red-100 text-red-700 border border-red-200',
     };
     return colores[estado] ?? 'bg-slate-100 text-slate-700 border border-slate-200';
+  }
+
+  etiquetaTipoCliente(tipo: string): string {
+    const keys: Record<string, string> = {
+      particular: 'clients.typeParticular',
+      empresa: 'clients.typeCompany',
+      vip: 'clients.typeVip',
+      mayorista: 'clients.typeWholesaler',
+    };
+    const key = keys[tipo];
+    return key ? this.translate.instant(key) : tipo;
+  }
+
+  etiquetaEstadoPedido(estado: string): string {
+    const keys: Record<string, string> = {
+      pendiente: 'orders.statusPending',
+      en_fabricacion: 'orders.statusInProduction',
+      fabricado: 'orders.statusManufactured',
+      entregado: 'orders.statusDelivered',
+      instalado: 'orders.statusInstalled',
+      finalizado: 'orders.statusCompleted',
+      cancelado: 'orders.statusCancelled',
+    };
+    const key = keys[estado];
+    return key ? this.translate.instant(key) : estado;
   }
 }

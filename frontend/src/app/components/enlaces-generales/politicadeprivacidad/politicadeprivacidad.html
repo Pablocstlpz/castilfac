@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Política de Privacidad - CastilFac</title>
+    <title>{{ 'legal.privacy.pageTitle' | translate }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-xl font-extrabold text-blue-600 tracking-tighter">CastilFac</div>
-            <a routerLink="/registro" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">Volver al Registro</a>
+            <div class="text-xl font-extrabold text-blue-600 tracking-tighter">{{ 'common.brand' | translate }}</div>
+            <a routerLink="/registro" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">{{ 'legal.privacy.backToRegister' | translate }}</a>
         </div>
     </nav>
 
@@ -19,69 +19,69 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
             
             <header class="mb-10 text-center border-b border-slate-100 pb-8">
-                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Política de Privacidad</h1>
-                <p class="text-slate-500">Última actualización: 4 de Marzo de 2026</p>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">{{ 'legal.privacy.title' | translate }}</h1>
+                <p class="text-slate-500">{{ 'legal.privacy.lastUpdated' | translate }}</p>
             </header>
 
             <article class="space-y-8 text-slate-600 leading-relaxed text-sm sm:text-base">
                 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">1. Identidad del Responsable</h2>
-                    <p>En cumplimiento de lo establecido en el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo (RGPD) y la Ley Orgánica 3/2018 de Protección de Datos Personales (LOPDGDD), te informamos que los datos personales recogidos a través de la plataforma <strong>CastilFac</strong> serán tratados por el titular del software (en adelante, "el Responsable").</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.privacy.s1Title' | translate }}</h2>
+                    <p>{{ 'legal.privacy.s1Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">2. Datos que recopilamos</h2>
-                    <p>Para la correcta prestación del servicio SaaS, CastilFac recopila estrictamente los siguientes datos:</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.privacy.s2Title' | translate }}</h2>
+                    <p>{{ 'legal.privacy.s2Intro' | translate }}</p>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li><strong>Datos de la empresa (Taller):</strong> Nombre comercial, NIF/CIF, dirección postal y datos de facturación.</li>
-                        <li><strong>Datos de usuarios (Empleados):</strong> Nombre, correo electrónico y contraseña (almacenada mediante cifrado irreversible <em>bcrypt</em>).</li>
-                        <li><strong>Datos de uso:</strong> Registros de acceso y actividad en la plataforma por motivos de seguridad y auditoría técnica.</li>
+                        <li><strong>{{ 'legal.privacy.s2Item1' | translate }}</strong> {{ 'legal.privacy.s2Item1Desc' | translate }}</li>
+                        <li><strong>{{ 'legal.privacy.s2Item2' | translate }}</strong> {{ 'legal.privacy.s2Item2Desc' | translate }}</li>
+                        <li><strong>{{ 'legal.privacy.s2Item3' | translate }}</strong> {{ 'legal.privacy.s2Item3Desc' | translate }}</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">3. Finalidad del tratamiento</h2>
-                    <p>Tus datos serán utilizados única y exclusivamente para las siguientes finalidades:</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.privacy.s3Title' | translate }}</h2>
+                    <p>{{ 'legal.privacy.s3Intro' | translate }}</p>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li>Creación y gestión de tu cuenta de acceso a la plataforma.</li>
-                        <li>Prestación del servicio de software (creación de presupuestos, gestión de catálogo).</li>
-                        <li>Gestión administrativa, contable y fiscal (cobro de la suscripción).</li>
-                        <li>Envío de comunicaciones técnicas o avisos de seguridad sobre el software.</li>
+                        <li>{{ 'legal.privacy.s3Item1' | translate }}</li>
+                        <li>{{ 'legal.privacy.s3Item2' | translate }}</li>
+                        <li>{{ 'legal.privacy.s3Item3' | translate }}</li>
+                        <li>{{ 'legal.privacy.s3Item4' | translate }}</li>
                     </ul>
                     <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-800 rounded-r-md">
-                        <strong>Nota importante:</strong> CastilFac NO venderá, alquilará ni cederá tu base de datos de clientes ni tus listas de precios a terceros bajo ninguna circunstancia.
+                        <strong>{{ 'legal.privacy.s3NoteLabel' | translate }}</strong> {{ 'legal.privacy.s3Note' | translate }}
                     </div>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">4. CastilFac como Encargado del Tratamiento</h2>
-                    <p>Respecto a los datos de los <strong>clientes finales del taller</strong> (los particulares o empresas a los que el taller hace presupuestos), CastilFac actúa únicamente como <em>Encargado del Tratamiento</em>, limitándose a almacenar dicha información en sus servidores para que el software funcione. El Taller es el único <em>Responsable del Tratamiento</em> de dichos datos y debe garantizar que ha obtenido el consentimiento lícito de sus clientes para introducirlos en nuestro sistema.</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.privacy.s4Title' | translate }}</h2>
+                    <p>{{ 'legal.privacy.s4Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">5. Conservación de los datos (Borrado Lógico)</h2>
-                    <p>Los datos se conservarán mientras se mantenga la relación comercial (suscripción activa). En caso de baja o eliminación de elementos dentro de la app (clientes, facturas), CastilFac emplea técnicas de <strong>borrado lógico</strong> para preservar la integridad de los datos históricos y evitar roturas en los registros contables. Si solicitas la eliminación total de tu cuenta, los datos serán bloqueados y posteriormente destruidos, a excepción de aquellos que debamos conservar por imperativo legal (ej. datos de facturación durante 5 años).</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.privacy.s5Title' | translate }}</h2>
+                    <p>{{ 'legal.privacy.s5Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">6. Tus Derechos (ARCO)</h2>
-                    <p>Como usuario, tienes derecho en cualquier momento a ejercer tus derechos de:</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.privacy.s6Title' | translate }}</h2>
+                    <p>{{ 'legal.privacy.s6Intro' | translate }}</p>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li><strong>Acceso:</strong> Saber qué datos tuyos tenemos.</li>
-                        <li><strong>Rectificación:</strong> Modificar datos inexactos (disponible directamente desde tu panel de configuración).</li>
-                        <li><strong>Supresión (Derecho al olvido):</strong> Solicitar la eliminación de tu cuenta.</li>
-                        <li><strong>Portabilidad:</strong> Solicitar un archivo con la exportación de tus datos en formato estructurado.</li>
+                        <li><strong>{{ 'legal.privacy.s6Item1Label' | translate }}</strong> {{ 'legal.privacy.s6Item1' | translate }}</li>
+                        <li><strong>{{ 'legal.privacy.s6Item2Label' | translate }}</strong> {{ 'legal.privacy.s6Item2' | translate }}</li>
+                        <li><strong>{{ 'legal.privacy.s6Item3Label' | translate }}</strong> {{ 'legal.privacy.s6Item3' | translate }}</li>
+                        <li><strong>{{ 'legal.privacy.s6Item4Label' | translate }}</strong> {{ 'legal.privacy.s6Item4' | translate }}</li>
                     </ul>
-                    <p class="mt-2">Para ejercer estos derechos, puedes escribirnos a <em>privacidad@castilfac.com</em>.</p>
+                    <p class="mt-2"><em>{{ 'legal.privacy.s6Contact' | translate }}</em></p>
                 </section>
 
             </article>
 
             <div class="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-slate-500">¿Dudas sobre privacidad? Escríbenos a privacidad@castilfac.com</p>
+                <p class="text-sm text-slate-500">{{ 'legal.privacy.footerNote' | translate }}</p>
                 <a routerLink="/registro" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-colors shadow-sm w-full sm:w-auto">
-                    Aceptar y volver
+                    {{ 'legal.privacy.acceptButton' | translate }}
                 </a>
             </div>
 
@@ -89,7 +89,7 @@
     </main>
 
     <footer class="text-center py-8 text-slate-400 text-sm">
-        &copy; 2026 CastilFac. Todos los derechos reservados.
+        {{ 'legal.privacy.copyright' | translate }}
     </footer>
 
 </body>

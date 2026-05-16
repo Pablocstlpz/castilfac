@@ -14,6 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { UsuariosServices } from '../../../services/usuarios';
 import { Authentication } from '../../../services/authentication';
 import { environment } from '../../../../environments/environment';
@@ -37,6 +38,7 @@ const GOOGLE_CLIENT_ID = environment.googleClientId;
     MatOptionModule,
     MatSelectModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './login.html',
   styleUrl: './login.css',

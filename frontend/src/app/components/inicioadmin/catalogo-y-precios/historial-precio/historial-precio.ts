@@ -20,6 +20,7 @@ import { HistorialPreciosEmpresa } from '../../../../services/historial-precios-
 import { HistorialPreciosBase } from '../../../../services/historial-precios-base';
 import { UsuariosServices } from '../../../../services/usuarios';
 import { Authentication } from '../../../../services/authentication';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-historial-precios',
@@ -31,6 +32,7 @@ import { Authentication } from '../../../../services/authentication';
     MatButtonModule,
     MatTabsModule,
     MatSnackBarModule,
+    TranslatePipe,
   ],
   templateUrl: './historial-precio.html',
   styleUrl: './historial-precio.css',
@@ -42,6 +44,7 @@ export class HistorialPrecio {
   private location = inject(Location);
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
 
   // Inyección de tus servicios
   private materialesService = inject(Materiales);
@@ -150,7 +153,7 @@ export class HistorialPrecio {
       this.cargarDatosCompletos(Number(idMaterial), usuario.empresa_id);
     } else {
       // Si no hay ID en la URL, devolvemos al usuario atrás
-      this.snackBar.open('Error: No se ha especificado ningún material', 'Cerrar', {
+      this.snackBar.open(this.translate.instant('catalogue.noMaterialSpecified'), this.translate.instant('common.close'), {
         duration: 3000,
       });
       this.volver();
@@ -203,7 +206,10 @@ export class HistorialPrecio {
               },
               error: (error: Error) => {
                 console.error('Error al cargar el historial base:', error);
-                this.snackBar.open('Error al cargar el historial de precios base', 'Cerrar', {
+                this.snackBar.open(
+                  this.translate.instant('catalogue.loadBaseHistoryError'),
+                  this.translate.instant('common.close'),
+                  {
                   duration: 3000,
                 });
                 this.estaCargando.set(false); // Quitamos la carga aunque falle
@@ -212,7 +218,10 @@ export class HistorialPrecio {
           },
           error: (error: Error) => {
             console.error('Error al cargar el historial de la empresa:', error);
-            this.snackBar.open('Error al cargar el historial de tu empresa', 'Cerrar', {
+            this.snackBar.open(
+              this.translate.instant('catalogue.loadCompanyHistoryError'),
+              this.translate.instant('common.close'),
+              {
               duration: 3000,
             });
             this.estaCargando.set(false);
@@ -221,7 +230,10 @@ export class HistorialPrecio {
       },
       error: (error: Error) => {
         console.error('Error al cargar el material:', error);
-        this.snackBar.open('El material no existe o no se pudo cargar', 'Cerrar', {
+        this.snackBar.open(
+          this.translate.instant('catalogue.materialLoadError'),
+          this.translate.instant('common.close'),
+          {
           duration: 3000,
         });
         this.volver(); // Si falla el material principal, no tiene sentido seguir en esta vista
@@ -252,7 +264,7 @@ export class HistorialPrecio {
 
   obtenerNombreUsuario(usuarioId: number | null | undefined): string {
     if (usuarioId === null || usuarioId === undefined) {
-      return 'Sistema';
+      return this.translate.instant('catalogue.systemUser');
     }
 
     return this.nombresUsuarios()[usuarioId] || `Usuario #${usuarioId}`;

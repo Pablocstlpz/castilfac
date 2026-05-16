@@ -6,10 +6,11 @@ import { Router } from '@angular/router';
 import { Authentication } from '../../../services/authentication';
 import { PedidosServices } from '../../../services/pedidos';
 import { Pedido } from '../../../interfaces/pedido';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-finanzas',
-  imports: [MatIcon, CommonModule, FormsModule],
+  imports: [MatIcon, CommonModule, FormsModule, TranslatePipe],
   templateUrl: './finanzas.html',
   styleUrl: './finanzas.css',
 })

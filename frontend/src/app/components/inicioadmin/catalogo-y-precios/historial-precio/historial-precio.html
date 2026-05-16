@@ -11,13 +11,13 @@
           </div>
           <div>
             <h1 class="text-xl font-extrabold text-white tracking-tight leading-tight">
-              Historial de Precios
+              {{ 'catalogue.priceHistory' | translate }}
             </h1>
             <p class="text-sm text-slate-400 mt-0.5 font-medium">
               @if (materialEncontrado()) {
                 {{ materialEncontrado()?.nombre }}
               } @else {
-                Cargando material...
+                {{ 'catalogue.loadingMaterial' | translate }}
               }
             </p>
           </div>
@@ -27,7 +27,7 @@
           class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors font-semibold text-sm border border-white/10"
         >
           <mat-icon style="font-size: 18px; width: 18px; height: 18px">arrow_back</mat-icon>
-          Volver
+          {{ 'common.back' | translate }}
         </button>
       </div>
     </div>
@@ -42,7 +42,7 @@
           style="font-size: 40px; width: 40px; height: 40px"
           >refresh</mat-icon
         >
-        <p class="font-bold tracking-widest text-sm uppercase">Cargando registros...</p>
+        <p class="font-bold tracking-widest text-sm uppercase">{{ 'catalogue.loadingRecords' | translate }}</p>
       </div>
     } @else {
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -55,19 +55,18 @@
                 style="font-size: 20px; width: 20px; height: 20px"
                 >storefront</mat-icon
               >
-              <span class="font-bold text-slate-700">PVP de Empresa</span>
+              <span class="font-bold text-slate-700">{{ 'catalogue.tabCompanyPvp' | translate }}</span>
             </ng-template>
 
             <div class="p-5">
-              <!-- FILTROS -->
               <div
                 class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 mb-4 flex flex-wrap gap-4 items-center"
               >
-                <span class="text-xs font-black text-slate-400 uppercase tracking-wider"
-                  >Filtrar por fecha</span
-                >
+                <span class="text-xs font-black text-slate-400 uppercase tracking-wider">{{
+                  'catalogue.filterByDate' | translate
+                }}</span>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-500">Desde</span>
+                  <span class="text-xs font-bold text-slate-500">{{ 'catalogue.from' | translate }}</span>
                   <input
                     type="date"
                     [ngModel]="filtroFechaDesdeEmpresa()"
@@ -76,7 +75,7 @@
                   />
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-500">Hasta</span>
+                  <span class="text-xs font-bold text-slate-500">{{ 'catalogue.to' | translate }}</span>
                   <input
                     type="date"
                     [ngModel]="filtroFechaHastaEmpresa()"
@@ -91,12 +90,11 @@
                     type="button"
                   >
                     <mat-icon style="font-size: 14px; width: 14px; height: 14px">close</mat-icon>
-                    Limpiar filtros
+                    {{ 'catalogue.clearFilters' | translate }}
                   </button>
                 }
               </div>
 
-              <!-- TABLA -->
               <div class="rounded-xl border border-slate-200 overflow-hidden">
                 <div class="overflow-y-auto max-h-[50vh]">
                   <table
@@ -107,27 +105,27 @@
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider"
                         >
-                          Fecha y hora
+                          {{ 'catalogue.colDateTime' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider"
                         >
-                          Usuario
+                          {{ 'catalogue.colUser' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
                         >
-                          Precio anterior
+                          {{ 'catalogue.colPreviousPrice' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center"
                         >
-                          Variación
+                          {{ 'catalogue.colVariation' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
                         >
-                          Precio nuevo
+                          {{ 'catalogue.colNewPrice' | translate }}
                         </th>
                       </tr>
                     </thead>
@@ -173,7 +171,7 @@
                                 <mat-icon style="font-size: 14px; width: 14px; height: 14px"
                                   >trending_up</mat-icon
                                 >
-                                Subida
+                                {{ 'catalogue.trendUp' | translate }}
                               </span>
                             } @else if (
                               calcularTendencia(
@@ -187,7 +185,7 @@
                                 <mat-icon style="font-size: 14px; width: 14px; height: 14px"
                                   >trending_down</mat-icon
                                 >
-                                Bajada
+                                {{ 'catalogue.trendDown' | translate }}
                               </span>
                             } @else {
                               <span class="text-slate-300 font-bold text-lg">—</span>
@@ -208,12 +206,12 @@
                               style="font-size: 48px; width: 48px; height: 48px"
                               >event_busy</mat-icon
                             >
-                            <p class="font-bold text-base text-slate-500">Sin registros</p>
+                            <p class="font-bold text-base text-slate-500">{{ 'catalogue.noRecords' | translate }}</p>
                             <p class="text-sm mt-1">
                               @if (filtroFechaDesdeEmpresa() || filtroFechaHastaEmpresa()) {
-                                Ajusta el rango de fechas para ver más resultados.
+                                {{ 'catalogue.adjustDateRange' | translate }}
                               } @else {
-                                Aún no hay cambios de precio para este material.
+                                {{ 'catalogue.noPriceChanges' | translate }}
                               }
                             </p>
                           </td>
@@ -226,11 +224,11 @@
                   class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between"
                 >
                   <span class="text-sm text-slate-500">
-                    Mostrando
+                    {{ 'catalogue.showing' | translate }}
                     <span class="font-medium text-slate-900">{{
                       historialEmpresaFiltrado().length
                     }}</span>
-                    registros
+                    {{ 'catalogue.recordsCount' | translate }}
                   </span>
                 </div>
               </div>
@@ -245,19 +243,18 @@
                 style="font-size: 20px; width: 20px; height: 20px"
                 >factory</mat-icon
               >
-              <span class="font-bold text-slate-700">Coste Base Sistema</span>
+              <span class="font-bold text-slate-700">{{ 'catalogue.tabBaseCost' | translate }}</span>
             </ng-template>
 
             <div class="p-5">
-              <!-- FILTROS -->
               <div
                 class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 mb-4 flex flex-wrap gap-4 items-center"
               >
-                <span class="text-xs font-black text-slate-400 uppercase tracking-wider"
-                  >Filtrar por fecha</span
-                >
+                <span class="text-xs font-black text-slate-400 uppercase tracking-wider">{{
+                  'catalogue.filterByDate' | translate
+                }}</span>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-500">Desde</span>
+                  <span class="text-xs font-bold text-slate-500">{{ 'catalogue.from' | translate }}</span>
                   <input
                     type="date"
                     [ngModel]="filtroFechaDesdeBase()"
@@ -266,7 +263,7 @@
                   />
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-500">Hasta</span>
+                  <span class="text-xs font-bold text-slate-500">{{ 'catalogue.to' | translate }}</span>
                   <input
                     type="date"
                     [ngModel]="filtroFechaHastaBase()"
@@ -281,12 +278,11 @@
                     type="button"
                   >
                     <mat-icon style="font-size: 14px; width: 14px; height: 14px">close</mat-icon>
-                    Limpiar filtros
+                    {{ 'catalogue.clearFilters' | translate }}
                   </button>
                 }
               </div>
 
-              <!-- TABLA -->
               <div class="rounded-xl border border-slate-200 overflow-hidden">
                 <div class="overflow-y-auto max-h-[50vh]">
                   <table
@@ -297,32 +293,32 @@
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider"
                         >
-                          Fecha y hora
+                          {{ 'catalogue.colDateTime' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider"
                         >
-                          Administrador
+                          {{ 'catalogue.colAdmin' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
                         >
-                          Precio anterior
+                          {{ 'catalogue.colPreviousPrice' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center"
                         >
-                          Variación
+                          {{ 'catalogue.colVariation' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
                         >
-                          Precio nuevo
+                          {{ 'catalogue.colNewPrice' | translate }}
                         </th>
                         <th
                           class="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider"
                         >
-                          Motivo
+                          {{ 'catalogue.colReason' | translate }}
                         </th>
                       </tr>
                     </thead>
@@ -370,7 +366,7 @@
                                 <mat-icon style="font-size: 14px; width: 14px; height: 14px"
                                   >trending_up</mat-icon
                                 >
-                                Subida
+                                {{ 'catalogue.trendUp' | translate }}
                               </span>
                             } @else if (
                               calcularTendencia(
@@ -384,7 +380,7 @@
                                 <mat-icon style="font-size: 14px; width: 14px; height: 14px"
                                   >trending_down</mat-icon
                                 >
-                                Bajada
+                                {{ 'catalogue.trendDown' | translate }}
                               </span>
                             } @else {
                               <span class="text-slate-300 font-bold text-lg">—</span>
@@ -411,12 +407,12 @@
                               style="font-size: 48px; width: 48px; height: 48px"
                               >event_busy</mat-icon
                             >
-                            <p class="font-bold text-base text-slate-500">Sin registros</p>
+                            <p class="font-bold text-base text-slate-500">{{ 'catalogue.noRecords' | translate }}</p>
                             <p class="text-sm mt-1">
                               @if (filtroFechaDesdeBase() || filtroFechaHastaBase()) {
-                                Ajusta el rango de fechas para ver más resultados.
+                                {{ 'catalogue.adjustDateRange' | translate }}
                               } @else {
-                                El coste base nunca ha sido modificado.
+                                {{ 'catalogue.baseNeverModified' | translate }}
                               }
                             </p>
                           </td>
@@ -429,11 +425,11 @@
                   class="border-t border-slate-200 bg-slate-50 px-6 py-3 flex items-center justify-between"
                 >
                   <span class="text-sm text-slate-500">
-                    Mostrando
+                    {{ 'catalogue.showing' | translate }}
                     <span class="font-medium text-slate-900">{{
                       historialBaseFiltrado().length
                     }}</span>
-                    registros
+                    {{ 'catalogue.recordsCount' | translate }}
                   </span>
                 </div>
               </div>

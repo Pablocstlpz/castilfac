@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-company',
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './company.html',
   styleUrl: './company.css',
 })

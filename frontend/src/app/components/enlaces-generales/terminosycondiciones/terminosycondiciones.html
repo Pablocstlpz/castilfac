@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Términos y Condiciones - CastilFac</title>
+    <title>{{ 'legal.terms.pageTitle' | translate }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-xl font-extrabold text-blue-600 tracking-tighter">CastilFac</div>
-            <a routerLink="/registro" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">Volver al Registro</a>
+            <div class="text-xl font-extrabold text-blue-600 tracking-tighter">{{ 'common.brand' | translate }}</div>
+            <a routerLink="/registro" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">{{ 'legal.terms.backToRegister' | translate }}</a>
         </div>
     </nav>
 
@@ -19,61 +19,61 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
             
             <header class="mb-10 text-center border-b border-slate-100 pb-8">
-                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Términos y Condiciones de Uso</h1>
-                <p class="text-slate-500">Última actualización: 4 de Marzo de 2026</p>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">{{ 'legal.terms.title' | translate }}</h1>
+                <p class="text-slate-500">{{ 'legal.terms.lastUpdated' | translate }}</p>
             </header>
 
             <article class="space-y-8 text-slate-600 leading-relaxed text-sm sm:text-base">
                 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">1. Aceptación de los Términos</h2>
-                    <p>Al registrarte y utilizar el software <strong>CastilFac</strong> (en adelante, "el Servicio"), gestionado en modalidad de Software as a Service (SaaS), aceptas cumplir y estar sujeto a los presentes Términos y Condiciones. Si no estás de acuerdo con alguna parte de estos términos, no debes utilizar el Servicio. El uso de CastilFac está restringido exclusivamente a profesionales y empresas (B2B).</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s1Title' | translate }}</h2>
+                    <p>{{ 'legal.terms.s1Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">2. Descripción del Servicio</h2>
-                    <p>CastilFac proporciona una plataforma en la nube para la gestión integral de talleres de carpintería metálica y aluminio, incluyendo, entre otros, la elaboración de presupuestos, despiece de materiales y control del estado de pedidos en taller. Las actualizaciones y mejoras del sistema se aplicarán automáticamente a todos los usuarios bajo suscripción activa.</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s2Title' | translate }}</h2>
+                    <p>{{ 'legal.terms.s2Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">3. Suscripciones y Pagos</h2>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s3Title' | translate }}</h2>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li>El acceso al Servicio requiere una <strong>suscripción activa</strong>. El pago se realizará de forma anticipada según el ciclo de facturación acordado.</li>
-                        <li>En caso de impago o expiración de la suscripción, CastilFac se reserva el derecho de <strong>suspender temporalmente</strong> el acceso a la cuenta. Durante este periodo, los datos del cliente no serán eliminados (se mantendrán en estado de "borrado lógico" o "inactivo"), pudiendo ser recuperados tras la regularización del pago.</li>
+                        <li>{{ 'legal.terms.s3Item1' | translate }}</li>
+                        <li>{{ 'legal.terms.s3Item2' | translate }}</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">4. Propiedad Intelectual y Propiedad de los Datos</h2>
-                    <p>Todo el código fuente, diseño, bases de datos maestras de materiales y algoritmos de cálculo son propiedad exclusiva de CastilFac. Por otro lado, <strong>el Cliente es el único propietario y responsable de los datos que introduce en el sistema</strong> (cartera de clientes, presupuestos emitidos, márgenes comerciales y precios personalizados de venta).</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s4Title' | translate }}</h2>
+                    <p>{{ 'legal.terms.s4Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">5. Privacidad y Tratamiento de Datos (RGPD)</h2>
-                    <p>En cumplimiento con el Reglamento General de Protección de Datos (RGPD) vigente en España y la Unión Europea:</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s5Title' | translate }}</h2>
+                    <p>{{ 'legal.terms.s5Intro' | translate }}</p>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li>CastilFac actúa como <strong>Encargado del Tratamiento</strong> de los datos personales de los clientes del Taller.</li>
-                        <li>El Taller (Usuario) actúa como <strong>Responsable del Tratamiento</strong> y debe contar con el consentimiento de sus propios clientes para introducir sus datos (nombre, dirección, teléfono) en nuestra plataforma para la generación de presupuestos.</li>
-                        <li>CastilFac garantiza que las contraseñas se almacenan mediante algoritmos de encriptación seguros (bcrypt) y no compartirá la base de datos de clientes de un taller con terceros.</li>
+                        <li>{{ 'legal.terms.s5Item1' | translate }}</li>
+                        <li>{{ 'legal.terms.s5Item2' | translate }}</li>
+                        <li>{{ 'legal.terms.s5Item3' | translate }}</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">6. Limitación de Responsabilidad</h2>
-                    <p>CastilFac es una herramienta de asistencia al cálculo. <strong>El Cliente es el responsable final de revisar y aprobar los presupuestos antes de enviarlos a sus compradores.</strong> CastilFac no se hace responsable de pérdidas económicas, lucro cesante o daños derivados de errores de cálculo, configuración incorrecta de mermas, desactualización de precios base o uso indebido de las plantillas por parte del usuario.</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s6Title' | translate }}</h2>
+                    <p>{{ 'legal.terms.s6Text' | translate }}</p>
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-bold text-slate-900 mb-3">7. Cancelación del Servicio</h2>
-                    <p>El cliente puede solicitar la cancelación de su cuenta en cualquier momento. A la cancelación del servicio, CastilFac ofrecerá la posibilidad de exportar los datos del cliente antes de proceder a su eliminación definitiva de los servidores, garantizando el derecho al olvido.</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">{{ 'legal.terms.s7Title' | translate }}</h2>
+                    <p>{{ 'legal.terms.s7Text' | translate }}</p>
                 </section>
 
             </article>
 
             <div class="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-slate-500">¿Tienes dudas legales? Contáctanos en legal@castilfac.com</p>
+                <p class="text-sm text-slate-500">{{ 'legal.terms.footerNote' | translate }}</p>
                 <a routerLink="/registro" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm w-full sm:w-auto">
-                    Entendido, volver al registro
+                    {{ 'legal.terms.acceptButton' | translate }}
                 </a>
             </div>
 

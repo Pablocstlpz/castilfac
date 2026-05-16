@@ -16,13 +16,35 @@
         type="button"
         class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm"
         (click)="abrirMenuMovil()"
-        aria-label="Abrir menú"
+        [attr.aria-label]="'admin.openMenu' | translate"
       >
         <mat-icon>menu</mat-icon>
       </button>
-      <div class="min-w-0">
-        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Castilfac</p>
-        <p class="text-sm font-bold text-slate-900 truncate">Panel de administración</p>
+      <div class="min-w-0 flex-1">
+        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{{ 'common.brand' | translate }}</p>
+        <p class="text-sm font-bold text-slate-900 truncate">{{ 'admin.panelTitle' | translate }}</p>
+      </div>
+      <div class="flex items-center rounded-lg border border-slate-200 overflow-hidden text-xs font-semibold shrink-0">
+        <button
+          type="button"
+          (click)="cambiarIdioma('es')"
+          class="px-2.5 py-1.5 transition-colors"
+          [class.bg-primary-700]="idiomaActual() === 'es'"
+          [class.text-white]="idiomaActual() === 'es'"
+          [class.text-slate-600]="idiomaActual() !== 'es'"
+        >
+          {{ 'lang.es' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="cambiarIdioma('en')"
+          class="px-2.5 py-1.5 transition-colors"
+          [class.bg-primary-700]="idiomaActual() === 'en'"
+          [class.text-white]="idiomaActual() === 'en'"
+          [class.text-slate-600]="idiomaActual() !== 'en'"
+        >
+          {{ 'lang.en' | translate }}
+        </button>
       </div>
     </header>
 

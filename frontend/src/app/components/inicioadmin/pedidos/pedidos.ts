@@ -12,10 +12,11 @@ import { UsuariosServices } from '../../../services/usuarios';
 import { Usuario } from '../../../interfaces/usuario';
 import { ClientesServices } from '../../../services/clientes';
 import { Cliente } from '../../../interfaces/cliente';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-pedidos',
-  imports: [MatIcon, DatePipe, UpperCasePipe, NgClass, RouterLink, FormsModule],
+  imports: [MatIcon, DatePipe, UpperCasePipe, NgClass, RouterLink, FormsModule, TranslatePipe],
   templateUrl: './pedidos.html',
   styleUrl: './pedidos.css',
 })
@@ -24,6 +25,7 @@ export class Pedidos {
   private authentication = inject(Authentication);
   private usuariosServices = inject(UsuariosServices);
   private clientesServices = inject(ClientesServices);
+  private translate = inject(TranslateService);
 
   private todosPedidos = signal<Pedido[]>([]);
   public usuarios = signal<Usuario[]>([]);
@@ -74,13 +76,11 @@ export class Pedidos {
 
   // Funcion para transformar el ID en Nombre buscando en el Signal de usuarios
   getNombreOperario(id: any): string {
-    if (!id) return 'Sin asignar';
+    if (!id) return this.translate.instant('orders.unassigned');
 
-    // Buscamos en el array del signal.
-    // Usamos == para comparar por si uno es string y otro numero
     const operario = this.usuarios().find((u) => u.id == id);
 
-    return operario ? operario.nombre : 'Cargando...';
+    return operario ? operario.nombre : this.translate.instant('orders.loading');
   }
 
   //funcion para cargar todos los clientes de la empresa
@@ -93,12 +93,24 @@ export class Pedidos {
 
   // Funcion para transformar el ID en Nombre buscando en el Signal de clientes
   getNombreCliente(id: any): string {
-    if (!id) return 'Sin asignar';
+    if (!id) return this.translate.instant('orders.unassigned');
 
-    // Buscamos en el array del signal.
-    // Usamos == para comparar por si uno es string y otro numero
     const cliente = this.clientes().find((c) => c.id == id);
 
-    return cliente ? cliente.nombre_empresa_o_particular : 'Cargando...';
+    return cliente ? cliente.nombre_empresa_o_particular : this.translate.instant('orders.loading');
+  }
+
+  etiquetaEstadoFabricacion(estado: string): string {
+    const keys: Record<string, string> = {
+      pendiente: 'orders.statusPending',
+      en_fabricacion: 'orders.statusInProduction',
+      fabricado: 'orders.statusManufactured',
+      entregado: 'orders.statusDelivered',
+      instalado: 'orders.statusInstalled',
+      finalizado: 'orders.statusCompleted',
+      cancelado: 'orders.statusCancelled',
+    };
+    const key = keys[estado];
+    return key ? this.translate.instant(key) : estado;
   }
 }
