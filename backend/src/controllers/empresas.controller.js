@@ -2,10 +2,13 @@ import { Empresa } from "../models/empresa.model.js";
 import { Op } from "sequelize";
 import { sequelize } from "../data/db.js";
 import { Usuario } from "../models/usuario.model.js";
-import { randomUUID } from "crypto";
 import { enviarEmailVerificacion } from "../mailer.js";
 import { URL, FRONTEND_URL } from "../config.js";
-import { hashPassword } from "../utils/seguridad.js";
+import {
+  hashPassword,
+  hashToken,
+  generarTokenVerificacion,
+} from "../utils/seguridad.js";
 import { logger } from "../utils/logger.js";
 
 export const getEmpresas = async (req, res) => {
@@ -22,7 +25,7 @@ export const getEmpresas = async (req, res) => {
     res.status(200).json(empresas);
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("getEmpresas", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al obtener las empresas" });
   }
@@ -50,7 +53,7 @@ export const getEmpresa = async (req, res) => {
     res.status(200).json(empresa);
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("getEmpresa", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al obtener la empresa" });
   }
@@ -85,7 +88,7 @@ export const getEmpresaByNif = async (req, res) => {
     res.status(200).json(empresa);
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("getEmpresaByNif", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al obtener la empresa por NIF" });
   }
@@ -118,9 +121,14 @@ export const createEmpresa = async (req, res) => {
     //controller solo las REGLAS DE NEGOCIO (unicidad, side effects).
     const nifMayusculas = nif.toUpperCase();
 
-    // Si existe alguna empresa no verificada con el mismo NIF, email o teléfono,
-    // la elimino junto a sus usuarios para permitir que el usuario pueda reintentar el registro
-    const empresasNoVerificadas = await Empresa.findAll({
+    //Misma proteccion anti-abuso que en registroTransaccional: solo borramos
+    //empresas no verificadas si llevan >= 24h. Si son recientes, devolvemos 409
+    //para no permitir que un atacante con los mismos datos elimine un registro
+    //pendiente de un usuario legitimo.
+    const VENTANA_PROTECCION_MS = 24 * 60 * 60 * 1000;
+    const ahora = Date.now();
+
+    const empresasPendientes = await Empresa.findAll({
       where: {
         email_verificado: false,
         [Op.or]: [
@@ -130,7 +138,14 @@ export const createEmpresa = async (req, res) => {
         ],
       },
     });
-    for (const emp of empresasNoVerificadas) {
+    for (const emp of empresasPendientes) {
+      const edadMs = ahora - new Date(emp.fecha_registro).getTime();
+      if (edadMs < VENTANA_PROTECCION_MS) {
+        return res.status(409).json({
+          message:
+            "Ya hay un registro reciente pendiente de verificacion con esos datos. Revisa tu email o pide reenvio del enlace.",
+        });
+      }
       await Usuario.destroy({ where: { empresa_id: emp.id } });
       await emp.destroy();
     }
@@ -173,8 +188,8 @@ export const createEmpresa = async (req, res) => {
     //el cliente no puede ya extenderla.
     const fechaVencimiento = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-    //genero el token de verificación
-    const token = randomUUID();
+    //Genero el token (plano para el email, hash para BD).
+    const { plano: tokenPlano, hash: tokenHash } = generarTokenVerificacion();
 
     //creo la empresa con valores controlados por el servidor.
     //suscripcion_activa se queda en false y solo el flujo de Stripe la pone a true.
@@ -193,18 +208,18 @@ export const createEmpresa = async (req, res) => {
       suscripcion_activa: false,
       activo: true,
       email_verificado: false,
-      token_verificacion: token,
+      token_verificacion: tokenHash, //HASH en BD; el plano viaja solo por email
     });
 
-    //envío el email de verificación sin bloquear la respuesta
-    const urlVerificacion = `${URL}/api/empresas/verificar/${token}`;
+    //envío el email de verificación con el token en CLARO
+    const urlVerificacion = `${URL}/api/empresas/verificar/${tokenPlano}`;
     enviarEmailVerificacion(email, nombre_comercial, urlVerificacion);
 
     //devuelvo la empresa creada
     res.status(200).json(empresa);
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("createEmpresa", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al crear la empresa" });
   }
@@ -321,7 +336,7 @@ export const updateEmpresa = async (req, res) => {
     res.status(200).json(empresaActualizada);
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("updateEmpresa", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al actualizar la empresa" });
   }
@@ -352,7 +367,7 @@ export const deleteEmpresa = async (req, res) => {
     res.status(200).json({ message: "Empresa eliminada correctamente" });
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("deleteEmpresa", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al eliminar la empresa" });
   }
@@ -384,7 +399,7 @@ export const deleteEmpresaCorreo = async (req, res) => {
     res.status(200).json({ message: "Empresa eliminada correctamente" });
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("deleteEmpresaCorreo", error);
     //devuelvo un mensaje de error
     res
       .status(500)
@@ -400,7 +415,9 @@ export const verificarEmailEmpresa = async (req, res) => {
       return res.status(400).json({ message: "Token requerido" });
     }
 
-    const empresa = await Empresa.findOne({ where: { token_verificacion: token } });
+    //El cliente llega con el token en CLARO (link del email). Buscamos por su HASH.
+    const tokenHash = hashToken(token);
+    const empresa = await Empresa.findOne({ where: { token_verificacion: tokenHash } });
 
     if (!empresa) {
       return res.redirect(`${FRONTEND_URL}/login`);
@@ -413,7 +430,7 @@ export const verificarEmailEmpresa = async (req, res) => {
 
     return res.redirect(`${FRONTEND_URL}/verificacion-exito`);
   } catch (error) {
-    console.log(error);
+    logger.error("verificarEmailEmpresa", error);
     res.status(500).json({ message: "Error al verificar el email de la empresa" });
   }
 };
@@ -436,10 +453,11 @@ export const reenviarVerificacionEmpresa = async (req, res) => {
       return res.status(400).json({ message: "Esta empresa ya está verificada" });
     }
 
-    const nuevoToken = randomUUID();
-    await empresa.update({ token_verificacion: nuevoToken });
+    //Como en createEmpresa: plano para el email, hash para BD.
+    const { plano: tokenPlano, hash: tokenHash } = generarTokenVerificacion();
+    await empresa.update({ token_verificacion: tokenHash });
 
-    const urlVerificacion = `${URL}/api/empresas/verificar/${nuevoToken}`;
+    const urlVerificacion = `${URL}/api/empresas/verificar/${tokenPlano}`;
     enviarEmailVerificacion(email, empresa.nombre_comercial, urlVerificacion);
 
     res.status(200).json({ message: "Email de verificación reenviado correctamente" });
@@ -478,10 +496,20 @@ export const registroTransaccional = async (req, res) => {
 
     const nifMayusculas = String(empresaInput.nif || "").toUpperCase();
 
-    //Limpieza previa: si hay empresas no verificadas con el mismo nif/email/telefono,
-    //borramos para permitir reintento del registro (sin huerfanos: borramos tambien
-    //sus usuarios). Se hace todo dentro de la transaccion.
-    const empresasNoVerificadas = await Empresa.findAll({
+    //Limpieza previa anti-abuso:
+    //
+    //Permitimos reintentos de registros NO verificados (alguien que se equivoco
+    //al escribir el email, p.ej.), pero SOLO si el registro previo es "viejo"
+    //(>= 24h). Si es reciente, lo respetamos y respondemos 409: asi un atacante
+    //con el mismo NIF/email/telefono NO puede borrar el registro pendiente de
+    //un usuario legitimo.
+    //
+    //El usuario legitimo cuyo registro reciente sigue pendiente puede usar
+    ///empresas/reenviar-verificacion para recibir un nuevo email.
+    const VENTANA_PROTECCION_MS = 24 * 60 * 60 * 1000;
+    const ahora = Date.now();
+
+    const empresasPendientes = await Empresa.findAll({
       where: {
         email_verificado: false,
         [Op.or]: [
@@ -492,7 +520,18 @@ export const registroTransaccional = async (req, res) => {
       },
       transaction: transaccion,
     });
-    for (const emp of empresasNoVerificadas) {
+
+    for (const emp of empresasPendientes) {
+      const edadMs = ahora - new Date(emp.fecha_registro).getTime();
+      if (edadMs < VENTANA_PROTECCION_MS) {
+        //Registro pendiente reciente -> NO lo borramos para evitar DoS.
+        await transaccion.rollback();
+        return res.status(409).json({
+          message:
+            "Ya hay un registro reciente pendiente de verificacion con esos datos. Revisa tu email o pide reenvio del enlace.",
+        });
+      }
+      //Registro pendiente viejo (>= 24h) -> lo damos por abandonado y lo borramos.
       await Usuario.destroy({
         where: { empresa_id: emp.id },
         transaction: transaccion,
@@ -530,7 +569,8 @@ export const registroTransaccional = async (req, res) => {
         .json({ message: "Ya existe un usuario con ese email" });
     }
 
-    const token = randomUUID();
+    //Token: plano va por email, hash queda en BD.
+    const { plano: tokenPlano, hash: tokenHash } = generarTokenVerificacion();
     const fechaVencimiento = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
     //Crea la empresa (suscripcion_activa = false, email_verificado = false, etc.)
@@ -550,7 +590,7 @@ export const registroTransaccional = async (req, res) => {
         activo: true,
         fecha_vencimiento: fechaVencimiento,
         email_verificado: false,
-        token_verificacion: token,
+        token_verificacion: tokenHash,
       },
       { transaction: transaccion },
     );
@@ -572,7 +612,7 @@ export const registroTransaccional = async (req, res) => {
 
     //Email de verificacion FUERA de la transaccion: si falla el envio,
     //la empresa ya esta creada y el usuario puede pedir reenvio.
-    const urlVerificacion = `${URL}/api/empresas/verificar/${token}`;
+    const urlVerificacion = `${URL}/api/empresas/verificar/${tokenPlano}`;
     enviarEmailVerificacion(
       empresaInput.email,
       empresaInput.nombre_comercial,

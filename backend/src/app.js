@@ -26,6 +26,16 @@ import "./models/associations.js";
 
 const app = express();
 
+//---- Trust proxy ---------------------------------------------------------
+//Si la API queda detras de un reverse-proxy (nginx, Cloudflare, traefik...),
+//Express necesita saberlo para que la IP real del cliente llegue desde
+//X-Forwarded-For. Sin esto, express-rate-limit cuenta TODAS las peticiones
+//como si vinieran de la IP del proxy y bloquea a todo el mundo a la vez.
+//
+//Valor 1: confiamos en UN unico proxy directo (lo habitual). Si hay mas saltos,
+//hay que subirlo o configurar una lista de IPs concretas.
+app.set("trust proxy", 1);
+
 //---- Cabeceras de seguridad ----------------------------------------------
 //helmet pone Content-Security-Policy, X-Content-Type-Options, etc.
 //Como esto es API JSON (no sirve HTML), desactivamos CSP para no estorbar a Swagger

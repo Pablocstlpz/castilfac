@@ -1,46 +1,15 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
-import { catchError, Observable, throwError } from 'rxjs';
+import { BaseHttpService } from './base-http.service';
 
-import { environment } from '../../environments/environment';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class StripeServices {
-  private URL = environment.apiUrl;
-
-  private httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      //  'Authorization': `Bearer ${this.token}`
-    }),
-  };
-
-  private http = inject(HttpClient);
-
+@Injectable({ providedIn: 'root' })
+export class StripeServices extends BaseHttpService {
   crearSesionCheckout(empresa_id: number): Observable<{ url: string }> {
-    return this.http
-      .post<{ url: string }>(`${this.URL}/stripe/crear-sesion`, { empresa_id }, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.post<{ url: string }>('/stripe/crear-sesion', { empresa_id });
   }
 
   verificarSesionPago(session_id: string): Observable<{ message: string }> {
-    return this.http
-      .post<{ message: string }>(
-        `${this.URL}/stripe/verificar-sesion`,
-        { session_id },
-        this.httpOptions,
-      )
-      .pipe(catchError(this.handleError));
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    console.log(error);
-
-    const errorMessage = error.error?.message || 'Error desconocido al procesar la solicitud';
-
-    return throwError(() => new Error(errorMessage));
+    return this.post<{ message: string }>('/stripe/verificar-sesion', { session_id });
   }
 }

@@ -1,40 +1,14 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
 import { PlantillaProducto } from '../interfaces/plantilla-producto';
+import { BaseHttpService } from './base-http.service';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class PlantillasMateriales {
-  private URL = environment.apiUrl;
-
-  private httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      //  'Authorization': `Bearer ${this.token}`
-    }),
-  };
-
-  private http = inject(HttpClient);
-
-  //obtener todas las plantillas de una empresa
-  getPlantillaMaterialPorPlantillaProducto(plantillaId: number): Observable<PlantillaProducto[]> {
-    return this.http
-      .get<PlantillaProducto[]>(`${this.URL}/plantillas-materiales/${plantillaId}`)
-      .pipe(
-        map((response) => response), // Aseguramos que la respuesta se trate como un array de PlantillaProducto
-        catchError(this.handleError),
-      );
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    console.log(error);
-
-    const errorMessage = error.error?.message || 'Error desconocido al procesar la solicitud';
-
-    return throwError(() => new Error(errorMessage));
+@Injectable({ providedIn: 'root' })
+export class PlantillasMateriales extends BaseHttpService {
+  getPlantillaMaterialPorPlantillaProducto(
+    plantillaId: number,
+  ): Observable<PlantillaProducto[]> {
+    return this.get<PlantillaProducto[]>(`/plantillas-materiales/${plantillaId}`);
   }
 }

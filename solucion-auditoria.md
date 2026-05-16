@@ -1,8 +1,8 @@
-# ✅ Solución a la Auditoría — Bloques 1, 2, 3 y 4
+# ✅ Solución a la Auditoría — Bloques 1, 2, 3, 4 y 5
 
 > **Fecha**: 2026-05-15
-> **Bloques aplicados**: 🔴 Bloque 1 — *Detener la hemorragia*, 🟠 Bloque 2 — *Tenant isolation*, 🟡 Bloque 3 — *Validaciones consistentes* y 🟢 Bloque 4 — *Hardening y limpieza* (auditoria.md §5)
-> **Estado**: Implementado. La API exige JWT en todas las rutas operativas; los hashes y tokens internos no viajan al cliente; el registro no permite auto-activarse la suscripción; un usuario solo puede leer/modificar recursos de su propia empresa; las reglas de validación están centralizadas y son consistentes entre frontend y backend; **la API tiene cabeceras de seguridad, rate-limiting, CORS restringido, bcrypt 12, registro transaccional y asociaciones Sequelize declaradas**.
+> **Bloques aplicados**: 🔴 Bloque 1 — *Detener la hemorragia*, 🟠 Bloque 2 — *Tenant isolation*, 🟡 Bloque 3 — *Validaciones consistentes*, 🟢 Bloque 4 — *Hardening y limpieza* y 🔵 Bloque 5 — *Cierre de deuda y riesgos extra* (los 4 primeros corresponden al plan original de auditoria.md §5; el 5º cubre los riesgos de auditoria.md §6 y la deuda restante).
+> **Estado**: Implementado. La API exige JWT en todas las rutas operativas; los hashes y tokens internos no viajan al cliente; el registro no permite auto-activarse la suscripción; un usuario solo puede leer/modificar recursos de su propia empresa; las reglas de validación están centralizadas y son consistentes entre frontend y backend; la API tiene cabeceras de seguridad, rate-limiting, CORS restringido, bcrypt 12, registro transaccional y asociaciones Sequelize declaradas; **los tokens internos se almacenan hasheados (sha256), el flujo de registro tiene protección anti-DoS, todos los controllers escriben por un logger con redacción, los 15 servicios frontend usan `BaseHttpService` y el doble registro del webhook de Stripe queda eliminado**.
 
 Este archivo documenta uno a uno los cambios aplicados, qué hace cada uno y por qué.
 
@@ -674,3 +674,135 @@ Los 12 servicios restantes (pedidos, presupuestos, materiales, categorías, etc.
 - **`environment.development.ts` no se activa automáticamente**: hace falta declarar el `fileReplacements` en `angular.json`. Documentado al inicio del fichero.
 - **El nuevo endpoint `/empresas/registro` ignora `Stripe`**: la empresa se crea con `suscripcion_activa=false` y trial de 14 días, igual que el antiguo `POST /empresas`. Si el frontend redirige al pago, el flujo de Stripe sigue siendo el mismo (Bloque 1).
 - **Helmet sin CSP**: explicitamente desactivada (`contentSecurityPolicy: false`) porque la API solo sirve JSON. Cuando empecemos a servir HTML (ej. PDFs renderizados server-side), activar con política específica.
+
+---
+
+## 19. Bloque 5 — Cierre de deuda y riesgos extra
+
+> **Objetivo**: cerrar los riesgos descubiertos en *auditoria.md §6* que no encajaban en ningún bloque numerado, y resolver la deuda técnica que dejamos abierta en Bloques anteriores (12 servicios sin migrar, `console.log` dispersos, doble registro del webhook, soporte de proxy).
+
+### 19.1 Hash de tokens internos en BD (riesgos §6.3 y §6.4 de auditoria.md)
+
+Antes guardábamos `reset_token` y `token_verificacion` **en claro** en la BD. Si la BD se filtraba, un atacante podía:
+- Verificar emails de empresas ajenas con su `token_verificacion`.
+- Restablecer la contraseña de cualquier usuario con su `reset_token` aún no expirado.
+
+Solución estándar — el cliente recibe el token **en claro** (en la URL del email), pero en BD guardamos `sha256(token)`. Como `sha256` es determinista y los tokens son aleatorios largos (32 bytes / UUIDv4), no necesita salt: comparar el hash al recibir el token de vuelta es suficiente.
+
+Cambios:
+- [`backend/src/utils/seguridad.js`](backend/src/utils/seguridad.js): nuevas funciones `hashToken(plano)`, `generarTokenReset()` y `generarTokenVerificacion()`. Cada una devuelve `{ plano, hash }`.
+- [`backend/src/controllers/usuarios.controller.js#solicitarRecuperacion`](backend/src/controllers/usuarios.controller.js): genera `(plano, hash)`, guarda `hash` en BD, envía `plano` por email.
+- [`backend/src/controllers/usuarios.controller.js#restablecerPassword`](backend/src/controllers/usuarios.controller.js): recibe el `plano`, calcula `hashToken(plano)` y busca por el `hash`.
+- [`backend/src/controllers/empresas.controller.js`](backend/src/controllers/empresas.controller.js): mismo patrón en `createEmpresa`, `registroTransaccional`, `reenviarVerificacionEmpresa` (escritura) y `verificarEmailEmpresa` (comparación).
+
+> **Aviso de despliegue**: los tokens existentes en BD dejan de funcionar tras este cambio. Los `reset_token` caducan en 1 hora de todas formas; los `token_verificacion` de empresas no verificadas se pueden regenerar via `POST /empresas/reenviar-verificacion`.
+
+### 19.2 Anti-abuso en `/empresas/registro` (riesgo §6.2 de auditoria.md)
+
+Antes, el endpoint de registro **borraba automáticamente** cualquier empresa no verificada que tuviera el mismo NIF/email/teléfono que la nueva. Eso permitía un DoS: Bob hace POST con los datos de Alice y elimina su registro pendiente.
+
+Ahora ([`backend/src/controllers/empresas.controller.js#registroTransaccional` y `createEmpresa`](backend/src/controllers/empresas.controller.js)):
+- Si encontramos un registro pendiente **reciente** (menos de **24 h**), respondemos `409 Conflict` con el mensaje *"Ya hay un registro reciente pendiente de verificación con esos datos. Revisa tu email o pide reenvío del enlace."*
+- Si el registro pendiente es **antiguo** (≥ 24 h), lo damos por abandonado y permitimos sobrescribirlo (igual que antes).
+
+El usuario legítimo que no ha recibido el email puede usar `POST /empresas/reenviar-verificacion` para que se le mande de nuevo el enlace.
+
+### 19.3 Migración total a `BaseHttpService` (deuda del Bloque 4)
+
+Los **12 servicios** restantes del frontend han sido migrados a `BaseHttpService`:
+
+- [`services/pedidos.ts`](frontend/src/app/services/pedidos.ts)
+- [`services/presupuestos.ts`](frontend/src/app/services/presupuestos.ts)
+- [`services/materiales.ts`](frontend/src/app/services/materiales.ts)
+- [`services/categorias.ts`](frontend/src/app/services/categorias.ts)
+- [`services/precios-empresas.ts`](frontend/src/app/services/precios-empresas.ts)
+- [`services/plantillas-productos.ts`](frontend/src/app/services/plantillas-productos.ts)
+- [`services/plantillas-materiales.ts`](frontend/src/app/services/plantillas-materiales.ts)
+- [`services/historial-precios-base.ts`](frontend/src/app/services/historial-precios-base.ts)
+- [`services/historial-precios-empresa.ts`](frontend/src/app/services/historial-precios-empresa.ts)
+- [`services/elementos.ts`](frontend/src/app/services/elementos.ts)
+- [`services/elementos-materiales.ts`](frontend/src/app/services/elementos-materiales.ts)
+- [`services/stripe.ts`](frontend/src/app/services/stripe.ts)
+
+Sumados a los del Bloque 4 (`usuarios`, `clientes`, `empresas`), **todos** los servicios HTTP del frontend extienden ya `BaseHttpService`. Se eliminan ~120 líneas de `httpOptions` + `handleError` duplicados y se asegura que el `authInterceptor` se aplique uniformemente (al desaparecer cualquier `httpOptions` con headers manuales, no hay riesgo de pisar el `Authorization`).
+
+Verificación: `grep -l "HttpClient\|httpOptions" frontend/src/app/services/*.ts` ya solo devuelve `base-http.service.ts` (que sí debe tenerlo) y un comentario en `usuarios.ts`.
+
+### 19.4 `console.log` → logger en TODOS los controllers (deuda del Bloque 4)
+
+El [logger con redacción](backend/src/utils/logger.js) ahora se usa en **todos** los controllers que tenían `console.log`:
+
+| Controller | Reemplazos |
+|---|---|
+| [`empresas.controller.js`](backend/src/controllers/empresas.controller.js) | 8 (`getEmpresas`, `getEmpresa`, `getEmpresaByNif`, `createEmpresa`, `updateEmpresa`, `deleteEmpresa`, `deleteEmpresaCorreo`, `verificarEmailEmpresa`) |
+| [`usuarios.controller.js`](backend/src/controllers/usuarios.controller.js) | 10 (los 10 handlers del controller) |
+| [`stripe.controller.js`](backend/src/controllers/stripe.controller.js) | 6 — incluye `logger.warn` para el fallo de firma del webhook y `logger.info` para la activación de suscripción (no son errores, son eventos de negocio) |
+| [`presupuestos.controller.js`](backend/src/controllers/presupuestos.controller.js) | 2 (createPresupuesto, updatePresupuesto — ambos hacen `rollback` previo) |
+| [`suscripcion.controller.js`](backend/src/controllers/suscripcion.controller.js) | 1 |
+
+Cada llamada lleva el nombre del handler como contexto: `logger.error("createUsuario", error)`. Verificación: `grep -rn "console.log" backend/src/controllers/` devuelve vacío.
+
+Esto cierra dos riesgos a la vez:
+- **No más fugas accidentales**: si en el futuro alguien hace `logger.info("login", { usuario })`, los campos `password`, `reset_token`, `accessToken`, etc. se imprimen como `[REDACTED]`.
+- **Logs auditables**: cada entrada tiene `[NIVEL][contexto]`, lo que facilita un futuro `tail -F | grep ERROR` o un *log shipper* a Datadog/ELK.
+
+### 19.5 `trust proxy` y limpieza del webhook duplicado
+
+- [`backend/src/app.js`](backend/src/app.js): `app.set("trust proxy", 1)` antes de helmet. Hace que Express lea la IP real del cliente desde `X-Forwarded-For` cuando la API está detrás de nginx / Cloudflare / Traefik. Sin esto, `express-rate-limit` contaba todas las peticiones contra la IP del proxy y bloqueaba a todo el mundo al mismo tiempo.
+- [`backend/src/routes/stripe.route.js`](backend/src/routes/stripe.route.js): elimina la línea `router.post("/stripe/webhook", express.raw(...), webhookStripe)`. El webhook ya se monta directamente en [`app.js`](backend/src/app.js) **antes** de `express.json()` para que el body crudo llegue intacto y la firma de Stripe valide. Tenerlo dos veces no daba problema (gana el primer registro), pero confundía al lector y dejaba código muerto.
+
+---
+
+## 20. Lista de archivos modificados / nuevos (Bloque 5)
+
+**Backend (modificados):**
+90. `backend/src/utils/seguridad.js` (+`hashToken`, `generarTokenReset`, `generarTokenVerificacion`)
+91. `backend/src/controllers/usuarios.controller.js` (hash de reset_token; console.log → logger × 10)
+92. `backend/src/controllers/empresas.controller.js` (hash de token_verificacion en 3 sitios; anti-DoS ventana 24h en 2 sitios; console.log → logger × 8)
+93. `backend/src/controllers/stripe.controller.js` (console.log → logger × 6 con `warn`/`info`/`error`)
+94. `backend/src/controllers/presupuestos.controller.js` (console.log → logger × 2)
+95. `backend/src/controllers/suscripcion.controller.js` (console.log → logger × 1)
+96. `backend/src/app.js` (+`trust proxy`)
+97. `backend/src/routes/stripe.route.js` (eliminado registro duplicado del webhook)
+
+**Frontend (modificados — migración a BaseHttpService):**
+98. `frontend/src/app/services/pedidos.ts`
+99. `frontend/src/app/services/presupuestos.ts`
+100. `frontend/src/app/services/materiales.ts`
+101. `frontend/src/app/services/categorias.ts`
+102. `frontend/src/app/services/precios-empresas.ts`
+103. `frontend/src/app/services/plantillas-productos.ts`
+104. `frontend/src/app/services/plantillas-materiales.ts`
+105. `frontend/src/app/services/historial-precios-base.ts`
+106. `frontend/src/app/services/historial-precios-empresa.ts`
+107. `frontend/src/app/services/elementos.ts`
+108. `frontend/src/app/services/elementos-materiales.ts`
+109. `frontend/src/app/services/stripe.ts`
+
+---
+
+## 21. Verificación manual del Bloque 5
+
+1. **Hash de reset_token**: pide un reset de password y consulta la BD → `reset_token` debe ser una cadena hex de 64 chars **distinta** a la que aparece en el enlace del email. Sigue el enlace y comprueba que la nueva contraseña funciona.
+2. **Hash de token_verificacion**: registra una empresa nueva y consulta la BD → `token_verificacion` es la sha256 del token del email, no el UUID original.
+3. **Anti-DoS de registro**:
+   - Registra una empresa nueva (queda pendiente de verificación).
+   - Inmediatamente intenta registrar OTRA empresa con el mismo NIF/email/teléfono → debe devolver `409` con el mensaje *"Ya hay un registro reciente pendiente…"*.
+   - El registro original NO se ha borrado.
+4. **Migración total a BaseHttpService**: con la app cargada, abre DevTools → Network y prueba pedidos, presupuestos, materiales, categorías, finanzas. Todas las peticiones llevan `Authorization: Bearer ...` (lo añade el interceptor del Bloque 1) y devuelven JSON sin headers manuales molestos.
+5. **Logger con redacción**: provoca un error (p.ej. crear cliente con `descuento_fijo: 9999`). El log del servidor debe mostrar `[ERROR][addCliente]` y NO debe haber `password`, `hash`, `accessToken` ni `credential` en claro en ningún sitio.
+6. **trust proxy**: si la API está tras nginx/Cloudflare con `X-Forwarded-For`, prueba a hacer 6 logins fallidos desde una misma IP real (no la del proxy). El 6º debe dar `429`. Si lo hicieras antes de este cambio, todas las IPs se contaban juntas y los 429 saltaban casi al instante en producción.
+7. **Webhook único**: `grep -rn "stripe/webhook" backend/src/` debe encontrar UNA sola declaración (en `app.js`).
+
+---
+
+## 22. Riesgos conocidos del Bloque 5
+
+- **Migración de la BD necesaria**: el cambio a hash de tokens internos rompe los tokens existentes. Para tokens nuevos no hay problema; para los antiguos que estuvieran pendientes, los usuarios pueden:
+  - Volver a pedir reseteo (`POST /usuarios/recuperar-password`).
+  - Pedir reenvío de la verificación (`POST /empresas/reenviar-verificacion`).
+  - Borrar las filas con `UPDATE usuarios SET reset_token = NULL, reset_token_expira = NULL` y `UPDATE empresas SET token_verificacion = NULL` para forzar a regenerar.
+- **Ventana de 24 h en registro**: razonable, pero un caso edge: si el usuario tarda > 24 h en verificar (por ejemplo se va de vacaciones), un atacante PUEDE entonces sobrescribir su registro. Para más estrictez se podría subir a 72 h o requerir verificación previa antes de permitir nuevo intento.
+- **`trust proxy = 1`** asume **un solo proxy entre cliente y API**. Si la cadena es `cliente → cloudflare → nginx → API`, hay que poner `trust proxy = 2` o configurarlo con una lista de IPs concretas para que `express-rate-limit` siga siendo seguro (de lo contrario, un atacante puede falsificar `X-Forwarded-For` y saltarse el límite).
+- **Migración a BaseHttpService**: el `tap` de RxJS y los `map(response => response)` redundantes desaparecen. Si algún componente dependía explícitamente del side effect (no he encontrado ninguno), habría que recolocarlo. He revisado y nadie hacía nada útil en esos pipes; lo doy por seguro pero ojo si se descubre algo en pruebas.
+- **`logger` no escribe a fichero**: sigue siendo `console.log/warn/error`. Si quieres centralizar en un log shipper, el siguiente paso es enchufar `pino` o `winston` detrás del API de `logger` (las llamadas no cambian).

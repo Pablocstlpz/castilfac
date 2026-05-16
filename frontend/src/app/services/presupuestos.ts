@@ -1,68 +1,28 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
 import { Presupuesto } from '../interfaces/presupuesto';
+import { BaseHttpService } from './base-http.service';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class Presupuestos {
-  private URL = environment.apiUrl;
-
-  private httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      //  'Authorization': `Bearer ${this.token}`
-    }),
-  };
-
-  private http = inject(HttpClient);
-
-  //obtener presupuestos de una empresa
+@Injectable({ providedIn: 'root' })
+export class Presupuestos extends BaseHttpService {
   getPresupuestosEmpresa(empresaId: number): Observable<Presupuesto[]> {
-    return this.http.get<Presupuesto[]>(`${this.URL}/empresas/${empresaId}/presupuestos`).pipe(
-      map((response) => response),
-      catchError(this.handleError),
-    );
+    return this.get<Presupuesto[]>(`/empresas/${empresaId}/presupuestos`);
   }
 
-  //obtener un presupuesto por su id
   getPresupuesto(id: number): Observable<Presupuesto> {
-    return this.http
-      .get<Presupuesto>(`${this.URL}/presupuestos/${id}`)
-      .pipe(catchError(this.handleError));
+    return this.get<Presupuesto>(`/presupuestos/${id}`);
   }
-
-  // AÑADIR ESTO EN TU ARCHIVO services/presupuestos.ts
 
   addPresupuesto(presupuesto: any): Observable<{ id: number; message: string }> {
-    return this.http
-      .post<{
-        id: number;
-        message: string;
-      }>(`${this.URL}/presupuestos`, presupuesto, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.post<{ id: number; message: string }>('/presupuestos', presupuesto);
   }
 
   updatePresupuesto(id: number, presupuesto: any): Observable<{ message: string }> {
-    return this.http
-      .put<{ message: string }>(`${this.URL}/presupuestos/${id}`, presupuesto, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.put<{ message: string }>(`/presupuestos/${id}`, presupuesto);
   }
 
   patchEstadoPresupuesto(id: number, estado: string): Observable<{ message: string }> {
-    return this.http
-      .patch<{ message: string }>(`${this.URL}/presupuestos/${id}/estado`, { estado }, this.httpOptions)
-      .pipe(catchError(this.handleError));
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    console.log(error);
-
-    const errorMessage = error.error?.message || 'Error desconocido al procesar la solicitud';
-
-    return throwError(() => new Error(errorMessage));
+    return this.patch<{ message: string }>(`/presupuestos/${id}/estado`, { estado });
   }
 }

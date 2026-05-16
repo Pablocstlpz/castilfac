@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { Empresa } from '../models/empresa.model.js';
 import { empresaIdEfectivo, esSuperadmin } from "../utils/tenant.js";
+import { logger } from "../utils/logger.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -52,9 +53,7 @@ export const crearSesionCheckout = async (req, res) => {
     //devuelvo la url de la sesion de checkout
     res.status(200).json({ url: session.url });
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
-    //devuelvo un mensaje de error
+    logger.error("crearSesionCheckout", error);
     res.status(500).json({ message: "Error al crear la sesión de pago" });
   }
 };
@@ -70,8 +69,7 @@ export const webhookStripe = async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    //muestro el error por consola
-    console.log("Webhook signature verification failed:", err.message);
+    logger.warn("webhookStripe.signature", { message: err.message });
     //devuelvo un error si la firma no es valida
     return res.status(400).json({ message: `Webhook error: ${err.message}` });
   }
@@ -98,11 +96,10 @@ export const webhookStripe = async (req, res) => {
             fecha_vencimiento: fechaVencimiento,
             fecha_actualizacion: new Date(),
           });
-          console.log(`Suscripción activada para empresa ${empresa_id}`);
+          logger.info("webhookStripe.activada", { empresa_id });
         }
       } catch (error) {
-        //muestro el error por consola
-        console.log("Error al activar suscripción:", error);
+        logger.error("webhookStripe.activar", error);
       }
     }
   }
@@ -168,14 +165,13 @@ export const verificarSesionPago = async (req, res) => {
         fecha_vencimiento: fechaVencimiento,
         fecha_actualizacion: new Date(),
       });
-      console.log(`Suscripción activada (verificación directa) para empresa ${empresa_id}`);
+      logger.info("verificarSesionPago.activada", { empresa_id });
     }
 
     //devuelvo un mensaje de exito
     res.status(200).json({ message: "Suscripción activada correctamente" });
   } catch (error) {
-    //muestro el error por consola
-    console.log(error);
+    logger.error("verificarSesionPago", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al verificar la sesión de pago" });
   }

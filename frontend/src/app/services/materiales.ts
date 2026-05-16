@@ -1,67 +1,40 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
 import { Material, MaterialConPrecio } from '../interfaces/material';
+import { BaseHttpService } from './base-http.service';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class Materiales {
-  private URL = environment.apiUrl;
-
-  private httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-    }),
-  };
-
-  private http = inject(HttpClient);
-
+@Injectable({ providedIn: 'root' })
+export class Materiales extends BaseHttpService {
   getMaterialesConPrecioEmpresa(empresa_id: number): Observable<MaterialConPrecio[]> {
-    return this.http
-      .get<MaterialConPrecio[]>(`${this.URL}/materiales/empresa/${empresa_id}`)
-      .pipe(catchError(this.handleError));
+    return this.get<MaterialConPrecio[]>(`/materiales/empresa/${empresa_id}`);
   }
 
   getMateriales(empresa_id: number): Observable<Material[]> {
-    return this.http
-      .get<Material[]>(`${this.URL}/materiales/empresa/${empresa_id}/lista`)
-      .pipe(map((response) => response), catchError(this.handleError));
+    return this.get<Material[]>(`/materiales/empresa/${empresa_id}/lista`);
   }
 
   getMaterial(empresa_id: number, id: number): Observable<Material> {
-    return this.http
-      .get<Material>(`${this.URL}/materiales/empresa/${empresa_id}/${id}`)
-      .pipe(catchError(this.handleError));
+    return this.get<Material>(`/materiales/empresa/${empresa_id}/${id}`);
   }
 
   addMaterial(
     empresa_id: number,
     material: Omit<Material, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'deleted_at'>,
   ): Observable<Material> {
-    return this.http
-      .post<Material>(`${this.URL}/materiales/empresa/${empresa_id}`, material, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.post<Material>(`/materiales/empresa/${empresa_id}`, material);
   }
 
   updateMaterial(empresa_id: number, material: Material): Observable<Material> {
-    return this.http
-      .put<Material>(`${this.URL}/materiales/empresa/${empresa_id}/${material.id}`, material, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.put<Material>(`/materiales/empresa/${empresa_id}/${material.id}`, material);
   }
 
   deleteMaterial(empresa_id: number, id: number): Observable<{ message: string }> {
-    return this.http
-      .delete<{ message: string }>(`${this.URL}/materiales/empresa/${empresa_id}/${id}`, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.delete<{ message: string }>(`/materiales/empresa/${empresa_id}/${id}`);
   }
 
   toggleActivo(empresa_id: number, id: number): Observable<Material> {
-    return this.http
-      .patch<Material>(`${this.URL}/materiales/empresa/${empresa_id}/${id}/activo`, {}, this.httpOptions)
-      .pipe(catchError(this.handleError));
+    return this.patch<Material>(`/materiales/empresa/${empresa_id}/${id}/activo`, {});
   }
 
   actualizarPvpEmpresa(
@@ -70,18 +43,9 @@ export class Materiales {
     usuario_id: number,
     nuevo_precio: number,
   ): Observable<{ message: string; precio_anterior: number; precio_nuevo: number }> {
-    return this.http
-      .put<{
-        message: string;
-        precio_anterior: number;
-        precio_nuevo: number;
-      }>(`${this.URL}/precios/actualizar`, { material_id, empresa_id, usuario_id, nuevo_precio }, this.httpOptions)
-      .pipe(catchError(this.handleError));
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    console.log(error);
-    const errorMessage = error.error?.message || 'Error desconocido al procesar la solicitud';
-    return throwError(() => new Error(errorMessage));
+    return this.put<{ message: string; precio_anterior: number; precio_nuevo: number }>(
+      '/precios/actualizar',
+      { material_id, empresa_id, usuario_id, nuevo_precio },
+    );
   }
 }

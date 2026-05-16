@@ -1,5 +1,6 @@
 import { Empresa } from '../models/empresa.model.js';
 import { assertEmpresaIdParam } from "../utils/tenant.js";
+import { logger } from "../utils/logger.js";
 
 export const verificarSuscripcion = async (req, res) => {
   try {
@@ -39,7 +40,7 @@ export const verificarSuscripcion = async (req, res) => {
     });
   } catch (error) {
     //muestro el error por consola
-    console.log(error);
+    logger.error("verificarSuscripcion", error);
     //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al verificar la suscripción" });
   }

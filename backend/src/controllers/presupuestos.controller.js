@@ -12,6 +12,7 @@ import {
   assertOwnsRecurso,
   empresaIdEfectivo,
 } from "../utils/tenant.js";
+import { logger } from "../utils/logger.js";
 
 export const patchEstadoPresupuesto = async (req, res) => {
   try {
@@ -267,7 +268,7 @@ export const createPresupuesto = async (req, res) => {
     res.status(201).json(nuevoPresupuesto);
   } catch (error) {
     await transaccion.rollback();
-    console.log(error);
+    logger.error("createPresupuesto", error);
     res.status(500).json({ message: "Error al crear el presupuesto" });
   }
 };
@@ -429,7 +430,7 @@ export const updatePresupuesto = async (req, res) => {
     res.status(200).json({ message: "Presupuesto actualizado correctamente" });
   } catch (error) {
     await transaccion.rollback();
-    console.log(error);
+    logger.error("updatePresupuesto", error);
     res.status(500).json({ message: "Error al actualizar el presupuesto" });
   }
 };

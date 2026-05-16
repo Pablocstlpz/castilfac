@@ -7,7 +7,12 @@ import { randomBytes } from "crypto";
 import { enviarEmailRecuperacion } from "../mailer.js";
 import { FRONTEND_URL } from "../config.js";
 import { generarAccessToken } from "../middlewares/auth.middleware.js";
-import { hashPassword } from "../utils/seguridad.js";
+import {
+  hashPassword,
+  hashToken,
+  generarTokenReset,
+} from "../utils/seguridad.js";
+import { logger } from "../utils/logger.js";
 
 export const getUsuarios = async (req, res) => {
   try {
@@ -23,7 +28,7 @@ export const getUsuarios = async (req, res) => {
     res.status(200).json(usuarios);
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("getUsuarios", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al obtener los usuarios" });
   }
@@ -50,7 +55,7 @@ export const getUsuario = async (req, res) => {
     res.status(200).json(usuario);
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("getUsuario", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al obtener el usuario" });
   }
@@ -84,7 +89,7 @@ export const getUsuarioPorEmpresa = async (req, res) => {
     res.status(200).json(usuario);
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("getUsuarioPorEmpresa", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res
       .status(500)
@@ -142,7 +147,7 @@ export const createUsuario = async (req, res) => {
       .json({ message: "Usuario creado correctamente", usuario: usuario });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("createUsuario", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al crear el usuario" });
   }
@@ -283,7 +288,7 @@ export const updateUsuario = async (req, res) => {
       .json({ message: "Usuario actualizado correctamente", usuario: usuario });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("updateUsuario", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al actualizar el usuario" });
   }
@@ -332,7 +337,7 @@ export const deleteUsuario = async (req, res) => {
     res.status(200).json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("deleteUsuario", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al eliminar el usuario" });
   }
@@ -380,7 +385,7 @@ export const deleteUsuarioCorreo = async (req, res) => {
     res.status(200).json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("deleteUsuarioCorreo", error);
     //devuelvo un mensaje de error
     res
       .status(500)
@@ -401,17 +406,19 @@ export const solicitarRecuperacion = async (req, res) => {
       return res.status(200).json({ message: "Si el email está registrado, recibirás un correo en breve." });
     }
 
-    //genero un token unico y aleatorio de 64 caracteres para el restablecimiento de la contraseña
-    const token = randomBytes(32).toString("hex");
+    //Generamos un par (plano, hash). El plano viaja por email en la URL,
+    //el hash es lo unico que persiste en BD -> si la BD se filtra, no se puede
+    //usar el hash para reset (sha256 no es reversible).
+    const { plano: tokenPlano, hash: tokenHash } = generarTokenReset();
 
-    //establezco la fecha de expiracion del token, sera valido durante 1 hora desde ahora
+    //token vigente durante 1 hora desde ahora
     const expira = new Date(Date.now() + 60 * 60 * 1000);
 
-    //guardo el token y su fecha de expiracion en el usuario
-    await usuario.update({ reset_token: token, reset_token_expira: expira });
+    //guardo en BD el HASH del token, no el token mismo
+    await usuario.update({ reset_token: tokenHash, reset_token_expira: expira });
 
-    //construyo la url de restablecimiento que se enviara al usuario por correo
-    const urlReset = `${FRONTEND_URL}/password-nueva?token=${token}`;
+    //la URL al usuario lleva el token EN CLARO (es el unico sitio donde existe)
+    const urlReset = `${FRONTEND_URL}/password-nueva?token=${tokenPlano}`;
 
     //envio el correo de recuperacion con el enlace al usuario
     enviarEmailRecuperacion(email, usuario.nombre, urlReset);
@@ -420,7 +427,7 @@ export const solicitarRecuperacion = async (req, res) => {
     res.status(200).json({ message: "Si el email está registrado, recibirás un correo en breve." });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("solicitarRecuperacion", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña" });
   }
@@ -431,8 +438,10 @@ export const restablecerPassword = async (req, res) => {
     //Validacion (token presente + password >= 8) la hace validarRestablecerPassword.
     const { token, password } = req.body;
 
-    //busco el usuario por el token de restablecimiento
-    const usuario = await Usuario.findOne({ where: { reset_token: token } });
+    //El cliente nos manda el token en CLARO; en BD esta el sha256.
+    //Buscamos por el hash.
+    const tokenHash = hashToken(token);
+    const usuario = await Usuario.findOne({ where: { reset_token: tokenHash } });
 
     //valido que el token sea valido, si no existe es que ya fue usado o nunca existio
     if (!usuario) {
@@ -456,7 +465,7 @@ export const restablecerPassword = async (req, res) => {
     res.status(200).json({ message: "Contraseña actualizada correctamente" });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("restablecerPassword", error);
     //devuelvo un mensaje de error al usuario si hay algun error
     res.status(500).json({ message: "Error al restablecer la contraseña" });
   }
@@ -506,7 +515,7 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
     res.status(200).json({ accessToken, usuario });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
-    console.log(error);
+    logger.error("getUsuarioCorreoContraseña", error);
     //devuelvo un mensaje de error
     res
       .status(500)
