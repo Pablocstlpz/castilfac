@@ -32,12 +32,13 @@ export const Material = sequelize.define(
       defaultValue: null,
     },
     tipo_unidad: {
+      //El enum de la BD solo permite 4 valores; eliminamos "litros" del modelo
+      //para no abrir un valor que MariaDB rechazaria en runtime.
       type: DataTypes.ENUM(
         "metros_lineales",
         "metros_cuadrados",
         "unidades",
         "kilogramos",
-        "litros",
       ),
       allowNull: false,
     },

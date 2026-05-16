@@ -16,23 +16,33 @@ export const Usuario = sequelize.define(
       allowNull: false,
     },
     nombre: {
-      type: DataTypes.STRING(200),
-      allowNull: true,
+      //BD: varchar(100). Antes el modelo decia 200 y rompia inserts >100.
+      type: DataTypes.STRING(100),
+      allowNull: false,
     },
     email: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-        validate: {
-          isEmail: true,
-    },
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      validate: { isEmail: true },
     },
     password: {
-      type: DataTypes.STRING(60), //la librería Bcrypt tiene siempre exactamente 60 caracteres
-      allowNull: true,
+      //BD: varchar(255). Lo dejamos en 255 para soportar futuros algoritmos
+      //(argon2 ~96 chars, bcrypt 60). Antes el modelo limitaba a 60.
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
     rol: {
-      type: DataTypes.ENUM('admin', 'operario'),
+      //Alineado con el ENUM real de la BD (incluye superadmin).
+      type: DataTypes.ENUM('admin', 'operario', 'superadmin'),
       allowNull: true,
+      defaultValue: 'operario',
+    },
+    activo: {
+      //Existe en BD pero faltaba en el modelo. Sin esto Sequelize ignora la
+      //columna al hacer findAll y nunca podemos desactivar/reactivar usuarios.
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true,
     },
     fecha_creacion: {
       type: DataTypes.DATE,

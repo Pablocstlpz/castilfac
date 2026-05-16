@@ -84,7 +84,9 @@ export const Empresa = sequelize.define(
       defaultValue: false,
     },
     token_verificacion: {
-      type: DataTypes.STRING(100),
+      //BD: varchar(255). El hash sha256 son 64 chars, pero alineamos con BD
+      //por si en el futuro guardamos un algoritmo mas largo.
+      type: DataTypes.STRING(255),
       allowNull: true,
     },
   },

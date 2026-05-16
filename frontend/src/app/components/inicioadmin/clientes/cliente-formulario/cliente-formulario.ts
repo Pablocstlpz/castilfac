@@ -44,8 +44,10 @@ export class ClienteFormulario {
   private clientesService = inject(ClientesServices);
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
+  //Unificado a inject() — antes mezclabamos DI por constructor.
+  private fb = inject(FormBuilder);
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.clienteForm = this.fb.group({
       id: [''],
       nombre_empresa_o_particular: ['', [Validators.required, Validators.maxLength(200)]],

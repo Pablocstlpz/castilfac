@@ -49,11 +49,12 @@ export class Registro {
   // se encarga tanto de crear la empresa como el admin inicial en una sola
   // peticion. Nos ahorramos UsuariosServices y la cadena anidada de subscribes.
   private empresaServicios = inject(EmpresasServices);
+  private fb = inject(FormBuilder);
 
   //Formulario.
   //Usamos los regex y limites de shared/regex.ts para que las reglas del frontend
   //coincidan EXACTAMENTE con las del validator del backend (validarCrearEmpresa).
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.userForm = this.fb.group({
       //parte de las empresas y sus validaciones
       nombre_comercial: [

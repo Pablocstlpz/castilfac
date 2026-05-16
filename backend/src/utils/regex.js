@@ -29,18 +29,20 @@ export const REGEX_PASSWORD_FUERTE = /^(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
 //Tipos de cliente validos (alineado con el ENUM del modelo Sequelize)
 export const TIPOS_CLIENTE = ["particular", "empresa", "vip", "mayorista"];
 
-//Limites de longitud usados en validators y controllers
+//Limites de longitud usados en validators y controllers.
+//IMPORTANTE: cada valor cuadra con la columna VARCHAR / TEXT real de la BD.
+//Si BD limita 100 y aqui pones 200, MariaDB trunca o rechaza el INSERT.
 export const LIMITES = Object.freeze({
-  EMAIL_MAX: 150,
-  NOMBRE_COMERCIAL_MAX: 200,
-  RAZON_SOCIAL_MAX: 200,
-  DIRECCION_MAX: 500,
-  CIUDAD_MAX: 100,
-  PROVINCIA_MAX: 100,
-  CODIGO_POSTAL_MAX: 10,
-  TELEFONO_MAX: 20,
-  NIF_MAX: 20,
-  NOMBRE_USUARIO_MAX: 200,
+  EMAIL_MAX: 100,           // BD: varchar(100)
+  NOMBRE_COMERCIAL_MAX: 200, // BD: varchar(200)
+  RAZON_SOCIAL_MAX: 200,    // BD: varchar(200)
+  DIRECCION_MAX: 500,       // BD: TEXT (limitado por practica)
+  CIUDAD_MAX: 100,          // BD: varchar(100)
+  PROVINCIA_MAX: 100,       // BD: varchar(100)
+  CODIGO_POSTAL_MAX: 10,    // BD: varchar(10)
+  TELEFONO_MAX: 20,         // BD: varchar(20)
+  NIF_MAX: 20,              // BD: varchar(20)
+  NOMBRE_USUARIO_MAX: 100,  // BD: varchar(100) (antes 200, rompia inserts)
   PASSWORD_MIN: 8,
-  CLIENTE_NOMBRE_MAX: 255,
+  CLIENTE_NOMBRE_MAX: 150,  // BD: varchar(150) (antes 255, rompia inserts)
 });

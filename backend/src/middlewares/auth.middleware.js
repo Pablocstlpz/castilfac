@@ -4,8 +4,10 @@ import jwt from 'jsonwebtoken';
 import { SECRET_KEY, REFRESH_SECRET_KEY } from '../config.js';
 
 // Tiempo de expiración de tokens
-//8h cubre una jornada de trabajo completa sin requerir refresh todavia (Bloque 1)
-export const ACCESS_TOKEN_EXPIRY = '8h';
+//Con el refresh flow en marcha, podemos bajar el TTL del access token a 15 min.
+//Asi si alguien intercepta el access, su ventana de uso es pequena. El frontend
+//pide refresh automaticamente (interceptor) usando el refresh token (7 dias).
+export const ACCESS_TOKEN_EXPIRY = '15m';
 export const REFRESH_TOKEN_EXPIRY = '7d';  // 7 días
 
 // Generar Access Token

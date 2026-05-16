@@ -6,7 +6,7 @@ import { Empresa } from "../models/empresa.model.js";
 import { randomBytes } from "crypto";
 import { enviarEmailRecuperacion } from "../mailer.js";
 import { FRONTEND_URL } from "../config.js";
-import { generarAccessToken } from "../middlewares/auth.middleware.js";
+import { emitirTokens } from "./auth.controller.js";
 import {
   hashPassword,
   hashToken,
@@ -504,15 +504,10 @@ export const getUsuarioCorreoContraseña = async (req, res) => {
         .json({ message: "La empresa no ha verificado su correo electrónico. Revisa tu bandeja de entrada." });
     }
 
-    //genero un access token JWT con los datos imprescindibles para autorizar peticiones posteriores
-    const accessToken = generarAccessToken({
-      id: usuario.id,
-      rol: usuario.rol,
-      empresa_id: usuario.empresa_id,
-    });
-
-    //devuelvo el token y el usuario (el toJSON del modelo ya filtra password / reset_token)
-    res.status(200).json({ accessToken, usuario });
+    //emito access + refresh token. El access caduca a los 15 min; el refresh
+    //a los 7 dias y se usa contra POST /auth/refresh para extender la sesion.
+    const tokens = emitirTokens(usuario);
+    res.status(200).json({ ...tokens, usuario });
   } catch (error) {
     //muestro el error por consola, ya que el error me lo dira en la terminal en la que tengo desplegado el backend
     logger.error("getUsuarioCorreoContraseña", error);

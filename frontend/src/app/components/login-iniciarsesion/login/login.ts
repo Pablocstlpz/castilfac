@@ -49,8 +49,10 @@ export class Login implements AfterViewInit {
   private usuarioServicios = inject(UsuariosServices);
   private authentication = inject(Authentication);
   private ngZone = inject(NgZone);
+  //Unificado a inject() para no mezclar con constructor DI (Angular 21 idiomatico).
+  private fb = inject(FormBuilder);
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.userForm = this.fb.group({
       emailUsuario: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],

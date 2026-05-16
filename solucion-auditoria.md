@@ -1,4 +1,4 @@
-# ✅ Solución a la Auditoría — Bloques 1, 2, 3, 4 y 5
+# ✅ Solución a la Auditoría — Bloques 1, 2, 3, 4, 5 y 6
 
 > **Fecha**: 2026-05-15
 > **Bloques aplicados**: 🔴 Bloque 1 — *Detener la hemorragia*, 🟠 Bloque 2 — *Tenant isolation*, 🟡 Bloque 3 — *Validaciones consistentes*, 🟢 Bloque 4 — *Hardening y limpieza* y 🔵 Bloque 5 — *Cierre de deuda y riesgos extra* (los 4 primeros corresponden al plan original de auditoria.md §5; el 5º cubre los riesgos de auditoria.md §6 y la deuda restante).
@@ -806,3 +806,135 @@ Esto cierra dos riesgos a la vez:
 - **`trust proxy = 1`** asume **un solo proxy entre cliente y API**. Si la cadena es `cliente → cloudflare → nginx → API`, hay que poner `trust proxy = 2` o configurarlo con una lista de IPs concretas para que `express-rate-limit` siga siendo seguro (de lo contrario, un atacante puede falsificar `X-Forwarded-For` y saltarse el límite).
 - **Migración a BaseHttpService**: el `tap` de RxJS y los `map(response => response)` redundantes desaparecen. Si algún componente dependía explícitamente del side effect (no he encontrado ninguno), habría que recolocarlo. He revisado y nadie hacía nada útil en esos pipes; lo doy por seguro pero ojo si se descubre algo en pruebas.
 - **`logger` no escribe a fichero**: sigue siendo `console.log/warn/error`. Si quieres centralizar en un log shipper, el siguiente paso es enchufar `pino` o `winston` detrás del API de `logger` (las llamadas no cambian).
+
+---
+
+## 23. Bloque 6 — Refresh token + alineación de modelos con la BD + Angular 21 puro
+
+> **Objetivo**: cerrar las dos deudas que quedaban abiertas (refresh token flow y `constructor(private)` en formularios) y, al pasar el SQL real de la BD, alinear los modelos Sequelize con el esquema. Decidimos **no** instalar `pino`: el logger sigue con `console` estructurado.
+
+### 23.1 Refresh token flow real
+
+Hasta ahora el `accessToken` duraba **8 h** porque no había forma de renovarlo. Ahora tenemos refresh, así que el access vuelve a su valor recomendado (**15 min**) y el refresh dura **7 días**.
+
+**Backend:**
+- [`backend/src/middlewares/auth.middleware.js`](backend/src/middlewares/auth.middleware.js): `ACCESS_TOKEN_EXPIRY = '15m'`.
+- [`backend/src/controllers/auth.controller.js`](backend/src/controllers/auth.controller.js):
+  - Nuevo helper exportado `emitirTokens(usuario)` que devuelve `{ accessToken, refreshToken }` (centraliza la lógica de payload: `{ id, rol, empresa_id }`).
+  - `loginGoogle` lo usa.
+  - Nuevo controller `refrescarToken`: recibe `refreshToken`, lo verifica con `verificarRefreshToken`, relee el usuario por id (para detectar cambios de rol/empresa), comprueba que la empresa siga `activo`, **rota** el refresh (devuelve un nuevo refresh) y emite un nuevo access. Si algo falla → `401`.
+- [`backend/src/controllers/usuarios.controller.js#getUsuarioCorreoContraseña`](backend/src/controllers/usuarios.controller.js): ahora también usa `emitirTokens` y devuelve `{ accessToken, refreshToken, usuario }`.
+- [`backend/src/routes/auth.route.js`](backend/src/routes/auth.route.js): nueva ruta `POST /api/auth/refresh` con `loginRateLimit` (mismo límite que el login: el refresh es un *login implícito*). Es **pública** porque el access ya está caduco cuando se llama.
+
+> Implementación **stateless**: no se guarda en BD ninguna lista de refresh tokens emitidos. Si se quiere revocación inmediata, hay que añadir una tabla `refresh_tokens(id, usuario_id, hash, revocado_en)` y comprobarla en `refrescarToken`. Lo documento como deuda razonable.
+
+**Frontend:**
+- [`frontend/src/app/services/authentication.ts`](frontend/src/app/services/authentication.ts):
+  - Nueva clave `refresh_castilfac` en `sessionStorage`.
+  - `guardarSesion` ahora guarda los 3 elementos (`usuario`, `accessToken`, `refreshToken`).
+  - Nuevos métodos `obtenerRefreshToken()` y `actualizarTokens({ accessToken, refreshToken })` (llamado por el interceptor tras un refresh exitoso).
+- [`frontend/src/app/interceptors/auth.interceptor.ts`](frontend/src/app/interceptors/auth.interceptor.ts) — **reescrito** para que en cada 401 (no público) intente refresh **una vez** antes de mandar a `/sesioncerrada`:
+  - Si hay `refreshToken` y refresh es exitoso → reintenta la petición original con el nuevo access token.
+  - Si refresh falla → `cerrarSesion()` y redirige a `/sesioncerrada`.
+  - **Cola de espera**: si llegan 5 peticiones a la vez con access caducado, sólo se dispara **un** refresh; las otras 4 esperan al `BehaviorSubject<string | null>` y reintentan con el token nuevo.
+- [`frontend/src/app/services/usuarios.ts`](frontend/src/app/services/usuarios.ts): tipos del login (tradicional y Google) ahora declaran `refreshToken` en la respuesta.
+
+### 23.2 Alineación de modelos Sequelize con la BD real
+
+Al revisar el dump SQL detecté varios desajustes que provocaban errores silenciosos o rechazos de MariaDB. Corregidos:
+
+| Modelo / Constante | Problema | Solución |
+|---|---|---|
+| `Usuario.rol` | enum del modelo `('admin','operario')`, BD permite también `'superadmin'`. El validator del Bloque 3 ya aceptaba `superadmin`, pero el modelo Sequelize lo rechazaba al crear. | Añadido `'superadmin'` al enum del modelo. |
+| `Usuario.activo` | Existía en BD (`tinyint(1) DEFAULT 1`), faltaba en el modelo → Sequelize lo ignoraba en INSERT/UPDATE. | Añadida columna `activo` al modelo. |
+| `Usuario.nombre` | Modelo `STRING(200)`, BD `varchar(100)`. Inserts > 100 chars rompían con strict mode. | Bajado a `STRING(100)`. |
+| `Usuario.password` | Modelo `STRING(60)`, BD `varchar(255)`. Aunque bcrypt produce 60 chars exactos, si en el futuro usamos argon2 o pepper, no cabía. | Subido a `STRING(255)`. |
+| `Material.tipo_unidad` | Modelo incluía `'litros'`, BD no. Crear con `tipo_unidad: 'litros'` daba 500. | Eliminado `'litros'` del enum del modelo. |
+| `Cliente.nombre_empresa_o_particular` | Modelo `STRING(255)`, BD `varchar(150)`. Trunco silencioso o error. | Bajado a `STRING(150)`. |
+| `Cliente.codigo_postal`, `ciudad`, `provincia`, `notas`, `fecha_registro`, `fecha_actualizacion`, `deleted_at` | Existían en BD, faltaban todas en el modelo. Sequelize las ignoraba al leer/escribir. | Añadidas 7 columnas al modelo. |
+| `Empresa.token_verificacion` | Modelo `STRING(100)`, BD `varchar(255)`. | Subido a `STRING(255)`. |
+| `LIMITES.EMAIL_MAX` | 150 (FE+BE), BD `varchar(100)`. | Bajado a 100. |
+| `LIMITES.NOMBRE_USUARIO_MAX` | 200, BD 100. | Bajado a 100. |
+| `LIMITES.CLIENTE_NOMBRE_MAX` | 255, BD 150. | Bajado a 150. |
+
+Estos cambios afectan a [`backend/src/models/usuario.model.js`](backend/src/models/usuario.model.js), [`backend/src/models/material.model.js`](backend/src/models/material.model.js), [`backend/src/models/cliente.model.js`](backend/src/models/cliente.model.js), [`backend/src/models/empresa.model.js`](backend/src/models/empresa.model.js), [`backend/src/utils/regex.js`](backend/src/utils/regex.js) y [`frontend/src/app/shared/regex.ts`](frontend/src/app/shared/regex.ts).
+
+> **Detectado pero NO corregido** (cambio de comportamiento, requiere decisión de producto): en la BD el `UNIQUE` sobre `usuarios` es **compuesto** `(email, empresa_id)`. Eso permite que el mismo email exista en dos empresas distintas. El controller actual rechaza emails duplicados de forma global con `findOne({ where: { email } })`. **No es un bug que rompa nada** (el controller es más estricto que la BD), pero si quieres permitir compartir email entre empresas hay que cambiar el chequeo. Lo dejo anotado.
+
+### 23.3 Angular 21 puro — confirmado
+
+Resultados de los checks finales:
+
+```bash
+$ grep -rn "\*ngIf\|\*ngFor\|\*ngSwitch" frontend/src/
+# (vacío) — todas las plantillas usan @if / @for / @switch
+$ grep -rn "constructor(private\|constructor(public" frontend/src/
+# (vacío) — toda la DI es por inject()
+```
+
+Los 4 componentes que aún mezclaban `constructor(private fb: FormBuilder)` con `inject()` han pasado al patrón uniforme:
+
+- [`login.ts`](frontend/src/app/components/login-iniciarsesion/login/login.ts)
+- [`registro.ts`](frontend/src/app/components/registro-creacion/registro/registro.ts)
+- [`cliente-formulario.ts`](frontend/src/app/components/inicioadmin/clientes/cliente-formulario/cliente-formulario.ts)
+- [`formulario-usuario.ts`](frontend/src/app/components/inicioadmin/gestion-personal/formulario-usuario/formulario-usuario.ts)
+
+Estado Angular 21 (consolidado):
+- ✅ Componentes standalone (sin NgModule).
+- ✅ Control flow `@if`/`@for`/`@switch` en plantillas (cero `*ngIf`/`*ngFor`/`*ngSwitch`).
+- ✅ DI por `inject()` en componentes, servicios, guards e interceptor (cero `constructor(private)`).
+- ✅ `provideHttpClient(withInterceptors([...]))` registrado en `app.config.ts`.
+- ✅ Hidratación cliente con `provideClientHydration(withEventReplay())`.
+- ✅ Signals en uso donde aplica (en `clientes.html` y derivados; los formularios siguen con Reactive Forms, que es el patrón recomendado para forms complejos).
+
+### 23.4 Sobre el logger (decisión)
+
+Confirmado: **no** se instala `pino`. El `utils/logger.js` sigue usando `console.log/warn/error` con la API `logger.info("ctx", payload)` y la redacción automática de campos sensibles. Si en el futuro queréis enviar logs a un sistema externo, basta sustituir el cuerpo de los 3 métodos del `logger` por llamadas al transporte (pino/winston/Datadog) — el resto de la app no cambia.
+
+---
+
+## 24. Lista de archivos modificados (Bloque 6)
+
+**Backend (modificados):**
+110. `backend/src/middlewares/auth.middleware.js` (`ACCESS_TOKEN_EXPIRY = '15m'`)
+111. `backend/src/controllers/auth.controller.js` (+`emitirTokens`, +`refrescarToken`, logger)
+112. `backend/src/controllers/usuarios.controller.js` (login usa `emitirTokens`)
+113. `backend/src/routes/auth.route.js` (+`POST /auth/refresh`)
+114. `backend/src/models/usuario.model.js` (`superadmin` en enum, `activo`, tamaños BD)
+115. `backend/src/models/material.model.js` (sin `litros` en enum)
+116. `backend/src/models/cliente.model.js` (+7 columnas que faltaban)
+117. `backend/src/models/empresa.model.js` (`token_verificacion` a 255)
+118. `backend/src/utils/regex.js` (`LIMITES` alineados a BD)
+
+**Frontend (modificados):**
+119. `frontend/src/app/services/authentication.ts` (+refresh token)
+120. `frontend/src/app/interceptors/auth.interceptor.ts` (refresh-on-401 con cola)
+121. `frontend/src/app/services/usuarios.ts` (tipos con `refreshToken`)
+122. `frontend/src/app/shared/regex.ts` (`LIMITES` alineados a BD)
+123. `frontend/src/app/components/login-iniciarsesion/login/login.ts` (`inject(FormBuilder)`)
+124. `frontend/src/app/components/registro-creacion/registro/registro.ts` (`inject(FormBuilder)`)
+125. `frontend/src/app/components/inicioadmin/clientes/cliente-formulario/cliente-formulario.ts` (`inject(FormBuilder)`)
+126. `frontend/src/app/components/inicioadmin/gestion-personal/formulario-usuario/formulario-usuario.ts` (`inject(FormBuilder)`)
+
+---
+
+## 25. Verificación manual del Bloque 6
+
+1. **Login devuelve refresh**: DevTools → Network → `/usuarios/login`. La respuesta debe ser `{ accessToken: "...", refreshToken: "...", usuario: {...} }`. En `sessionStorage` deben verse las 3 claves (`usuario_castilfac`, `token_castilfac`, `refresh_castilfac`).
+2. **Refresh transparente**: estando logado, espera 15 minutos sin hacer nada (o, más rápido: pon en DevTools `sessionStorage.setItem('token_castilfac', 'token-roto')` y refresca la página). La primera petición autenticada dará 401, el interceptor disparará `POST /auth/refresh`, recibirás un access nuevo y la petición original se reintenta sola. NO debe llevarte a `/sesioncerrada`.
+3. **Refresh caducado**: pon `sessionStorage.setItem('refresh_castilfac', 'roto')` y haz cualquier acción → ahora sí debes acabar en `/sesioncerrada`.
+4. **Múltiples 401 simultáneos**: provoca un error de token (token-roto) y dispara 3 peticiones a la vez (ej. cambia a una pestaña con varios fetch). Solo debe haber **una** llamada a `/auth/refresh` en Network; las otras 2 esperan y reintentan después.
+5. **Rol superadmin**: crea un usuario con `rol: "superadmin"` (vía un admin) → ahora la BD acepta el insert y la API responde 200 (antes fallaba en el `ENUM` del modelo).
+6. **Cliente con código postal**: crea un cliente con `codigo_postal: "28080", ciudad: "Madrid", provincia: "Madrid"` → ahora se guarda en BD; antes Sequelize ignoraba esas columnas y nunca se persistían.
+7. **Material con `litros`**: intenta crear un material con `tipo_unidad: "litros"` → la API rechaza con 400 antes de tocar BD (antes daba 500 porque el modelo lo aceptaba pero MariaDB no).
+8. **Angular 21**: `grep -rn "*ngIf\|*ngFor\|constructor(private" frontend/src/` debe devolver 0 resultados.
+
+---
+
+## 26. Riesgos conocidos del Bloque 6
+
+- **Stateless refresh**: cualquier refresh válido (no caducado) emite tokens nuevos. Si te roban el refresh, el atacante puede mantener la sesión activa hasta los 7 días. Para revocación inmediata habría que persistirlos. Dado el nivel de riesgo de un SaaS de presupuestos B2B y que ya hay rate-limiting, es aceptable.
+- **Rotación de refresh agresiva**: cada `/auth/refresh` exitoso emite refresh **nuevo** e invalida el anterior implícitamente (porque el cliente lo pisa). Si una pestaña hace refresh mientras otra usa el viejo, la segunda fallará al refrescar después. Para apps single-tab esto está bien; si abres 2 pestañas y haces login en una, la otra perderá el refresh viejo. En la práctica, como ambas pestañas comparten `sessionStorage`, la segunda lee el nuevo y funciona.
+- **Cambios en modelo Cliente**: las columnas añadidas a `cliente.model.js` (`codigo_postal`, `ciudad`, `provincia`, `notas`) existían en BD. Los formularios actuales NO las exponen al usuario. Si quieres recogerlas en el formulario de creación de cliente, hay que añadirlas en [`cliente-formulario.ts/html`](frontend/src/app/components/inicioadmin/clientes/cliente-formulario/cliente-formulario.ts) y en el `validarCrearCliente`.
+- **`UNIQUE (email, empresa_id)`** en `usuarios`: la BD permite el mismo email en dos empresas distintas, pero el controller no. No es un bug que rompa nada, pero limita un caso de uso de soporte: si Pedro trabaja para empresa A y empresa B y quiere usar el mismo email, debe usar 2 emails distintos. Cambiar esto requiere reescribir las comprobaciones de unicidad en `createUsuario`/`updateUsuario`/`registroTransaccional`.
+- **Migración**: ningún cambio del Bloque 6 requiere alterar la BD. Las columnas que añadimos a los modelos ya existían. La rebajada del enum de `Material.tipo_unidad` quita una opción que la BD tampoco soportaba.

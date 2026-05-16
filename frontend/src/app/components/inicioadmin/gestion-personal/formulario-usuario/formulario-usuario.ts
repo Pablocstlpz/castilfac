@@ -47,11 +47,12 @@ export class FormularioUsuario {
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
+  private fb = inject(FormBuilder);
 
   //Si esta seteado estamos editando; si es null/undefined estamos creando.
   public id!: number;
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     //La contraseña arranca como REQUIRED + minLength 8 (para alinearse con el backend);
     //al editar la desactivamos como required y la dejamos opcional para no obligar a
     //cambiarla. Si el usuario la deja vacia, el backend mantiene la actual.

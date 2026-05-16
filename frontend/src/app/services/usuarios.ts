@@ -41,12 +41,14 @@ export class UsuariosServices extends BaseHttpService {
     return this.delete<{ message: string }>(`/usuarios/correo/${correo}`);
   }
 
-  // Login tradicional: backend devuelve { accessToken, usuario }
+  // Login tradicional: backend devuelve { accessToken, refreshToken, usuario }.
+  // El access dura 15 min; el refresh 7 dias y lo usa el interceptor para
+  // renovar sesion sin pedir password de nuevo.
   getUsuarioCorreoContraseña(
     correo: string,
     contraseña: string,
-  ): Observable<{ accessToken: string; usuario: Usuario }> {
-    return this.post<{ accessToken: string; usuario: Usuario }>(
+  ): Observable<{ accessToken: string; refreshToken: string; usuario: Usuario }> {
+    return this.post<{ accessToken: string; refreshToken: string; usuario: Usuario }>(
       '/usuarios/login',
       { correo, contraseña },
     );
@@ -63,13 +65,14 @@ export class UsuariosServices extends BaseHttpService {
     });
   }
 
-  // Login con Google: misma forma { accessToken, usuario }
+  // Login con Google: misma forma que el login tradicional.
   loginConGoogle(
     credential: string,
-  ): Observable<{ accessToken: string; usuario: Usuario }> {
-    return this.post<{ accessToken: string; usuario: Usuario }>('/auth/google', {
-      credential,
-    });
+  ): Observable<{ accessToken: string; refreshToken: string; usuario: Usuario }> {
+    return this.post<{ accessToken: string; refreshToken: string; usuario: Usuario }>(
+      '/auth/google',
+      { credential },
+    );
   }
 
   // Registro inicial: crea el primer admin de una empresa recien dada de alta.

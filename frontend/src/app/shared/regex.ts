@@ -26,9 +26,10 @@ export const REGEX_NIF_CIF_PERMISIVO = /^[A-Za-z0-9]{8,12}$/;
 export const TIPOS_CLIENTE = ["particular", "empresa", "vip", "mayorista"] as const;
 export type TipoCliente = (typeof TIPOS_CLIENTE)[number];
 
-// Limites de longitud
+// Limites de longitud. Cada uno cuadra con la columna real de la BD para
+// que el frontend rechace antes lo que MariaDB rechazaria despues.
 export const LIMITES = {
-  EMAIL_MAX: 150,
+  EMAIL_MAX: 100,          // BD: varchar(100)
   NOMBRE_COMERCIAL_MAX: 200,
   RAZON_SOCIAL_MAX: 200,
   DIRECCION_MAX: 500,
@@ -37,7 +38,7 @@ export const LIMITES = {
   CODIGO_POSTAL_MAX: 5,
   TELEFONO_MAX: 20,
   NIF_MAX: 9,
-  NOMBRE_USUARIO_MAX: 200,
+  NOMBRE_USUARIO_MAX: 100, // BD: varchar(100)
   PASSWORD_MIN: 8,
-  CLIENTE_NOMBRE_MAX: 255,
+  CLIENTE_NOMBRE_MAX: 150, // BD: varchar(150)
 } as const;
