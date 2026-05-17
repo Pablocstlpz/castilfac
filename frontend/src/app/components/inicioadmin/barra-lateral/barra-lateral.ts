@@ -1,5 +1,5 @@
 import { UpperCasePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -18,9 +18,9 @@ export class BarraLateral {
   private readonly language = inject(LanguageService);
 
   //input que recibe del layout para saber si el menu movil esta abierto
-  @Input() menuMovilAbierto = false;
+  readonly menuMovilAbierto = input<boolean>(false);
   //output para avisar al layout de que el usuario quiere cerrar el menu movil
-  @Output() cerrarMenu = new EventEmitter<void>();
+  readonly cerrarMenu = output<void>();
 
   //usuario actual en sesion, lo uso para mostrar el nombre en la barra
   readonly usuario = this.authentication.obtenerUsuarioSesion();
