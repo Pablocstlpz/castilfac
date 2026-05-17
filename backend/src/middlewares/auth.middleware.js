@@ -29,8 +29,33 @@ export const generarRefreshToken = (payload) => {
 };
 
 
+// Rutas publicas que NO llevan JWT. Cada router montado en /api ejecuta su
+// router.use(autenticarToken) para cualquier path que no haya matcheado antes;
+// sin este bypass, peticiones como POST /auth/google moririan en el primer router
+// (empresas) con "Token no proporcionado" antes de llegar a auth.route.js.
+const RUTAS_PUBLICAS = [
+  { method: "POST", test: (p) => p === "/auth/google" },
+  { method: "POST", test: (p) => p === "/auth/refresh" },
+  { method: "POST", test: (p) => p === "/usuarios/login" },
+  { method: "POST", test: (p) => p === "/usuarios/registro-inicial" },
+  { method: "POST", test: (p) => p === "/usuarios/recuperar-password" },
+  { method: "POST", test: (p) => p === "/usuarios/restablecer-password" },
+  { method: "POST", test: (p) => p === "/empresas/registro" },
+  { method: "POST", test: (p) => p === "/empresas" },
+  { method: "POST", test: (p) => p === "/empresas/reenviar-verificacion" },
+  { method: "GET", test: (p) => p.startsWith("/empresas/verificar/") },
+  { method: "GET", test: (p) => p.startsWith("/empresas/nif/") },
+];
+
+export const esRutaPublica = (req) =>
+  RUTAS_PUBLICAS.some((r) => r.method === req.method && r.test(req.path));
+
 // Verificar token (Authorization: Bearer <token>)
 export const autenticarToken = (req, res, next) => {
+  if (esRutaPublica(req)) {
+    return next();
+  }
+
   const authHeader = req.headers["authorization"];
 
   if (!authHeader) {

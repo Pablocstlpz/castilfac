@@ -76,6 +76,9 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), webho
 
 app.use(express.json());
 
+// Auth antes que el resto: login Google / refresh son publicos y viven solo aqui.
+app.use("/api", authRoutes);
+
 app.use("/api", empresasRoutes);
 app.use("/api", usuariosRoutes);
 app.use("/api", pedidosRoutes);
@@ -92,7 +95,6 @@ app.use("/api", historialPreciosBaseRoutes);
 app.use("/api", historialPreciosEmpresaRoutes);
 app.use("/api", suscripcionRoutes);
 app.use("/api", stripeRoutes);
-app.use("/api", authRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "API REST con Express.js" });
