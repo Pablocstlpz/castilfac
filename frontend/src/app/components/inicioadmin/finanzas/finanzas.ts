@@ -19,23 +19,32 @@ export class Finanzas {
   private pedidosServices = inject(PedidosServices);
   private router = inject(Router);
 
+  //filtro temporal que aplica el usuario (mes, año o global)
   public filtroTiempo = signal<'mes' | 'anio' | 'global'>('global');
+  //lista de pedidos que se muestran segun el filtro
   public listaPedidos = signal<Pedido[]>([]);
+  //texto que ha escrito el usuario en la busqueda de deudores
   public busqueda = signal<string>('');
 
+  //ingresos totales que tendria que cobrar la empresa segun lo acordado en cada pedido
   public ingresosPactados = computed(() =>
     this.listaPedidos().reduce((acc, p) => acc + Number(p.importe_acordado), 0),
   );
 
+  //ingresos reales que ha cobrado la empresa
   public ingresosReales = computed(() =>
     this.listaPedidos().reduce((acc, p) => acc + Number(p.importe_pagado), 0),
   );
 
+  //deuda total = lo que falta por cobrar
   public deudaTotal = computed(() => this.ingresosPactados() - this.ingresosReales());
 
+  //listado de pedidos con deuda, filtrado por busqueda para mostrar en la tabla
   public deudoresFiltrados = computed(() => {
     return this.listaPedidos().filter((p) => {
+      //solo me quedo con los pedidos que tienen deuda pendiente
       const tieneDeuda = Number(p.importe_pagado) < Number(p.importe_acordado);
+      //ademas filtro por nombre de cliente o numero de pedido si hay busqueda
       const coincideBusqueda =
         !this.busqueda() ||
         p.cliente_nombre.toLowerCase().includes(this.busqueda().toLowerCase()) ||
@@ -45,10 +54,12 @@ export class Finanzas {
   });
 
   ngOnInit(): void {
+    //al cargar la pagina traigo los datos financieros del usuario para su empresa
     const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.cargarDatos(usuario.empresa_id, this.filtroTiempo());
   }
 
+  //funcion para cambiar el filtro de tiempo y recargar los datos con el nuevo rango
   cambiarFiltro(rango: 'mes' | 'anio' | 'global'): void {
     this.filtroTiempo.set(rango);
     const usuario = this.authentication.obtenerUsuarioSesion();
@@ -57,12 +68,14 @@ export class Finanzas {
     }
   }
 
+  //funcion para cargar los pedidos de finanzas filtrados por rango temporal
   cargarDatos(empresa_id: number, rango: 'mes' | 'anio' | 'global'): void {
     this.pedidosServices.getFinanzasPorEmpresa(empresa_id, rango).subscribe((pedidos) => {
       this.listaPedidos.set(pedidos);
     });
   }
 
+  //funcion para abrir el detalle de un pedido y poder registrar un cobro desde alli
   abrirModalCobro(pedido: Pedido): void {
     this.router.navigate(['/inicioadmin/pedidos/pedido-detallado', pedido.id]);
   }

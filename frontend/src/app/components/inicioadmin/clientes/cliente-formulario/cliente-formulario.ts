@@ -39,7 +39,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 })
 export class ClienteFormulario {
   public clienteForm!: FormGroup;
-  public id!: number;
+  public id!: number; //id del cliente si estamos editando
 
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
@@ -47,12 +47,12 @@ export class ClienteFormulario {
   private authentication = inject(Authentication);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
-  //Unificado a inject() — antes mezclabamos DI por constructor.
   private fb = inject(FormBuilder);
 
+  //creo el formulario del cliente con sus validaciones
   constructor() {
     this.clienteForm = this.fb.group({
-      id: [''],
+      id: [''], //solo se rellena cuando estamos editando un cliente existente
       nombre_empresa_o_particular: ['', [Validators.required, Validators.maxLength(200)]],
       nif_cif: [''],
       telefono: [''],
@@ -64,9 +64,11 @@ export class ClienteFormulario {
   }
 
   ngOnInit(): void {
+    //miro si me llega un id por la URL para saber si estoy editando o creando
     this.activatedRoute.queryParams.subscribe((params) => {
       this.id = params['id'];
       if (this.id) {
+        //si hay id, pido el cliente y relleno el formulario con sus datos
         this.clientesService.getCliente(this.id).subscribe({
           next: (cliente) => {
             this.clienteForm.patchValue({
@@ -85,6 +87,7 @@ export class ClienteFormulario {
     });
   }
 
+  /**getter's */
   get nombre_empresa_o_particular() {
     return this.clienteForm.get('nombre_empresa_o_particular') as FormControl;
   }
@@ -95,18 +98,22 @@ export class ClienteFormulario {
     return this.clienteForm.get('tipo_cliente') as FormControl;
   }
 
+  //funcion que se ejecuta al pulsar guardar
   onSubmit(): void {
+    //si el formulario es invalido marco todos los campos como tocados para que se vean los errores
     if (this.clienteForm.invalid) {
       this.clienteForm.markAllAsTouched();
       return;
     }
 
+    //compruebo que hay sesion activa para saber a que empresa pertenece el cliente
     const usuarioSesion = this.authentication.obtenerUsuarioSesion();
     if (!usuarioSesion?.empresa_id) {
       this.router.navigate(['/sesioncerrada']);
       return;
     }
 
+    //construyo el objeto cliente con los datos del formulario y el empresa_id de la sesion
     const clienteData: Cliente = {
       id: this.clienteForm.value.id,
       empresa_id: usuarioSesion.empresa_id,
@@ -122,6 +129,7 @@ export class ClienteFormulario {
       deleted_at: null,
     };
 
+    //si no hay id, estoy creando un cliente; si hay id, lo actualizo
     if (!this.id) {
       this.anadirCliente(clienteData);
     } else {
@@ -129,9 +137,11 @@ export class ClienteFormulario {
     }
   }
 
+  //funcion para añadir un cliente nuevo
   anadirCliente(cliente: Cliente): void {
     this.clientesService.addCliente(cliente).subscribe({
       next: () => {
+        //muestro un snackbar de exito y vuelvo al listado de clientes
         this.snackBar.open(
           this.translate.instant('clients.createdSnack'),
           this.translate.instant('common.close'),
@@ -146,6 +156,7 @@ export class ClienteFormulario {
         this.router.navigate(['/inicioadmin/clientes']);
       },
       error: (error: Error) => {
+        //si falla muestro el mensaje del backend, o uno generico si no llega ninguno
         this.snackBar.open(
           error.message ?? this.translate.instant('clients.createErrorSnack'),
           this.translate.instant('common.close'),
@@ -160,6 +171,7 @@ export class ClienteFormulario {
     });
   }
 
+  //funcion para actualizar un cliente existente
   actualizarCliente(cliente: Cliente): void {
     this.clientesService.updateCliente(cliente).subscribe({
       next: () => {
@@ -191,6 +203,7 @@ export class ClienteFormulario {
     });
   }
 
+  //funcion para cancelar y volver al listado
   cancelar(): void {
     this.router.navigate(['/inicioadmin/clientes']);
   }

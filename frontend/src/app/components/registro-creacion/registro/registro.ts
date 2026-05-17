@@ -44,18 +44,14 @@ import {
 })
 export class Registro {
   public userForm!: FormGroup;
-  public hidePassword: boolean = true;
+  public hidePassword: boolean = true; //variable para mostrar u ocultar la contraseña
 
   private router = inject(Router);
-  // Ahora solo necesitamos el servicio de empresas: el endpoint transaccional
-  // se encarga tanto de crear la empresa como el admin inicial en una sola
-  // peticion. Nos ahorramos UsuariosServices y la cadena anidada de subscribes.
+  //solo necesito el servicio de empresas porque el endpoint transaccional crea la empresa y el admin en una sola peticion
   private empresaServicios = inject(EmpresasServices);
   private fb = inject(FormBuilder);
 
-  //Formulario.
-  //Usamos los regex y limites de shared/regex.ts para que las reglas del frontend
-  //coincidan EXACTAMENTE con las del validator del backend (validarCrearEmpresa).
+  //creo el formulario con las validaciones que tambien tiene el backend para que no haya diferencias
   constructor() {
     this.userForm = this.fb.group({
       //parte de las empresas y sus validaciones
@@ -67,7 +63,7 @@ export class Registro {
         '',
         [Validators.required, Validators.maxLength(LIMITES.RAZON_SOCIAL_MAX)],
       ],
-      //Regex de CIF identica al backend (antes el FE aceptaba DNI y el BE rechazaba).
+      //regex de CIF identica a la del backend para evitar que el frontend acepte un valor que el backend rechace
       nif: [
         '',
         [
@@ -168,14 +164,12 @@ export class Registro {
     return this.userForm.get('password') as FormControl;
   }
 
-  //cuando se da click a registrar:
+  //funcion que se ejecuta al pulsar registrar
   onSubmit(): void {
     this.router.navigate(['/creacionespera']);
 
-    //Construimos el payload del endpoint TRANSACCIONAL POST /api/empresas/registro.
-    //Es UNA SOLA peticion: si falla cualquier paso (validacion, unicidad de NIF,
-    //creacion del admin...) el backend hace rollback y NO queda empresa huerfana.
-    //Adios al "addEmpresa + getEmpresaByNif + addUsuario + deleteEmpresaCorreo si falla".
+    //monto el payload con los datos de la empresa y los del admin para mandarlos al endpoint transaccional
+    //el backend crea ambos en una sola operacion, si falla algo no queda empresa huerfana
     const payload: RegistroPayload = {
       empresa: {
         nombre_comercial: this.userForm.value.nombre_comercial,
@@ -195,15 +189,18 @@ export class Registro {
       },
     };
 
+    //llamo al endpoint de registro y redirijo segun el resultado
     this.empresaServicios.registroTransaccional(payload).subscribe({
       next: () => {
+        //guardo el email antes de resetear porque despues no lo tendria
         const emailEmpresa = this.userForm.value.emailEmpresa;
         this.userForm.reset();
         setTimeout(() => {
+          //paso el email a la pantalla de verificacion para mostrarlo al usuario
           this.router.navigate(['/registro-verificacion'], {
             state: { email: emailEmpresa },
           });
-        }, 700);
+        }, 700); //pequeña espera para que se vea la pantalla de espera
       },
       error: (error) => {
         console.error('Error al registrar empresa:', error);
@@ -214,6 +211,7 @@ export class Registro {
     });
   }
 
+  //funcion para resetear el formulario
   onReset(): void {
     this.userForm.reset();
   }

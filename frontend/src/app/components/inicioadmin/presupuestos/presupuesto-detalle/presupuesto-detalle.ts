@@ -34,19 +34,25 @@ export class PresupuestoDetalle implements OnInit {
   private pdfService = inject(PdfService);
   private translate = inject(TranslateService);
 
+  //signal con el presupuesto que estamos viendo
   public presupuesto = signal<Presupuesto | null>(null);
+  //signal con la lista de operarios de la empresa, para asignar uno al convertir a pedido
   public operarios = signal<Usuario[]>([]);
+  //indica si este presupuesto ya tiene un pedido creado a partir de el (para no permitir crear otro)
   public tienePedido = signal<boolean>(false);
+  //controla si el modal de convertir a pedido esta visible
   public modalPedidoVisible = signal(false);
 
-  //datos del formulario del modal
+  //datos del formulario del modal de creacion de pedido
   public operarioSeleccionado: number | null = null;
   public fechaInicioEstimada: string = '';
   public fechaEntregaEstimada: string = '';
 
+  //listado de estados disponibles que se muestran en el selector
   public estadosDisponibles: { valor: Presupuesto['estado']; etiqueta: string }[] = [];
 
   ngOnInit(): void {
+    //inicializo las etiquetas traducidas de los estados disponibles
     this.estadosDisponibles = [
       { valor: 'borrador', etiqueta: this.translate.instant('quotes.statusDraft') },
       { valor: 'enviado', etiqueta: this.translate.instant('quotes.statusSent') },
@@ -55,6 +61,7 @@ export class PresupuestoDetalle implements OnInit {
       { valor: 'caducado', etiqueta: this.translate.instant('quotes.statusExpired') },
     ];
 
+    //leo el id del presupuesto de la url y cargo los datos
     this.route.params.subscribe((params) => {
       const idPresupuesto = params['id'];
 
@@ -66,6 +73,7 @@ export class PresupuestoDetalle implements OnInit {
       }
     });
 
+    //cargo los operarios de la empresa para que el admin pueda asignarlos al convertir a pedido
     const usuario = this.authentication.obtenerUsuarioSesion();
     if (usuario) {
       this.usuariosService.getUsuarioPorEmpresa(usuario.empresa_id).subscribe({
@@ -75,6 +83,7 @@ export class PresupuestoDetalle implements OnInit {
     }
   }
 
+  //funcion para cargar el presupuesto por su id
   cargarPresupuesto(id: number): void {
     this.presupuestosService.getPresupuesto(id).subscribe({
       next: (datos) => this.presupuesto.set(datos),
@@ -85,6 +94,7 @@ export class PresupuestoDetalle implements OnInit {
     });
   }
 
+  //funcion para comprobar si este presupuesto ya tiene un pedido asociado
   comprobarSiTienePedido(presupuestoId: number): void {
     this.pedidosService.existePedidoDePresupuesto(presupuestoId).subscribe({
       next: (res) => this.tienePedido.set(res.existe),
@@ -92,10 +102,12 @@ export class PresupuestoDetalle implements OnInit {
     });
   }
 
+  //funcion para cambiar el estado del presupuesto (con rollback visual si falla)
   cambiarEstado(nuevoEstado: string): void {
     const pres = this.presupuesto();
     if (!pres) return;
 
+    //guardo el estado anterior por si la peticion falla y tengo que revertir el signal
     const estadoAnterior = pres.estado;
     this.presupuesto.set({ ...pres, estado: nuevoEstado as Presupuesto['estado'] });
 
@@ -104,16 +116,19 @@ export class PresupuestoDetalle implements OnInit {
         this.snackBar.open(this.translate.instant('quotes.statusUpdated'), this.translate.instant('common.close'), { duration: 3000 });
       },
       error: (err) => {
+        //revierto al estado anterior porque no se ha guardado en el backend
         this.presupuesto.set({ ...pres, estado: estadoAnterior });
         this.snackBar.open(err.message || this.translate.instant('quotes.statusChangeError'), this.translate.instant('common.close'), { duration: 3000 });
       },
     });
   }
 
+  //funcion para abrir el modal de convertir presupuesto a pedido
   abrirModalPedido(): void {
     this.modalPedidoVisible.set(true);
   }
 
+  //funcion para cerrar el modal y resetear los campos del formulario
   cerrarModalPedido(): void {
     this.modalPedidoVisible.set(false);
     this.operarioSeleccionado = null;
@@ -121,10 +136,12 @@ export class PresupuestoDetalle implements OnInit {
     this.fechaEntregaEstimada = '';
   }
 
+  //funcion para confirmar la conversion del presupuesto a pedido
   confirmarConversionAPedido(): void {
     const pres = this.presupuesto();
     if (!pres || !this.operarioSeleccionado) return;
 
+    //monto el objeto del nuevo pedido con los datos del presupuesto y los del modal
     const nuevoPedido = {
       empresa_id: pres.empresa_id,
       presupuesto_id: pres.id,
@@ -137,6 +154,7 @@ export class PresupuestoDetalle implements OnInit {
 
     this.pedidosService.createPedido(nuevoPedido).subscribe({
       next: () => {
+        //al crear el pedido, marco el presupuesto como aprobado y actualizo el estado local
         this.cambiarEstado('aprobado');
         this.tienePedido.set(true);
         this.cerrarModalPedido();
@@ -149,6 +167,7 @@ export class PresupuestoDetalle implements OnInit {
     });
   }
 
+  //funcion para calcular el coste total de produccion (materiales + mano obra + otros)
   calcularTotalProduccion(pres: Presupuesto): number {
     return (
       Number(pres.coste_materiales || 0) +
@@ -157,15 +176,18 @@ export class PresupuestoDetalle implements OnInit {
     );
   }
 
+  //funcion para calcular el descuento total = precio sin descuento - precio final
   calcularDescuentoTotal(pres: Presupuesto): number {
     return Number(pres.precio_sin_descuento || 0) - Number(pres.precio_final || 0);
   }
 
+  //funcion para mostrar un error por snackbar y volver atras
   mostrarErrorYVolver(mensaje: string): void {
     this.snackBar.open(mensaje, this.translate.instant('common.understood'), { duration: 4000 });
     this.volver();
   }
 
+  //funcion para traducir el estado del presupuesto a un texto legible
   etiquetaEstadoPresupuesto(estado: string): string {
     const keys: Record<string, string> = {
       borrador: 'quotes.statusDraft',
@@ -178,17 +200,20 @@ export class PresupuestoDetalle implements OnInit {
     return key ? this.translate.instant(key) : estado;
   }
 
+  //funcion para volver atras a la pantalla anterior
   volver(): void {
     this.location.back();
   }
 
+  //funcion para generar el PDF de la hoja de fabricacion del presupuesto
   exportarPDF(): void {
     const pres = this.presupuesto();
     if (!pres) return;
-    // El desglose ya almacena tipo_unidad, pasamos [] como lista maestra (fallback interno del servicio)
+    //paso [] como lista maestra porque el desglose ya tiene el tipo_unidad guardado
     this.pdfService.generarHojaFabricacion(pres, []);
   }
 
+  //funcion para ir a la pantalla de edicion del presupuesto
   editarPresupuesto(): void {
     if (this.presupuesto()) {
       this.router.navigate(['/inicioadmin/presupuestos/editar', this.presupuesto()?.id]);

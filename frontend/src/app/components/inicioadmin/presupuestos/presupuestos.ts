@@ -26,16 +26,22 @@ export class Presupuestos {
   private router = inject(Router);
   private translate = inject(TranslateService);
 
+  //signal con todos los presupuestos de la empresa
   public presupuestos = signal<Presupuesto[]>([]);
+  //signal con todos los clientes de la empresa, los necesito para mostrar el nombre del cliente en cada presupuesto
   public clientes = signal<Cliente[]>([]);
+  //texto que ha escrito el usuario en la busqueda
   public busqueda = signal<string>('');
+  //estado por el que el usuario ha filtrado
   public filtroEstado = signal<string>('todos');
 
+  //listado de presupuestos filtrados que se muestran en la tabla
   public presupuestosFiltrados = computed(() => {
     const q = this.busqueda().toLowerCase().trim();
     const estado = this.filtroEstado();
     return this.presupuestos().filter((p) => {
       const coincideEstado = estado === 'todos' || p.estado === estado;
+      //busco por numero de presupuesto o por nombre del cliente
       const coincideBusqueda =
         !q ||
         p.numero_presupuesto.toLowerCase().includes(q) ||
@@ -44,14 +50,17 @@ export class Presupuestos {
     });
   });
 
+  //numero de presupuestos en estado borrador para la tarjeta de estadistica
   public statBorradores = computed(
     () => this.presupuestos().filter((p) => p.estado === 'borrador').length,
   );
 
+  //numero de presupuestos enviados pendientes de respuesta del cliente
   public statPendientesRespuesta = computed(
     () => this.presupuestos().filter((p) => p.estado === 'enviado').length,
   );
 
+  //numero de presupuestos aprobados en el mes actual
   public statAprobadosMes = computed(() => {
     const now = new Date();
     return this.presupuestos().filter(
@@ -62,6 +71,7 @@ export class Presupuestos {
     ).length;
   });
 
+  //tasa de exito = presupuestos aprobados / presupuestos enviados (no borradores)
   public statTasaExito = computed(() => {
     const enviados = this.presupuestos().filter((p) => p.estado !== 'borrador').length;
     if (enviados === 0) return 0;
@@ -72,11 +82,13 @@ export class Presupuestos {
   });
 
   ngOnInit(): void {
+    //al cargar la pagina cojo el empresa_id de la sesion y traigo presupuestos y clientes
     const usuario = this.authentication.obtenerUsuarioSesion()!;
     this.cargarPresupuestos(usuario.empresa_id);
     this.cargarClientes(usuario.empresa_id);
   }
 
+  //funcion para cargar todos los presupuestos de una empresa
   cargarPresupuestos(empresa_id: number): void {
     this.presupuestosService.getPresupuestosEmpresa(empresa_id).subscribe({
       next: (data) => this.presupuestos.set(data),
@@ -84,6 +96,7 @@ export class Presupuestos {
     });
   }
 
+  //funcion para cargar todos los clientes de la empresa
   cargarClientes(empresa_id: number): void {
     this.clientesServices.getClientePorEmpresa(empresa_id).subscribe({
       next: (data) => this.clientes.set(data),
@@ -91,16 +104,19 @@ export class Presupuestos {
     });
   }
 
+  //funcion para transformar el id de cliente en el nombre buscando en el signal de clientes
   getNombreCliente(id: number): string {
     const cliente = this.clientes().find((c) => c.id == id);
     return cliente ? cliente.nombre_empresa_o_particular : '—';
   }
 
+  //funcion para obtener el tipo de cliente a partir de su id
   getTipoCliente(id: number): string {
     const cliente = this.clientes().find((c) => c.id == id);
     return cliente?.tipo_cliente ?? '';
   }
 
+  //funcion para traducir el tipo de cliente a un texto legible
   etiquetaTipoCliente(tipo: string): string {
     if (!tipo) return '';
     const keys: Record<string, string> = {
@@ -113,6 +129,7 @@ export class Presupuestos {
     return key ? this.translate.instant(key) : tipo;
   }
 
+  //funcion para traducir el estado del presupuesto a un texto legible
   etiquetaEstadoPresupuesto(estado: string): string {
     const keys: Record<string, string> = {
       borrador: 'quotes.statusDraft',
@@ -125,11 +142,14 @@ export class Presupuestos {
     return key ? this.translate.instant(key) : estado;
   }
 
+  //funcion para ir al detalle de un presupuesto
   verDetalle(id: number): void {
     this.router.navigate(['/inicioadmin/presupuestos/detalle-presupuesto', id]);
   }
 
+  //funcion para generar y descargar el PDF de la hoja de fabricacion del presupuesto
   descargarPDF(id: number): void {
+    //primero pido los datos completos del presupuesto y despues genero el PDF con ellos
     this.presupuestosService.getPresupuesto(id).subscribe({
       next: (pres) => this.pdfService.generarHojaFabricacion(pres, []),
       error: (err) => console.error('Error al cargar presupuesto para PDF:', err),

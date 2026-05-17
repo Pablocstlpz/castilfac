@@ -24,52 +24,52 @@ export class CatalogoYPrecios {
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
-  // Signal con todos los materiales ya enriquecidos que llegan del backend
+  //signal con todos los materiales enriquecidos que llegan del backend (con precio empresa)
   private _materiales = signal<MaterialConPrecio[]>([]);
 
-  // Signal con el total de materiales de la empresa
+  //signal con el total de materiales que tiene la empresa, para la tarjeta de estadistica
   public totalMateriales = signal<number>(0);
 
-  // Signal con las categorias disponibles para el filtro
+  //signal con las categorias disponibles para el selector del filtro
   public categorias = signal<Categoria[]>([]);
 
-  // Signal con el texto de busqueda actual
+  //signal con el texto que ha escrito el usuario en la busqueda
   public busqueda = signal<string>('');
 
-  // Signal con el filtro de categoria seleccionado
+  //signal con la categoria que ha seleccionado el usuario en el filtro
   public filtroCategoria = signal<string>('todas');
 
-  // Signal para mostrar o no los materiales inactivos
+  //signal para incluir o no en el listado los materiales que estan desactivados
   public mostrarInactivos = signal<boolean>(false);
 
-  // Signal con los materiales filtrados para mostrar en la tabla
+  //signal con los materiales ya filtrados que se muestran en la tabla
   public materialesFiltrados = signal<MaterialConPrecio[]>([]);
 
-  // Signal que almacena el id del material cuyo PVP se está editando en línea (null si ninguno está en edición)
+  //id del material cuyo PVP se esta editando en linea, null si ninguno esta en edicion
   public materialEditandoId = signal<number | null>(null);
 
-  // Signal que almacena temporalmente el nuevo precio introducido en el input de edición en línea
+  //guarda temporalmente el precio que el usuario esta escribiendo en el input de edicion en linea
   public precioEnEdicion = signal<number>(0);
 
   ngOnInit(): void {
-    // Obtengo el usuario de la sesión para identificar la empresa a la que pertenece
+    //obtengo el usuario de la sesion para saber a que empresa pertenece
     const usuario = this.authentication.obtenerUsuarioSesion();
-    // Cargo las categorias disponibles para el select de filtrado
+    //cargo las categorias que se usan en el selector de filtro
     this.cargarCategorias();
-    // Si hay usuario autenticado, cargo los materiales enriquecidos de su empresa
+    //si hay usuario logado, cargo los materiales de su empresa
     if (usuario) {
       this.cargarMateriales(usuario.empresa_id);
     }
   }
 
-  // Función para cargar las categorias del select de filtrado desde el backend
+  //funcion para cargar las categorias del selector de filtro desde el backend
   cargarCategorias(): void {
     this.categoriasService.getCategorias().subscribe((data) => {
       this.categorias.set(data);
     });
   }
 
-  // Función para cargar los materiales ya enriquecidos con categoria y precio desde el backend
+  //funcion para cargar los materiales con su categoria y precio de empresa desde el backend
   cargarMateriales(empresaId: number): void {
     this.materialesService.getMaterialesConPrecioEmpresa(empresaId).subscribe((data) => {
       this._materiales.set(data);
@@ -78,6 +78,7 @@ export class CatalogoYPrecios {
     });
   }
 
+  //funcion para traducir el tipo de unidad a un texto legible en el idioma actual
   etiquetaTipoUnidad(tipo: string): string {
     const keys: Record<string, string> = {
       metros_lineales: 'catalogue.unitLinear',
@@ -90,23 +91,26 @@ export class CatalogoYPrecios {
     return key ? this.translate.instant(key) : tipo;
   }
 
-  // Función para filtrar los materiales según los filtros activos en cada momento
+  //funcion que aplica los filtros activos (busqueda, categoria, inactivos) y actualiza la lista que se ve
   filtrarMateriales(): void {
     const textoBusqueda = this.busqueda().toLowerCase().trim();
 
-    // Filtro por texto de búsqueda, categoría y estado activo y guardo el resultado en el signal
+    //filtro por texto, categoria y estado activo, y guardo el resultado en el signal de filtrados
     this.materialesFiltrados.set(
       this._materiales().filter((material) => {
+        //compruebo si el material coincide con el texto buscado en nombre, codigo o proveedor
         const coincideBusqueda =
           !textoBusqueda ||
           material.nombre.toLowerCase().includes(textoBusqueda) ||
           (material.codigo_interno ?? '').toLowerCase().includes(textoBusqueda) ||
           (material.proveedor ?? '').toLowerCase().includes(textoBusqueda);
 
+        //compruebo si el material coincide con la categoria seleccionada o es "todas"
         const coincideCategoria =
           this.filtroCategoria() === 'todas' ||
           material.categoria_id.toString() === this.filtroCategoria();
 
+        //si no se quieren ver inactivos, descarto los que no esten activos o esten borrados
         const coincideActivo =
           this.mostrarInactivos() ? true : material.activo !== false && !material.deleted_at;
 
@@ -115,12 +119,12 @@ export class CatalogoYPrecios {
     );
   }
 
-  // Función para activar o desactivar un material desde la columna de estado
+  //funcion para activar o desactivar un material desde la columna de estado de la tabla
   toggleActivo(id: number): void {
     const usuario = this.authentication.obtenerUsuarioSesion();
     if (!usuario) return;
     this.materialesService.toggleActivo(usuario.empresa_id, id).subscribe((materialActualizado) => {
-      // Actualizo el estado activo del material directamente en el signal para no recargar la página
+      //actualizo el material directamente en el signal para no tener que recargar toda la pagina
       const listaActualizada = [...this._materiales()];
       for (let indice = 0; indice < listaActualizada.length; indice++) {
         if (listaActualizada[indice].id === id) {
@@ -133,29 +137,29 @@ export class CatalogoYPrecios {
     });
   }
 
-  // Función para activar el modo de edición en línea del PVP para el material que el usuario ha pulsado
+  //funcion para activar el modo de edicion en linea del PVP en la fila del material seleccionado
   activarEdicionPvp(materialSeleccionado: MaterialConPrecio): void {
-    // Guardo el id del material en edición para que el template muestre el input en su fila
+    //guardo el id del material que se esta editando para que el template muestre el input en su fila
     this.materialEditandoId.set(materialSeleccionado.id);
-    // Inicializo el input con el precio actual del material como punto de partida para el usuario
+    //precargo el input con el precio actual para que el usuario tenga el valor de partida
     this.precioEnEdicion.set(materialSeleccionado.precio_venta);
   }
 
-  // Función para cancelar la edición en línea sin guardar ningún cambio
+  //funcion para cancelar la edicion en linea sin guardar nada
   cancelarEdicionPvp(): void {
-    // Limpio el id del material en edición para que el template vuelva al modo de visualización
+    //limpio el id del material en edicion para que el template vuelva a mostrar el modo normal
     this.materialEditandoId.set(null);
-    // Reseteo el precio en edición a su valor neutro
+    //reseteo el precio en edicion
     this.precioEnEdicion.set(0);
   }
 
-  // Función para guardar el nuevo PVP de empresa para el material seleccionado
-  // Llama al backend para actualizar precios_empresa y crear el registro en historial_precios_empresa
+  //funcion para guardar el nuevo PVP del material en el backend
+  //actualiza precios_empresa y crea un registro en historial_precios_empresa de forma transaccional
   guardarNuevoPvp(materialSeleccionado: MaterialConPrecio, precioNuevo: number): void {
-    // Obtengo el usuario de la sesión para enviar su id y el de su empresa en la petición
+    //necesito el usuario en sesion para mandar su id y el de su empresa al backend
     const usuarioSesion = this.authentication.obtenerUsuarioSesion();
 
-    // Verifico que existe sesión activa antes de intentar la actualización
+    //si no hay sesion activa, aviso por snackbar y no hago nada
     if (!usuarioSesion) {
       this.snackBar.open(this.translate.instant('catalogue.noSession'), this.translate.instant('common.close'), {
         duration: 3000,
@@ -163,7 +167,7 @@ export class CatalogoYPrecios {
       return;
     }
 
-    // Verifico que el precio introducido es un número válido y mayor que cero
+    //compruebo que el precio sea un numero valido y mayor que cero
     const precioNuevoNumerico = Number(precioNuevo);
     if (isNaN(precioNuevoNumerico) || precioNuevoNumerico <= 0) {
       this.snackBar.open(
@@ -174,17 +178,17 @@ export class CatalogoYPrecios {
       return;
     }
 
-    // Extraigo los identificadores necesarios para el cuerpo de la petición al backend
+    //preparo los ids que necesita la peticion al backend
     const empresaId = usuarioSesion.empresa_id;
     const usuarioId = usuarioSesion.id;
     const materialId = materialSeleccionado.id;
 
-    // Llamo al servicio para actualizar el precio en el backend con transacción y registro en historial
+    //llamo al servicio que actualiza el precio y registra el cambio en el historial
     this.materialesService
       .actualizarPvpEmpresa(materialId, empresaId, usuarioId, precioNuevoNumerico)
       .subscribe({
         next: () => {
-          // Actualizo el precio del material directamente en el signal para refrescar la tabla sin recargar
+          //actualizo el precio en el signal para que la tabla se refresque sin recargar
           const listaActualizada = [...this._materiales()];
           for (let indice = 0; indice < listaActualizada.length; indice++) {
             if (listaActualizada[indice].id === materialId) {
@@ -198,10 +202,10 @@ export class CatalogoYPrecios {
           this._materiales.set(listaActualizada);
           this.filtrarMateriales();
 
-          // Cierro el modo de edición en línea para volver a la vista normal
+          //cierro el modo edicion para volver a la vista normal
           this.cancelarEdicionPvp();
 
-          // Informo al usuario de que el precio se ha guardado correctamente
+          //aviso al usuario de que el precio se ha guardado bien
           this.snackBar.open(
             this.translate.instant('catalogue.pvpUpdated'),
             this.translate.instant('common.close'),
@@ -209,7 +213,7 @@ export class CatalogoYPrecios {
           );
         },
         error: (error) => {
-          // Informo al usuario del error ocurrido durante la actualización
+          //aviso al usuario del error que ha devuelto el backend
           this.snackBar.open(
             this.translate.instant('catalogue.pvpUpdateError', { message: error.message }),
             this.translate.instant('common.close'),

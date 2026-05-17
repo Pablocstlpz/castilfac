@@ -42,7 +42,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 })
 export class FormularioUsuario {
   public userForm!: FormGroup;
-  public hidePassword: boolean = true;
+  public hidePassword: boolean = true; //variable para mostrar u ocultar la contraseña
 
   private router = inject(Router);
   private usuarioServicios = inject(UsuariosServices);
@@ -52,15 +52,13 @@ export class FormularioUsuario {
   private translate = inject(TranslateService);
   private fb = inject(FormBuilder);
 
-  //Si esta seteado estamos editando; si es null/undefined estamos creando.
+  //id del usuario que voy a editar, si esta seteado estoy editando y si no estoy creando
   public id!: number;
 
+  //creo el formulario del usuario con sus validaciones
   constructor() {
-    //La contraseña arranca como REQUIRED + minLength 8 (para alinearse con el backend);
-    //al editar la desactivamos como required y la dejamos opcional para no obligar a
-    //cambiarla. Si el usuario la deja vacia, el backend mantiene la actual.
     this.userForm = this.fb.group({
-      id: [''],
+      id: [''], //solo se rellena si estamos editando un usuario existente
       nombre: [
         '',
         [
@@ -79,17 +77,17 @@ export class FormularioUsuario {
   }
 
   ngOnInit(): void {
+    //miro si me llega un id por la URL para saber si estoy editando o creando
     this.activatedRoute.queryParams.subscribe((params) => {
       this.id = params['id'];
       if (this.id) {
-        //Modo EDICION: la contraseña pasa a ser opcional (>= 8 si llega, vacia si no).
-        //ANTES: este metodo precargaba response.password en el input, lo que mostraba
-        //el HASH bcrypt en claro y, al guardar sin cambiarlo, hacia doble-hash y rompia
-        //el login del usuario editado. Ya NO se hace.
+        //si estoy editando, la contraseña deja de ser obligatoria
+        //si el admin la deja en blanco el backend mantiene la actual y no la cambia
         this.password.clearValidators();
         this.password.setValidators([Validators.minLength(LIMITES.PASSWORD_MIN)]);
         this.password.updateValueAndValidity();
 
+        //pido el usuario al backend y relleno el formulario con sus datos
         this.usuarioServicios.getUsuario(this.id).subscribe({
           next: (response: any) => {
             this.userForm.patchValue({
@@ -98,8 +96,7 @@ export class FormularioUsuario {
               email: response.email,
               rol: response.rol ?? 'operario',
             });
-            //Importante: NO seteamos password — el backend ya filtra el hash via
-            //toJSON, pero aun asi nunca queremos precargar nada en este campo.
+            //importante: NO precargo la contraseña, asi el admin escribe una nueva si quiere cambiarla
             this.password.setValue('');
           },
         });
@@ -121,28 +118,32 @@ export class FormularioUsuario {
     return this.userForm.get('rol') as FormControl;
   }
 
+  //funcion que se ejecuta al pulsar guardar
   onSubmit(): void {
+    //si el formulario es invalido marco todos los campos como tocados para que se vean los errores
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
       return;
     }
 
+    //necesito el empresa_id de la sesion para asociar el usuario a la empresa correcta
     const usuarioSesion = this.authentication.obtenerUsuarioSesion();
     if (!usuarioSesion?.empresa_id) {
       this.router.navigate(['/sesioncerrada']);
       return;
     }
 
-    //En edicion: si el campo password viene vacio, NO lo enviamos al backend.
-    //updateUsuario en el backend detecta password vacio/ausente y mantiene la actual.
+    //si estoy editando y la contraseña esta vacia no la mando al backend, asi mantiene la actual
     const passwordPlano = (this.userForm.value.password || '').trim();
     const enviarPassword = !this.id || passwordPlano.length > 0;
 
+    //construyo el objeto usuario con los datos del formulario
     const usuarioNuevo: Usuario = {
       id: this.userForm.value.id,
       nombre: this.userForm.value.nombre,
       email: this.userForm.value.email,
       password: enviarPassword ? passwordPlano : '',
+      //empresa_id se coge de la sesion para que el usuario quede en la empresa correcta
       empresa_id: usuarioSesion.empresa_id,
       rol: this.userForm.value.rol,
       fecha_creacion: new Date(),
@@ -150,6 +151,7 @@ export class FormularioUsuario {
       deleted_at: null,
     };
 
+    //si no hay id estoy creando un usuario nuevo, si lo hay lo estoy actualizando
     if (!this.id) {
       this.anadirUsuario(usuarioNuevo);
     } else {
@@ -161,6 +163,7 @@ export class FormularioUsuario {
   anadirUsuario(usuarioNuevo: Usuario): void {
     this.usuarioServicios.addUsuario(usuarioNuevo).subscribe({
       next: () => {
+        //muestro un snackbar de exito y vuelvo al listado de personal
         this.snackBar.open(
           this.translate.instant('staff.createdSnack'),
           this.translate.instant('common.close'),
@@ -176,6 +179,7 @@ export class FormularioUsuario {
       },
       error: (error) => {
         console.error('Error al crear usuario:', error);
+        //muestro el mensaje del backend o uno generico si no llega ninguno
         this.snackBar.open(
           error?.message ?? this.translate.instant('staff.createErrorSnack'),
           this.translate.instant('common.close'),
@@ -190,6 +194,7 @@ export class FormularioUsuario {
     });
   }
 
+  //funcion para actualizar un usuario existente
   actualizarUsuario(usuario: Usuario): void {
     this.usuarioServicios.updateUsuario(usuario).subscribe({
       next: () => {
@@ -208,6 +213,8 @@ export class FormularioUsuario {
       },
       error: (error: unknown) => {
         console.error('Error al actualizar usuario:', error);
+        //si el error es del tipo "sin administradores" muestro un mensaje especifico
+        //porque es un caso de uso que el usuario tiene que entender bien
         const mensaje =
           error instanceof Error && error.message.includes('sin administradores')
             ? this.translate.instant('staff.noAdminsError')
@@ -225,10 +232,12 @@ export class FormularioUsuario {
     });
   }
 
+  //funcion para resetear el formulario
   onReset(): void {
     this.userForm.reset();
   }
 
+  //funcion para volver al listado sin guardar nada
   volver(): void {
     this.router.navigate(['/inicioadmin/gestion-personal']);
   }

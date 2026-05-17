@@ -20,11 +20,10 @@ import { Authentication } from '../../../services/authentication';
 import { environment } from '../../../../environments/environment';
 
 
-// El objeto `google` lo inyecta el script de Google Identity Services cargado en index.html
+//objeto google que viene del script de Google Identity Services cargado en index.html
 declare const google: any;
 
-// El client id de Google viene del environment (antes estaba hardcodeado).
-// Asi podemos tener un client id distinto en dev/prod sin tocar codigo.
+//id del cliente de google que se lee del environment para no tenerlo hardcodeado
 const GOOGLE_CLIENT_ID = environment.googleClientId;
 
 @Component({
@@ -45,15 +44,15 @@ const GOOGLE_CLIENT_ID = environment.googleClientId;
 })
 export class Login implements AfterViewInit {
   public userForm!: FormGroup;
-  public hidePassword: boolean = true;
+  public hidePassword: boolean = true; //variable para mostrar u ocultar la contraseña al pulsar el ojo
 
   private router = inject(Router);
   private usuarioServicios = inject(UsuariosServices);
   private authentication = inject(Authentication);
-  private ngZone = inject(NgZone);
-  //Unificado a inject() para no mezclar con constructor DI (Angular 21 idiomatico).
+  private ngZone = inject(NgZone); //necesario para que Angular detecte el callback de google
   private fb = inject(FormBuilder);
 
+  //creo el formulario con sus validaciones
   constructor() {
     this.userForm = this.fb.group({
       emailUsuario: ['', [Validators.required, Validators.email]],
@@ -61,6 +60,7 @@ export class Login implements AfterViewInit {
     });
   }
 
+  /**getter's */
   get emailUsuario() {
     return this.userForm.get('emailUsuario') as FormControl;
   }
@@ -69,6 +69,7 @@ export class Login implements AfterViewInit {
   }
 
   ngOnInit(): void {
+    //si ya hay un operario logado lo mando directo a su inicio para que no vuelva a pasar por el login
     const usuarioLocal = this.authentication.obtenerUsuarioSesion();
     if (usuarioLocal !== null && usuarioLocal.rol === 'operario') {
       this.router.navigate(['/iniciooperario']);
@@ -76,11 +77,11 @@ export class Login implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Inicializa Google Identity Services y renderiza el botón en el contenedor
+    //inicializo google identity services y pinto el boton dentro de su contenedor
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: (response: { credential: string }) => {
-        // Ejecutamos dentro de NgZone para que Angular detecte los cambios
+        //envuelvo en NgZone para que Angular se entere del cambio y actualice la vista
         this.ngZone.run(() => this.manejarLoginGoogle(response.credential));
       },
     });
@@ -95,16 +96,17 @@ export class Login implements AfterViewInit {
     });
   }
 
+  //funcion para iniciar sesion con google
   private manejarLoginGoogle(credential: string): void {
     this.router.navigate(['/loginespera']);
 
     this.usuarioServicios.loginConGoogle(credential).subscribe({
       next: (res) => {
-        // res = { accessToken, usuario }; guardarSesion guarda ambos.
+        //res trae el accessToken, el refreshToken y el usuario; lo guardo todo en sesion
         this.authentication.guardarSesion(res);
         setTimeout(() => {
           this.router.navigate(['/logincorrecto']);
-        }, 700);
+        }, 700); //pequeña espera para que el usuario vea la pantalla de espera
       },
       error: (error) => {
         console.error('Error en login con Google:', error);
@@ -115,15 +117,17 @@ export class Login implements AfterViewInit {
     });
   }
 
+  //funcion que se ejecuta al pulsar el boton de iniciar sesion
   onSubmit(): void {
     this.router.navigate(['/loginespera']);
 
+    //recojo correo y contraseña del formulario
     const correo = this.userForm.value.emailUsuario;
     const contraseña = this.userForm.value.password;
 
     this.usuarioServicios.getUsuarioCorreoContraseña(correo, contraseña).subscribe({
       next: (res) => {
-        // res = { accessToken, usuario }; guardarSesion guarda token + usuario.
+        //res trae accessToken, refreshToken y usuario; los guardo en sesion
         this.authentication.guardarSesion(res);
         setTimeout(() => {
           this.router.navigate(['/logincorrecto']);
@@ -138,6 +142,7 @@ export class Login implements AfterViewInit {
     });
   }
 
+  //funcion para resetear el formulario
   onReset(): void {
     this.userForm.reset();
   }
