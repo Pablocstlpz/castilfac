@@ -21,10 +21,12 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 export class Iniciooperario {
   private authentication = inject(Authentication);
   private router = inject(Router);
+  //usuario operario en sesion, lo necesito para pedir solo sus pedidos
   public usuario: Usuario = this.authentication.obtenerUsuarioSesion()!;
   private pedidosServices = inject(PedidosServices);
   private presupuestosService = inject(PresupuestosService);
   private pdfService = inject(PdfService);
+  //signal con los pedidos en fabricacion que tiene asignados el operario
   public pedidosArray = signal<Pedido[]>([]);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
@@ -33,20 +35,22 @@ export class Iniciooperario {
     this.obtenerPedidosEnFabricacion();
   }
 
-  //cerrar sesion
+  //funcion para cerrar sesion
   cerrarSesion() {
     this.authentication.cerrarSesion();
     this.router.navigate(['/sesioncerrada']);
   }
 
-  //obtener todos los pedidos de este operario que esten en fabricacion
+  //funcion para obtener todos los pedidos de este operario que esten en fabricacion
   obtenerPedidosEnFabricacion() {
     this.pedidosServices.getPedidosByOperario(this.usuario.id).subscribe((pedidos) => {
       this.pedidosArray.set(pedidos);
     });
   }
 
+  //funcion para ver/descargar la hoja de fabricacion del presupuesto vinculado al pedido
   verHojaFabricacion(presupuestoId: number): void {
+    //pido el presupuesto completo y se lo paso al servicio de PDF para generar la hoja
     this.presupuestosService.getPresupuesto(presupuestoId).subscribe({
       next: (pres) => this.pdfService.generarHojaFabricacion(pres, []),
       error: () =>
@@ -63,11 +67,12 @@ export class Iniciooperario {
     });
   }
 
-  //marcar como fabricado cuando se da click al boton
+  //funcion para marcar un pedido como fabricado cuando el operario da click al boton
   marcarFabricado(id: number): void {
     try {
       this.pedidosServices.marcarComoFabricado(id).subscribe({
         next: () => {
+          //recargo el listado para que el pedido marcado desaparezca de "en fabricacion"
           this.obtenerPedidosEnFabricacion();
           this.snackBar.open(
             this.translate.instant('operario.orderMarkedFabricated'),

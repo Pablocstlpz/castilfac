@@ -6,7 +6,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-// Interfaces basadas en tu modelo
+//interfaces basadas en el modelo de la base de datos
 export interface Empresa {
   id: number;
   nombre_comercial: string;
@@ -47,18 +47,23 @@ export class InicioSuperadmin implements OnInit {
   private http = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
-  private apiUrl = 'http://localhost:3000/api'; // Ajusta a tu URL de entorno
+  private apiUrl = 'http://localhost:3000/api'; //ajustar segun el entorno
 
-  // Estado del componente
+  //listado completo de empresas que llega del backend
   public empresas = signal<Empresa[]>([]);
+  //empresas filtradas por busqueda que se muestran en la tabla
   public empresasFiltradas = signal<Empresa[]>([]);
+  //usuarios de la empresa seleccionada en el panel de detalle
   public usuariosActivos = signal<Usuario[]>([]);
+  //empresa que el superadmin ha seleccionado para ver el detalle
   public empresaSeleccionada = signal<Empresa | null>(null);
 
+  //flag para mostrar el spinner mientras se cargan las empresas
   public cargando = signal<boolean>(true);
+  //texto que ha escrito el superadmin en la busqueda
   public filtroBusqueda = signal<string>('');
 
-  // KPIs
+  //KPIs principales que se muestran en las tarjetas superiores
   public kpis = signal({
     total: 0,
     prueba: 0,
@@ -70,6 +75,7 @@ export class InicioSuperadmin implements OnInit {
     this.cargarEmpresas();
   }
 
+  //funcion para cargar todas las empresas del sistema
   cargarEmpresas(): void {
     this.cargando.set(true);
     this.http.get<Empresa[]>(`${this.apiUrl}/empresas`).subscribe({
@@ -91,20 +97,22 @@ export class InicioSuperadmin implements OnInit {
     });
   }
 
+  //funcion para calcular los KPIs del dashboard (total, en prueba, premium e ingresos)
   calcularKPIs(empresas: Empresa[]): void {
     let prueba = 0;
     let premium = 0;
 
     empresas.forEach((emp) => {
+      //ignoro empresas inactivas o sin email verificado
       if (!emp.activo || !emp.email_verificado) return;
 
       const fRegistro = new Date(emp.fecha_registro).getTime();
       const fVencimiento = new Date(emp.fecha_vencimiento).getTime();
 
-      // Calculamos la diferencia en días
+      //diferencia en dias entre el registro y el vencimiento
       const diffDias = Math.round((fVencimiento - fRegistro) / (1000 * 60 * 60 * 24));
 
-      // Si la diferencia es <= 15 días, consideramos que sigue en su periodo de prueba original
+      //si la diferencia es <= 15 dias, la empresa sigue en periodo de prueba; si no, es premium
       if (diffDias <= 15) {
         prueba++;
       } else {
@@ -116,10 +124,11 @@ export class InicioSuperadmin implements OnInit {
       total: empresas.length,
       prueba: prueba,
       premium: premium,
-      ingresos: premium * 39, // Tus 39€ por empresa premium
+      ingresos: premium * 39, //39€ por empresa premium
     });
   }
 
+  //funcion para filtrar las empresas por el texto que escribe el superadmin
   filtrarEmpresas(): void {
     const termino = this.filtroBusqueda().toLowerCase();
     if (!termino) {
@@ -127,6 +136,7 @@ export class InicioSuperadmin implements OnInit {
       return;
     }
 
+    //busco por nombre, nif o email
     const filtradas = this.empresas().filter(
       (emp) =>
         emp.nombre_comercial.toLowerCase().includes(termino) ||
@@ -136,11 +146,12 @@ export class InicioSuperadmin implements OnInit {
     this.empresasFiltradas.set(filtradas);
   }
 
+  //funcion para abrir el panel de detalle de una empresa y cargar sus usuarios
   verDetalle(empresa: Empresa): void {
     this.empresaSeleccionada.set(empresa);
-    this.usuariosActivos.set([]); // Limpiar anteriores
+    this.usuariosActivos.set([]); //limpio los usuarios anteriores antes de cargar los nuevos
 
-    // Llamada a tu controlador getUsuarioPorEmpresa
+    //llamo al endpoint que devuelve los usuarios de esta empresa
     this.http.get<Usuario[]>(`${this.apiUrl}/usuarios/empresa/${empresa.id}`).subscribe({
       next: (usuarios) => this.usuariosActivos.set(usuarios),
       error: () =>
@@ -152,15 +163,17 @@ export class InicioSuperadmin implements OnInit {
     });
   }
 
+  //funcion para cerrar el panel de detalle
   cerrarDetalle(): void {
     this.empresaSeleccionada.set(null);
   }
 
+  //funcion para activar o desactivar una empresa
   toggleEstadoEmpresa(empresa: Empresa): void {
-    // Invertimos el estado activo
+    //invierto el estado activo
     const nuevoEstado = !empresa.activo;
 
-    // Preparamos el payload completo para pasar tu validación del controlador updateEmpresa
+    //preparo el payload completo para pasar las validaciones del controller updateEmpresa
     const payload = {
       ...empresa,
       activo: nuevoEstado,
@@ -174,7 +187,8 @@ export class InicioSuperadmin implements OnInit {
           this.translate.instant('common.ok'),
           { duration: 3000 },
         );
-        this.calcularKPIs(this.empresas()); // Recalcular ingresos
+        //recalculo los KPIs por si cambia el numero de empresas premium o de ingresos
+        this.calcularKPIs(this.empresas());
       },
       error: (err) => {
         console.error(err);
@@ -187,8 +201,9 @@ export class InicioSuperadmin implements OnInit {
     });
   }
 
+  //funcion para extender la suscripcion de una empresa 30 dias mas (convertirla a premium)
   extenderSuscripcion(empresa: Empresa): void {
-    // Añadimos 30 días a la fecha de vencimiento actual para hacerla "Premium"
+    //sumo 30 dias a la fecha de vencimiento actual
     const nuevaFecha = new Date(empresa.fecha_vencimiento);
     nuevaFecha.setDate(nuevaFecha.getDate() + 30);
 

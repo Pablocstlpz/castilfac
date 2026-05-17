@@ -8,7 +8,7 @@ import { TranslatePipe } from '@ngx-translate/core';
   standalone: true,
   imports: [MatIconModule, TranslatePipe],
   templateUrl: './verificacion-exito.html',
-  // He añadido esta pequeña animación CSS aquí para la barrita del temporizador
+  //animacion CSS para la barrita del temporizador que muestra cuanto queda para redirigir
   styles: [`
     @keyframes progress {
       from { width: 0%; }
@@ -20,24 +20,26 @@ import { TranslatePipe } from '@ngx-translate/core';
   `]
 })
 export class VerificacionExito {
-  
+
   private router = inject(Router);
+  //referencia al timer para poder limpiarlo si el usuario sale antes de los 6 segundos
   private timer: any;
 
   ngOnInit(): void {
-    // Redirección automática tras 6 segundos
+    //redirijo al login automaticamente a los 6 segundos para que el usuario no se quede mirando la pantalla
     this.timer = setTimeout(() => {
       this.irAlLogin();
     }, 6000);
   }
 
   ngOnDestroy(): void {
-    // Limpieza del timer si el usuario sale antes de la pantalla
+    //limpio el timer si el usuario navega a otra pantalla antes de que se cumpla
     if (this.timer) {
       clearTimeout(this.timer);
     }
   }
 
+  //funcion para ir al login
   irAlLogin(): void {
     this.router.navigate(['/login']);
   }

@@ -10,24 +10,26 @@ import { TranslatePipe } from '@ngx-translate/core';
   templateUrl: './password-cambiada.html'
 })
 export class PasswordCambiada {
-  
+
   private router = inject(Router);
+  //referencia al timer para limpiarlo si el usuario sale antes de los 8 segundos
   private timer: any;
 
   ngOnInit(): void {
-    // Redirección automática tras 8 segundos por si el usuario se queda mirando la pantalla
+    //redirijo al login automaticamente tras 8 segundos por si el usuario se queda mirando la pantalla
     this.timer = setTimeout(() => {
       this.irAlLogin();
     }, 8000);
   }
 
   ngOnDestroy(): void {
-    // Limpiamos el timer si el usuario navega manualmente antes de los 8 segundos
+    //limpio el timer si el usuario navega manualmente antes de que se cumplan los 8 segundos
     if (this.timer) {
       clearTimeout(this.timer);
     }
   }
 
+  //funcion para ir al login
   irAlLogin(): void {
     this.router.navigate(['/login']);
   }

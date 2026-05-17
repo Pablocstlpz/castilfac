@@ -18,22 +18,24 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class HistorialCompletoOperario {
   private authentication = inject(Authentication);
   private router = inject(Router);
+  //usuario operario en sesion, lo uso para pedir su historial al backend
   public usuario: Usuario = this.authentication.obtenerUsuarioSesion()!;
   private pedidosServices = inject(PedidosServices);
+  //signal con el historial completo de pedidos de este operario
   public pedidosArray = signal<Pedido[]>([]);
 
   ngOnInit(): void {
     this.obtenerHistorialPedidos();
   }
 
-  //funcion para obtener historial de pedidos de este operario
+  //funcion para obtener el historial completo de pedidos de este operario
   obtenerHistorialPedidos(): void {
     this.pedidosServices.getPedidosHistorialByOperario(this.usuario.id).subscribe((pedidos) => {
       this.pedidosArray.set(pedidos);
     });
   }
 
-  //cerrar sesion
+  //funcion para cerrar sesion
   cerrarSesion() {
     this.authentication.cerrarSesion();
     this.router.navigate(['/sesioncerrada']);

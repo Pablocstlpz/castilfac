@@ -18,23 +18,29 @@ export class RegistroVerificacion implements OnInit {
   private empresasService = inject(EmpresasServices);
   private translate = inject(TranslateService);
 
+  //signal con el email de la empresa que se acaba de registrar, lo muestro en pantalla y lo uso para reenviar
   public emailEmpresa = signal<string>('');
+  //flag para deshabilitar el boton de reenvio mientras se procesa la peticion
   public cargando = signal<boolean>(false);
 
   ngOnInit(): void {
+    //recojo el email del state de la navegacion, lo pasa la pantalla de registro al redirigir aqui
     const email = history.state?.email;
     if (email) {
       this.emailEmpresa.set(email);
     }
   }
 
+  //funcion para abrir el cliente de correo por defecto del sistema operativo
   abrirCorreo(): void {
     window.open('mailto:', '_blank');
   }
 
+  //funcion para reenviar el correo de verificacion al usuario si no lo ha recibido
   reenviarVerificacion(): void {
     const email = this.emailEmpresa();
 
+    //si por algun motivo no tengo el email, aviso al usuario y no hago nada
     if (!email) {
       this.snackBar.open(
         this.translate.instant('register.emailNotFound'),
@@ -44,8 +50,10 @@ export class RegistroVerificacion implements OnInit {
       return;
     }
 
+    //activo el estado de carga para deshabilitar el boton
     this.cargando.set(true);
 
+    //llamo al backend para que reenvie el correo de verificacion
     this.empresasService.reenviarVerificacion(email).subscribe({
       next: () => {
         this.cargando.set(false);
@@ -66,6 +74,7 @@ export class RegistroVerificacion implements OnInit {
     });
   }
 
+  //funcion para volver al login
   volverAlLogin(): void {
     this.router.navigate(['/login']);
   }
