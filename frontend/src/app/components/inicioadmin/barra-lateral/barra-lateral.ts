@@ -1,8 +1,10 @@
 import { UpperCasePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Authentication } from '../../../services/authentication';
+import { AppLanguage, LanguageService } from '../../../services/language.service';
 
 @Component({
   selector: 'app-barra-lateral',
@@ -11,13 +13,30 @@ import { TranslatePipe } from '@ngx-translate/core';
   styleUrl: './barra-lateral.css',
 })
 export class BarraLateral {
-  //input que recibe del layout para saber si el menu movil esta abierto
+  private readonly authentication = inject(Authentication);
+  private readonly router = inject(Router);
+  private readonly language = inject(LanguageService);
+
   @Input() menuMovilAbierto = false;
-  //output para avisar al layout de que el usuario quiere cerrar el menu movil
   @Output() cerrarMenu = new EventEmitter<void>();
 
-  //funcion para emitir el evento de cerrar menu al pulsar fuera o en la X
-  cerrarMenuMovil() {
+  readonly usuario = this.authentication.obtenerUsuarioSesion();
+  readonly idiomaActual = signal<AppLanguage>('es');
+
+  constructor() {
+    this.idiomaActual.set(this.language.currentLang);
+  }
+
+  cambiarIdioma(lang: AppLanguage): void {
+    void this.language.setLanguage(lang).then(() => this.idiomaActual.set(lang));
+  }
+
+  cerrarSesion(): void {
+    this.authentication.cerrarSesion();
+    this.router.navigate(['/sesioncerrada']);
+  }
+
+  cerrarMenuMovil(): void {
     this.cerrarMenu.emit();
   }
 }

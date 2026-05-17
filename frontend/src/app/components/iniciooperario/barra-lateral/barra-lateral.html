@@ -59,4 +59,39 @@
       <span class="font-medium text-sm">{{ 'operario.history' | translate }}</span>
     </a>
   </nav>
+
+  <div class="mt-auto shrink-0 border-t border-slate-800 p-4 space-y-3">
+    <div class="flex items-center rounded-lg border border-slate-700 overflow-hidden text-xs font-semibold">
+      <button
+        type="button"
+        (click)="cambiarIdioma('es')"
+        class="flex-1 px-2.5 py-2 transition-colors"
+        [class.bg-blue-600]="idiomaActual() === 'es'"
+        [class.text-white]="idiomaActual() === 'es'"
+        [class.text-slate-400]="idiomaActual() !== 'es'"
+        [class.hover:bg-slate-800]="idiomaActual() !== 'es'"
+      >
+        {{ 'lang.es' | translate }}
+      </button>
+      <button
+        type="button"
+        (click)="cambiarIdioma('en')"
+        class="flex-1 px-2.5 py-2 transition-colors"
+        [class.bg-blue-600]="idiomaActual() === 'en'"
+        [class.text-white]="idiomaActual() === 'en'"
+        [class.text-slate-400]="idiomaActual() !== 'en'"
+        [class.hover:bg-slate-800]="idiomaActual() !== 'en'"
+      >
+        {{ 'lang.en' | translate }}
+      </button>
+    </div>
+    <button
+      type="button"
+      (click)="cerrarSesion(); cerrarMenuMovil()"
+      class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+    >
+      <mat-icon class="text-[18px]">logout</mat-icon>
+      {{ 'nav.logout' | translate }}
+    </button>
+  </div>
 </aside>
