@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 
-import { PORT, FRONTEND_URL } from "./config.js";
+import { PORT, FRONTEND_URL, validarConfig } from "./config.js";
+
+validarConfig();
 import { empresasRoutes } from "./routes/empresas.route.js";
 import { usuariosRoutes } from "./routes/usuarios.route.js";
 import { pedidosRoutes } from "./routes/pedidos.route.js";

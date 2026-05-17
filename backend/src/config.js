@@ -16,3 +16,24 @@ export const GOOGLE_CLIENT_ID=process.env.GOOGLE_CLIENT_ID
 export const SECRET_KEY=process.env.SECRET_KEY
 //si no hay REFRESH_SECRET_KEY caemos a SECRET_KEY para no romper en entornos antiguos
 export const REFRESH_SECRET_KEY=process.env.REFRESH_SECRET_KEY || process.env.SECRET_KEY
+
+const VARIABLES_REQUERIDAS = [
+  "SECRET_KEY",
+  "GOOGLE_CLIENT_ID",
+  "DB_HOST",
+  "DB_USER",
+  "DB_PASSWORD",
+  "DB_DATABASE",
+];
+
+export const validarConfig = () => {
+  const faltan = VARIABLES_REQUERIDAS.filter((k) => !process.env[k]);
+  if (faltan.length) {
+    console.error(
+      "[config] Faltan variables de entorno:",
+      faltan.join(", "),
+      "\nEn Docker: backend/.env + .env en la raíz del proyecto (para docker compose).",
+    );
+    process.exit(1);
+  }
+};

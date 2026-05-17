@@ -1,5 +1,8 @@
 version: '3.8'
 
+# Todas las variables vienen del .env del stack (Portainer: "Environment variables"
+# o importar .env). Docker Compose sustituye ${NOMBRE} al desplegar.
+
 services:
   mariadb:
     image: mariadb:10.11
@@ -7,7 +10,7 @@ services:
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
-      MARIADB_DATABASE: castilfac
+      MARIADB_DATABASE: ${DB_DATABASE}
     volumes:
       - castilfac_data:/var/lib/mysql
       - /DATA:/DATA
@@ -17,19 +20,22 @@ services:
     container_name: castilfac_api
     restart: always
     ports:
-      - "3000:3000"
+      - "${BACKEND_PORT:-3000}:3000"
     environment:
-      URL: https://apicastilfac.pablosrv.com
+      PORT: 3000
       DB_HOST: mariadb
-      DB_USER: root
+      DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_DATABASE: castilfac
+      DB_DATABASE: ${DB_DATABASE}
+      URL: ${URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      REFRESH_SECRET_KEY: ${REFRESH_SECRET_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
-      PORT: 3000
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
-      FRONTEND_URL: https://castilfac.pablosrv.com
     depends_on:
       - mariadb
 
@@ -38,7 +44,7 @@ services:
     container_name: castilfac_web
     restart: always
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:80"
     depends_on:
       - backend
 
