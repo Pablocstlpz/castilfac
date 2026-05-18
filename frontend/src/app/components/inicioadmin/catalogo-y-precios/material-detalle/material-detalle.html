@@ -34,7 +34,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'catalogue.materialNameLabel' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">label</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">label</mat-icon>
                 <input
                   matInput
                   formControlName="nombre"
@@ -51,7 +51,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'catalogue.internalCodeLabel' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">tag</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">tag</mat-icon>
                   <input
                     matInput
                     formControlName="codigo_interno"
@@ -64,7 +64,7 @@
 
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'catalogue.categoryLabel' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">category</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">category</mat-icon>
                   <mat-select formControlName="categoria_id">
                     @if (!id) {
                       <mat-option [value]="null" disabled>{{ 'catalogue.selectCategory' | translate }}</mat-option>
@@ -81,7 +81,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'catalogue.descriptionLabel' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">description</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">description</mat-icon>
                 <textarea
                   matInput
                   formControlName="descripcion"
@@ -120,7 +120,7 @@
                 <div class="grid grid-cols-2 gap-4">
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>{{ 'catalogue.basePriceLabel' | translate }}</mat-label>
-                    <span matTextPrefix><mat-icon class="text-slate-400 mr-2">euro</mat-icon></span>
+                    <mat-icon matIconPrefix class="text-slate-400">euro</mat-icon>
                     <input matInput type="number" step="0.0001" formControlName="precio_base" placeholder="0.00" />
                     @if (materialForm.get('precio_base')?.errors?.['required'] && materialForm.get('precio_base')?.touched) {
                       <mat-error>{{ 'catalogue.priceRequired' | translate }}</mat-error>
@@ -132,7 +132,7 @@
 
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>{{ 'catalogue.wasteLabel' | translate }}</mat-label>
-                    <span matTextPrefix><mat-icon class="text-slate-400 mr-2">percent</mat-icon></span>
+                    <mat-icon matIconPrefix class="text-slate-400">percent</mat-icon>
                     <input matInput type="number" formControlName="porcentaje_merma_recomendado" placeholder="10.00" />
                     @if (materialForm.get('porcentaje_merma_recomendado')?.errors?.['min']) {
                       <mat-error>{{ 'catalogue.wasteMin' | translate }}</mat-error>
@@ -145,7 +145,7 @@
 
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'catalogue.unitTypeLabel' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">straighten</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">straighten</mat-icon>
                   <mat-select formControlName="tipo_unidad">
                     <mat-option value="metros_lineales">{{ 'catalogue.unitLinear' | translate }}</mat-option>
                     <mat-option value="metros_cuadrados">{{ 'catalogue.unitSquare' | translate }}</mat-option>
@@ -170,7 +170,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'catalogue.supplierNameLabel' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">business</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">business</mat-icon>
                   <input
                     matInput
                     formControlName="proveedor"
@@ -183,7 +183,7 @@
 
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'catalogue.supplierRefLabel' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">badge</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">badge</mat-icon>
                   <input
                     matInput
                     formControlName="referencia_proveedor"

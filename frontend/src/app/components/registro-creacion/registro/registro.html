@@ -23,7 +23,7 @@
             <div class="grid grid-cols-1 gap-4">
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'register.tradeName' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">store</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">store</mat-icon>
                 <input matInput formControlName="nombre_comercial" [placeholder]="'register.tradeName' | translate" />
                 @if (nombre_comercial.errors?.['required'] && nombre_comercial.touched) {
                 <mat-error>{{ 'register.tradeNameRequired' | translate }}</mat-error>
@@ -66,7 +66,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'register.companyEmail' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">email</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">email</mat-icon>
                   <input matInput formControlName="emailEmpresa" [placeholder]="'register.companyEmail' | translate" />
                   @if (emailEmpresa.errors?.['required'] && emailEmpresa.touched) {
                   <mat-error>{{ 'register.required' | translate }}</mat-error>
@@ -78,7 +78,7 @@
 
                 <mat-form-field appearance="outline" class="w-full">
                   <mat-label>{{ 'register.phone' | translate }}</mat-label>
-                  <span matTextPrefix><mat-icon class="text-slate-400 mr-2">phone</mat-icon></span>
+                  <mat-icon matIconPrefix class="text-slate-400">phone</mat-icon>
                   <input matInput formControlName="telefono" [placeholder]="'register.phone' | translate" />
                   @if (telefono.errors?.['required'] && telefono.touched) {
                   <mat-error>{{ 'register.required' | translate }}</mat-error>
@@ -94,7 +94,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'register.address' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">location_on</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">location_on</mat-icon>
                 <input matInput formControlName="direccion" [placeholder]="'register.addressPlaceholder' | translate" />
                 @if (direccion.errors?.['required'] && direccion.touched) {
                 <mat-error>{{ 'register.addressRequired' | translate }}</mat-error>
@@ -162,7 +162,7 @@
             <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'register.fullName' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">person</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">person</mat-icon>
                 <input matInput formControlName="nombre" [placeholder]="'register.adminNamePlaceholder' | translate" />
                 @if (nombre.errors?.['required'] && nombre.touched) {
                 <mat-error>{{ 'register.nameRequired' | translate }}</mat-error>
@@ -177,7 +177,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'register.accessEmail' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">alternate_email</mat-icon>
                 <input matInput formControlName="emailUsuario" placeholder="usuario@empresa.com" />
                 @if (emailUsuario.errors?.['required'] && emailUsuario.touched) {
                 <mat-error>{{ 'register.required' | translate }}</mat-error>
@@ -189,7 +189,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'register.password' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">lock</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">lock</mat-icon>
                 <input type="password" matInput formControlName="password" placeholder="••••••••" />
                 @if (password.errors?.['required'] && password.touched) {
                 <mat-error>{{ 'register.passwordRequired' | translate }}</mat-error>
