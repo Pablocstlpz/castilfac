@@ -2,9 +2,11 @@ import { Empresa } from '../models/empresa.model.js';
 import { assertEmpresaIdParam } from "../utils/tenant.js";
 import { logger } from "../utils/logger.js";
 
+//funcion para comprobar el estado de la suscripcion de una empresa
 export const verificarSuscripcion = async (req, res) => {
   try {
-    //Tenant: empresa_id de la URL debe coincidir con el del JWT (excepto superadmin).
+    //compruebo que el empresa_id de la URL coincide con el del JWT (salvo superadmin)
+    //asi nadie puede consultar el estado de suscripcion de una empresa que no sea la suya
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
 
     const { empresa_id } = req.params;
@@ -12,7 +14,7 @@ export const verificarSuscripcion = async (req, res) => {
     //busco la empresa por el id
     const empresa = await Empresa.findByPk(empresa_id);
 
-    //valido que la empresa exista
+    //si no existe la empresa devuelvo 404
     if (!empresa) {
       return res.status(404).json({ message: "Empresa no encontrada" });
     }
@@ -26,12 +28,12 @@ export const verificarSuscripcion = async (req, res) => {
     const trialExpirado =
       !empresa.suscripcion_activa && (!fechaVencimiento || ahora > fechaVencimiento);
 
-    //calculo los dias restantes del trial
+    //calculo los dias que le quedan al trial
     const diasRestantes = fechaVencimiento
       ? Math.max(0, Math.ceil((fechaVencimiento - ahora) / (1000 * 60 * 60 * 24)))
       : 0;
 
-    //devuelvo la informacion de la suscripcion
+    //devuelvo la informacion completa de la suscripcion al frontend
     res.status(200).json({
       suscripcion_activa: empresa.suscripcion_activa,
       trial_expirado: trialExpirado,
@@ -39,9 +41,7 @@ export const verificarSuscripcion = async (req, res) => {
       dias_restantes: diasRestantes,
     });
   } catch (error) {
-    //muestro el error por consola
     logger.error("verificarSuscripcion", error);
-    //devuelvo un mensaje de error
     res.status(500).json({ message: "Error al verificar la suscripción" });
   }
 };

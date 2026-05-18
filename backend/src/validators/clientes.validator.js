@@ -8,9 +8,8 @@ import {
 } from "../utils/regex.js";
 import { handleValidation } from "./_handle.js";
 
-//Reglas comunes para crear/actualizar un cliente.
-//El controller tambien tiene `validarPayloadCliente` como defensa en profundidad
-//por si alguna ruta llama al handler sin pasar por esta cadena de validator.
+//reglas comunes para crear o actualizar un cliente
+//en update todos los campos son opcionales para permitir parciales
 const reglasComunes = (paraCrear) => [
   body("nombre_empresa_o_particular")
     [paraCrear ? "exists" : "optional"]({ checkFalsy: !paraCrear })
@@ -53,19 +52,23 @@ const reglasComunes = (paraCrear) => [
     .withMessage(`La direccion no puede superar ${LIMITES.DIRECCION_MAX} caracteres`),
 ];
 
+//validador para POST /clientes
 export const validarCrearCliente = [...reglasComunes(true), handleValidation];
 
+//validador para PUT /clientes/:id
 export const validarActualizarCliente = [
   param("id").isInt({ min: 1 }).withMessage("El id debe ser un entero positivo"),
   ...reglasComunes(false),
   handleValidation,
 ];
 
+//validador comun para parametro :id en URL
 export const validarIdParam = [
   param("id").isInt({ min: 1 }).withMessage("El id debe ser un entero positivo"),
   handleValidation,
 ];
 
+//validador para rutas que llevan :empresa_id en la URL (ej: GET /clientes/:empresa_id)
 export const validarEmpresaIdParam = [
   param("empresa_id").isInt({ min: 1 }).withMessage("empresa_id debe ser un entero positivo"),
   handleValidation,

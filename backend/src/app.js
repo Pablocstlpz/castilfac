@@ -4,6 +4,8 @@ import helmet from "helmet";
 
 import { PORT, FRONTEND_URL, validarConfig } from "./config.js";
 
+//valido que el .env tenga todo lo necesario antes de empezar a importar nada mas
+//asi si falta alguna variable critica el proceso muere antes de levantar la API
 validarConfig();
 import { empresasRoutes } from "./routes/empresas.route.js";
 import { usuariosRoutes } from "./routes/usuarios.route.js";
@@ -23,31 +25,25 @@ import { suscripcionRoutes } from "./routes/suscripcion.route.js";
 import { stripeRoutes } from "./routes/stripe.route.js";
 import { webhookStripe } from "./controllers/stripe.controller.js";
 import { authRoutes } from "./routes/auth.route.js";
-//Cargar asociaciones Sequelize (efecto secundario del import).
+//cargo las asociaciones de Sequelize por efecto secundario del import
 import "./models/associations.js";
 
 const app = express();
 
-//---- Trust proxy ---------------------------------------------------------
-//Si la API queda detras de un reverse-proxy (nginx, Cloudflare, traefik...),
-//Express necesita saberlo para que la IP real del cliente llegue desde
-//X-Forwarded-For. Sin esto, express-rate-limit cuenta TODAS las peticiones
-//como si vinieran de la IP del proxy y bloquea a todo el mundo a la vez.
-//
-//Valor 1: confiamos en UN unico proxy directo (lo habitual). Si hay mas saltos,
-//hay que subirlo o configurar una lista de IPs concretas.
+//trust proxy: si la API esta detras de un reverse-proxy (nginx, cloudflare, traefik...)
+//express necesita saberlo para leer la IP real del cliente desde X-Forwarded-For
+//sin esto express-rate-limit cuenta TODAS las peticiones contra la IP del proxy y bloquea a todos a la vez
+//valor 1 = confio en UN unico proxy directo (lo habitual); si hay mas saltos hay que subirlo
 app.set("trust proxy", 1);
 
-//---- Cabeceras de seguridad ----------------------------------------------
-//helmet pone Content-Security-Policy, X-Content-Type-Options, etc.
-//Como esto es API JSON (no sirve HTML), desactivamos CSP para no estorbar a Swagger
-//o paginas de error embebidas; el resto de cabeceras quedan activas.
+//helmet pone cabeceras de seguridad como X-Content-Type-Options, X-Frame-Options, HSTS, etc.
+//desactivo CSP porque esta API solo sirve JSON y la CSP por defecto rompe paginas de error embebidas
+//cuando empecemos a servir HTML embebido habra que activarla con una politica a medida
 app.use(helmet({ contentSecurityPolicy: false }));
 
-//---- CORS ----------------------------------------------------------------
-//Lista blanca de origenes permitidos. Se construye a partir de FRONTEND_URL
-//(.env) y de localhost para entorno de desarrollo. Si FRONTEND_URL no esta
-//definido, no se autoriza ningun origen externo -> mas seguro por defecto.
+//CORS: lista blanca de origenes permitidos
+//la formo con FRONTEND_URL del .env mas localhost en los puertos de dev de Angular y SSR
+//si FRONTEND_URL no esta definido no se autoriza ningun origen externo
 const ORIGENES_PERMITIDOS = [
   FRONTEND_URL,
   "http://localhost:4200",
@@ -56,10 +52,10 @@ const ORIGENES_PERMITIDOS = [
 
 const corsOption = {
   origin: (origin, callback) => {
-    //Peticiones sin Origin (curl, server-to-server, mismo origin) se permiten.
+    //peticiones sin Origin (curl, server-to-server, mismo origin) las dejo pasar
     if (!origin) return callback(null, true);
     if (ORIGENES_PERMITIDOS.includes(origin)) return callback(null, true);
-    //Si no esta en la lista, lo rechazamos en vez de devolver "*".
+    //si el origin no esta en la whitelist lo rechazo en vez de devolver "*"
     return callback(new Error(`Origin no permitido por CORS: ${origin}`));
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -73,12 +69,12 @@ const corsOption = {
 };
 app.use(cors(corsOption));
 
-// El webhook de Stripe necesita el body en crudo ANTES de express.json()
+//el webhook de Stripe necesita el body en CRUDO antes de express.json() para poder verificar la firma
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), webhookStripe);
 
 app.use(express.json());
 
-// Auth antes que el resto: login Google / refresh son publicos y viven solo aqui.
+//auth antes que el resto: login google y refresh son publicos y viven solo aqui
 app.use("/api", authRoutes);
 
 app.use("/api", empresasRoutes);
@@ -98,10 +94,12 @@ app.use("/api", historialPreciosEmpresaRoutes);
 app.use("/api", suscripcionRoutes);
 app.use("/api", stripeRoutes);
 
+//ruta basica para comprobar que la API responde
 app.get("/", (req, res) => {
   res.json({ message: "API REST con Express.js" });
 });
 
+//handler 404 para cualquier ruta que no haya matcheado arriba
 app.use((req, res) => {
   res.status(404).json({ message: "Página no encontrada" });
 });

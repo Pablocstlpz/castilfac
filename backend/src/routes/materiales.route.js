@@ -15,16 +15,16 @@ import { checkSuscripcion } from "../middlewares/checkSuscripcion.middleware.js"
 
 const router = Router();
 
-//Todas las rutas de materiales requieren JWT y suscripcion vigente.
+//todas las rutas de materiales requieren JWT y suscripcion vigente
 router.use(autenticarToken, checkSuscripcion);
 
-// Listado enriquecido con precio de empresa (para catálogo / tabla de precios)
+//listado enriquecido con categoria y precio empresa (para el catalogo y la tabla de precios)
 router.get("/materiales/empresa/:empresa_id", obtenerMaterialesConPrecioEmpresa);
 
-// Listado base (para selects de formularios, etc.)
+//listado base sin enriquecer (para los select de los formularios)
 router.get("/materiales/empresa/:empresa_id/lista", obtenerMateriales);
 
-// CRUD individual — todos los endpoints exigen empresa_id en la URL para garantizar aislamiento
+//CRUD individual: todos los endpoints llevan :empresa_id en la URL para garantizar el aislamiento
 router.get("/materiales/empresa/:empresa_id/:id", obtenerMaterialPorId);
 router.post("/materiales/empresa/:empresa_id", crearMaterial);
 router.put("/materiales/empresa/:empresa_id/:id", actualizarMaterial);

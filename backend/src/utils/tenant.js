@@ -1,26 +1,25 @@
-//Helpers de aislamiento multi-tenant.
-//Todo lo que sigue asume que la peticion ya paso por autenticarToken,
-//por lo que req.user tiene { id, rol, empresa_id }.
+//helpers para el aislamiento multi-tenant
+//todos asumen que la peticion ya paso por autenticarToken, por lo que req.user tiene { id, rol, empresa_id }
 
+//funcion para saber si el usuario es superadmin (asi se salta los checks de empresa)
 const esSuperadmin = (req) => req.user?.rol === "superadmin";
 
-//Comprueba que el empresa_id que viene en la URL (parametro :empresa_id o :id segun
-//el nombre que use la ruta) coincide con el empresa_id del JWT.
-//Si la peticion es de superadmin se permite acceso a cualquier empresa.
-//
-//Si la comprobacion falla envia la respuesta (404 o 403) y devuelve false; el
-//controlador debe hacer "if (!assertEmpresaIdParam(req, res)) return;".
+//funcion para validar que el empresa_id de la URL coincide con el del JWT
+//acepta el nombre del param (suele ser "empresa_id" o "id") segun como este declarada la ruta
+//si no coincide manda la respuesta de error y devuelve false; el controller hace "if (!assertEmpresaIdParam(req, res)) return;"
 export const assertEmpresaIdParam = (req, res, nombreParam = "empresa_id") => {
   const empresaIdParam = req.params[nombreParam];
 
+  //si la URL no trae el param es un 400 (mal montada la ruta o falta el id)
   if (!empresaIdParam) {
     res.status(400).json({ message: "Falta el ID de empresa en la URL" });
     return false;
   }
 
+  //si es superadmin lo dejo pasar a cualquier empresa
   if (esSuperadmin(req)) return true;
 
-  //Comparamos como string para evitar problemas entre "12" del path y 12 del JWT.
+  //comparo como string por si llega "12" del path y 12 del JWT
   if (String(empresaIdParam) !== String(req.user.empresa_id)) {
     res
       .status(403)
@@ -30,9 +29,8 @@ export const assertEmpresaIdParam = (req, res, nombreParam = "empresa_id") => {
   return true;
 };
 
-//Comprueba que un recurso devuelto por Sequelize pertenece a la empresa del JWT.
-//Pensado para usar despues de un findByPk: si el id existe pero la empresa no
-//coincide, mentimos con un 404 para no filtrar la existencia del id ajeno.
+//funcion para validar que un recurso recuperado por findByPk pertenece a la empresa del JWT
+//si el id existe pero es de otra empresa devuelvo 404 a proposito para no filtrar la existencia del id ajeno
 export const assertOwnsRecurso = (req, res, recurso, campo = "empresa_id") => {
   if (!recurso) {
     res.status(404).json({ message: "Recurso no encontrado" });
@@ -43,20 +41,18 @@ export const assertOwnsRecurso = (req, res, recurso, campo = "empresa_id") => {
 
   const empresaRecurso = recurso[campo];
   if (String(empresaRecurso) !== String(req.user.empresa_id)) {
-    //Devolvemos 404 a proposito (en vez de 403) para no revelar que el id existe
-    //en otra empresa. Se evita asi enumeracion cruzada.
+    //devuelvo 404 en vez de 403 para evitar enumeracion cruzada entre empresas
     res.status(404).json({ message: "Recurso no encontrado" });
     return false;
   }
   return true;
 };
 
-//Devuelve el empresa_id efectivo de la peticion: si el body intenta colar uno
-//distinto, lo ignoramos y devolvemos el del JWT. Util al crear recursos para
-//no fiarse de empresa_id que llegue del cliente.
+//funcion para obtener el empresa_id correcto al crear un recurso
+//si un usuario normal manda otro empresa_id en el body lo ignoro y uso el del JWT
+//solo el superadmin puede crear recursos en empresas distintas a la suya
 export const empresaIdEfectivo = (req) => {
   if (esSuperadmin(req) && req.body?.empresa_id) {
-    //Solo un superadmin puede crear recursos para empresas que no son la suya.
     return req.body.empresa_id;
   }
   return req.user?.empresa_id;

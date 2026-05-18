@@ -96,12 +96,11 @@ export const getEmpresaByNif = async (req, res) => {
 
 export const createEmpresa = async (req, res) => {
   try {
-    //recojo los datos del body
-    //NOTA DE SEGURIDAD: NO se aceptan del body:
-    //  - suscripcion_activa, fecha_vencimiento  (solo los toca el flujo de Stripe)
-    //  - activo                                  (solo lo toca un superadmin)
-    //  - email_verificado, token_verificacion    (solo el flujo de verificacion por email)
-    //Asi evitamos que un cliente se de de alta con suscripcion premium ya activada.
+    //recojo los datos del body, pero NO acepto:
+    //  - suscripcion_activa / fecha_vencimiento -> solo los toca el flujo de Stripe
+    //  - activo -> solo lo toca un superadmin
+    //  - email_verificado / token_verificacion -> solo el flujo de verificacion por email
+    //asi evito que un cliente se registre con suscripcion premium ya activada
     const {
       nombre_comercial,
       razon_social,
@@ -115,16 +114,14 @@ export const createEmpresa = async (req, res) => {
       logo_url,
     } = req.body;
 
-    //Las validaciones de formato (campos requeridos, regex de CIF/telefono/CP,
-    //caracteres de ciudad/provincia, email valido, longitudes) las hace ahora
-    //el middleware validarCrearEmpresa antes de llegar aqui. Mantenemos en este
-    //controller solo las REGLAS DE NEGOCIO (unicidad, side effects).
+    //las validaciones de formato (campos requeridos, regex de CIF/telefono/CP, caracteres de ciudad/provincia, email, longitudes)
+    //las hace el middleware validarCrearEmpresa antes de llegar aqui
+    //en este controller solo me quedo con las reglas de negocio (unicidad, side effects)
     const nifMayusculas = nif.toUpperCase();
 
-    //Misma proteccion anti-abuso que en registroTransaccional: solo borramos
-    //empresas no verificadas si llevan >= 24h. Si son recientes, devolvemos 409
-    //para no permitir que un atacante con los mismos datos elimine un registro
-    //pendiente de un usuario legitimo.
+    //proteccion anti-abuso: solo borro empresas pendientes de verificacion si llevan >= 24h
+    //si son recientes devuelvo 409 para no permitir que un atacante con los mismos datos
+    //elimine un registro pendiente de un usuario legitimo (DoS via reintentos)
     const VENTANA_PROTECCION_MS = 24 * 60 * 60 * 1000;
     const ahora = Date.now();
 
@@ -184,15 +181,15 @@ export const createEmpresa = async (req, res) => {
         .json({ message: "El telefono ya esta registrado" });
     }
 
-    //la fecha de vencimiento se calcula SIEMPRE en el servidor: hoy + 14 dias (prueba gratis)
-    //el cliente no puede ya extenderla.
+    //la fecha de vencimiento se calcula SIEMPRE en el servidor: hoy + 14 dias de prueba gratis
+    //asi el cliente no puede manipularla desde el body para extenderse el trial
     const fechaVencimiento = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-    //Genero el token (plano para el email, hash para BD).
+    //genero el token de verificacion: plano para el email, hash para BD
     const { plano: tokenPlano, hash: tokenHash } = generarTokenVerificacion();
 
-    //creo la empresa con valores controlados por el servidor.
-    //suscripcion_activa se queda en false y solo el flujo de Stripe la pone a true.
+    //creo la empresa con valores controlados por el servidor
+    //suscripcion_activa la dejo en false; solo el flujo de Stripe la pone a true
     const empresa = await Empresa.create({
       nombre_comercial: nombre_comercial,
       razon_social: razon_social,
@@ -453,7 +450,7 @@ export const reenviarVerificacionEmpresa = async (req, res) => {
       return res.status(400).json({ message: "Esta empresa ya está verificada" });
     }
 
-    //Como en createEmpresa: plano para el email, hash para BD.
+    //genero un nuevo token (plano para el email, hash para BD)
     const { plano: tokenPlano, hash: tokenHash } = generarTokenVerificacion();
     await empresa.update({ token_verificacion: tokenHash });
 
@@ -467,20 +464,15 @@ export const reenviarVerificacionEmpresa = async (req, res) => {
   }
 };
 
-//-------------------------------------------------------------------------
-// REGISTRO PUBLICO TRANSACCIONAL
-//-------------------------------------------------------------------------
-//Crea empresa + admin inicial en UNA SOLA transaccion.
-//Si falla cualquier paso, se hace rollback automatico y NO queda una empresa
-//huerfana en la BD. Sustituye al patron antiguo de "crea empresa, despues
-//createUsuario y si falla intenta deleteEmpresaCorreo a mano".
+//funcion para el registro publico transaccional (crea empresa + admin inicial en una sola transaccion)
+//si falla cualquier paso hago rollback automatico y NO queda una empresa huerfana en la BD
+//sustituye al patron antiguo de "crea empresa, despues createUsuario y si falla intenta deleteEmpresaCorreo a mano"
 //
-//Campos esperados (todos validados antes por validarRegistroEmpresa):
-//  empresa: { nombre_comercial, razon_social, nif, email, telefono, direccion,
-//             codigo_postal, ciudad, provincia, logo_url? }
+//el body lleva:
+//  empresa: { nombre_comercial, razon_social, nif, email, telefono, direccion, codigo_postal, ciudad, provincia, logo_url? }
 //  admin:   { nombre, email, password }
 //
-//Devuelve la empresa creada (con el toJSON aplicado, sin token_verificacion).
+//las validaciones de formato las hace validarRegistroTransaccional antes de llegar aqui
 export const registroTransaccional = async (req, res) => {
   const transaccion = await sequelize.transaction();
 
@@ -496,16 +488,10 @@ export const registroTransaccional = async (req, res) => {
 
     const nifMayusculas = String(empresaInput.nif || "").toUpperCase();
 
-    //Limpieza previa anti-abuso:
-    //
-    //Permitimos reintentos de registros NO verificados (alguien que se equivoco
-    //al escribir el email, p.ej.), pero SOLO si el registro previo es "viejo"
-    //(>= 24h). Si es reciente, lo respetamos y respondemos 409: asi un atacante
-    //con el mismo NIF/email/telefono NO puede borrar el registro pendiente de
-    //un usuario legitimo.
-    //
-    //El usuario legitimo cuyo registro reciente sigue pendiente puede usar
-    ///empresas/reenviar-verificacion para recibir un nuevo email.
+    //limpieza previa anti-abuso: solo borro registros no verificados si llevan >= 24h
+    //si son recientes respondo 409 para que un atacante con los mismos datos no pueda eliminar
+    //el registro pendiente de un usuario legitimo (DoS via reintentos)
+    //el usuario legitimo puede usar /empresas/reenviar-verificacion si no recibio el email
     const VENTANA_PROTECCION_MS = 24 * 60 * 60 * 1000;
     const ahora = Date.now();
 
@@ -524,14 +510,14 @@ export const registroTransaccional = async (req, res) => {
     for (const emp of empresasPendientes) {
       const edadMs = ahora - new Date(emp.fecha_registro).getTime();
       if (edadMs < VENTANA_PROTECCION_MS) {
-        //Registro pendiente reciente -> NO lo borramos para evitar DoS.
+        //registro pendiente reciente -> NO lo borro, devuelvo 409 para evitar DoS
         await transaccion.rollback();
         return res.status(409).json({
           message:
             "Ya hay un registro reciente pendiente de verificacion con esos datos. Revisa tu email o pide reenvio del enlace.",
         });
       }
-      //Registro pendiente viejo (>= 24h) -> lo damos por abandonado y lo borramos.
+      //registro pendiente viejo (>= 24h) -> lo doy por abandonado y lo borro junto a sus usuarios
       await Usuario.destroy({
         where: { empresa_id: emp.id },
         transaction: transaccion,
@@ -539,7 +525,7 @@ export const registroTransaccional = async (req, res) => {
       await emp.destroy({ transaction: transaccion });
     }
 
-    //Unicidad contra empresas ya verificadas (las que sobreviven al limpiado).
+    //compruebo que no haya empresas ya verificadas con el mismo email, NIF o telefono
     const conflictosEmpresa = await Empresa.findOne({
       where: {
         [Op.or]: [
@@ -557,7 +543,7 @@ export const registroTransaccional = async (req, res) => {
         .json({ message: "Ya existe una empresa con ese email, NIF o telefono" });
     }
 
-    //El email del admin no debe coincidir con el de un usuario existente.
+    //el email del admin no puede coincidir con el de un usuario ya existente
     const conflictoUsuario = await Usuario.findOne({
       where: { email: adminInput.email },
       transaction: transaccion,
@@ -569,11 +555,12 @@ export const registroTransaccional = async (req, res) => {
         .json({ message: "Ya existe un usuario con ese email" });
     }
 
-    //Token: plano va por email, hash queda en BD.
+    //genero el token de verificacion: plano para el email, hash para BD
     const { plano: tokenPlano, hash: tokenHash } = generarTokenVerificacion();
+    //14 dias de trial gratis desde hoy
     const fechaVencimiento = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-    //Crea la empresa (suscripcion_activa = false, email_verificado = false, etc.)
+    //creo la empresa con suscripcion_activa = false y email_verificado = false
     const empresa = await Empresa.create(
       {
         nombre_comercial: empresaInput.nombre_comercial,
@@ -595,7 +582,7 @@ export const registroTransaccional = async (req, res) => {
       { transaction: transaccion },
     );
 
-    //Crea el admin (forzamos rol='admin', ignorando lo que mande el cliente).
+    //creo el admin inicial forzando rol='admin' aunque el cliente mande otra cosa en el body
     const hashed = await hashPassword(adminInput.password);
     await Usuario.create(
       {
@@ -610,8 +597,8 @@ export const registroTransaccional = async (req, res) => {
 
     await transaccion.commit();
 
-    //Email de verificacion FUERA de la transaccion: si falla el envio,
-    //la empresa ya esta creada y el usuario puede pedir reenvio.
+    //envio el email FUERA de la transaccion: si el SMTP falla la empresa ya esta creada
+    //y el usuario puede pedir reenvio desde /empresas/reenviar-verificacion
     const urlVerificacion = `${URL}/api/empresas/verificar/${tokenPlano}`;
     enviarEmailVerificacion(
       empresaInput.email,
@@ -619,17 +606,17 @@ export const registroTransaccional = async (req, res) => {
       urlVerificacion,
     );
 
-    //toJSON del modelo filtra token_verificacion automaticamente.
+    //devuelvo la empresa creada (el toJSON del modelo filtra automaticamente token_verificacion)
     res.status(201).json({
       message: "Empresa y administrador creados correctamente",
       empresa,
     });
   } catch (error) {
-    //Si ya hubo rollback explicito, esta segunda llamada es no-op en sequelize.
+    //si ya hice rollback explicito, esta segunda llamada es no-op en sequelize, asi que es seguro
     try {
       await transaccion.rollback();
     } catch {
-      //ignoramos: rollback ya aplicado
+      //rollback ya hecho, ignoro
     }
     logger.error("registroTransaccional", error);
     res.status(500).json({ message: "Error al registrar la empresa" });

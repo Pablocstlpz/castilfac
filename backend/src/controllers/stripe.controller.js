@@ -7,8 +7,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const crearSesionCheckout = async (req, res) => {
   try {
-    //empresa_id se toma del JWT (no del body) para que un usuario no pueda
-    //crear una sesion de checkout pagando para OTRA empresa.
+    //el empresa_id se coge del JWT (no del body) asi un usuario no puede
+    //crear una sesion de checkout pagando para otra empresa
     const empresa_id = empresaIdEfectivo(req);
 
     if (!empresa_id) {
@@ -134,8 +134,8 @@ export const verificarSesionPago = async (req, res) => {
       return res.status(400).json({ message: "Sesión sin empresa asociada" });
     }
 
-    //Tenant: el usuario solo puede verificar sesiones de SU empresa. Asi un atacante
-    //con un session_id ajeno no puede gatillar la activacion de suscripcion de otro.
+    //tenant: el usuario solo puede verificar sesiones de SU empresa
+    //asi un atacante con un session_id ajeno no puede activar la suscripcion de otro
     if (
       !esSuperadmin(req) &&
       String(empresa_id) !== String(req.user.empresa_id)

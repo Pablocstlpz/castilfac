@@ -9,6 +9,8 @@ import {
   esSuperadmin,
 } from "../utils/tenant.js";
 
+//SELECT base para traer pedidos con el nombre y direccion del cliente en una sola query
+//asi el frontend no tiene que hacer una llamada extra por cada pedido para conseguir el nombre del cliente
 const PEDIDOS_WITH_CLIENTE_SELECT = `
     SELECT
         p.*,
@@ -18,8 +20,8 @@ const PEDIDOS_WITH_CLIENTE_SELECT = `
     INNER JOIN clientes c ON c.id = p.cliente_id
 `;
 
-//Helper local: comprueba que el usuario con id == :id pertenece a la misma empresa
-//que el del JWT. Util para getPedidosByOperario / getPedidosHistorialByOperario.
+//helper local: compruebo que el usuario con id == :id de la URL es de la misma empresa que el del JWT
+//lo uso en getPedidosByOperario y getPedidosHistorialByOperario para que un admin no pueda pedir pedidos de operarios de otra empresa
 const validarOperarioDeMiEmpresa = async (req, res) => {
   if (esSuperadmin(req)) return true;
   const operario = await Usuario.findByPk(req.params.id);
@@ -30,7 +32,7 @@ const validarOperarioDeMiEmpresa = async (req, res) => {
   return true;
 };
 
-//Idem para cliente.
+//igual que el anterior pero para cliente
 const validarClienteDeMiEmpresa = async (req, res) => {
   if (esSuperadmin(req)) return true;
   const cliente = await Cliente.findByPk(req.params.id);
@@ -41,7 +43,7 @@ const validarClienteDeMiEmpresa = async (req, res) => {
   return true;
 };
 
-//OBTENER TODOS LOS PEDIDOS (solo superadmin via autorizarRol en la ruta)
+//funcion para obtener TODOS los pedidos del sistema (solo superadmin via autorizarRol en la ruta)
 export const getPedidos = async (req, res) => {
   try {
     const [pedidos] = await sequelize.query(`
@@ -55,16 +57,16 @@ export const getPedidos = async (req, res) => {
   }
 };
 
-//OBTENER PEDIDO POR SU ID
+//funcion para obtener un pedido por su id
 export const getPedidoById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    //Buscamos primero con Sequelize para poder validar empresa antes de devolver datos.
+    //primero busco con sequelize para poder validar la empresa antes de devolver los datos
     const pedido = await Pedido.findByPk(id);
     if (!assertOwnsRecurso(req, res, pedido)) return;
 
-    //Si pasa el filtro, recuperamos el row enriquecido con cliente via SQL crudo.
+    //si pasa el chequeo de tenant, recupero el pedido enriquecido con el cliente via SQL crudo
     const [pedidos] = await sequelize.query(
       `
             ${PEDIDOS_WITH_CLIENTE_SELECT}
@@ -84,13 +86,13 @@ export const getPedidoById = async (req, res) => {
   }
 };
 
-//BUSCAR PEDIDOS POR OPERARIO (operarios solo ven los suyos, admins ven los de su empresa)
+//funcion para buscar pedidos por operario asignado (los operarios solo ven los suyos, los admins ven los de cualquier operario de su empresa)
 export const getPedidosByOperario = async (req, res) => {
   try {
-    //Tenant: el operario pedido debe ser de la misma empresa que el del JWT.
+    //el operario que pido debe ser de la misma empresa que el del JWT
     if (!(await validarOperarioDeMiEmpresa(req, res))) return;
 
-    //Si el solicitante es un operario, solo puede pedir SUS propios pedidos.
+    //si el que pide es un operario solo puede consultar SUS propios pedidos
     if (
       req.user?.rol === "operario" &&
       String(req.user.id) !== String(req.params.id)
@@ -109,8 +111,10 @@ export const getPedidosByOperario = async (req, res) => {
       { replacements: [req.params.id] },
     );
 
+    //si no hay pedidos devuelvo array vacio con 200 para que el frontend no falle
     if (pedidos.length === 0) return res.status(200).json([]);
 
+    //los ordeno por fecha de inicio estimada para que en la UI salgan los mas proximos primero
     pedidos.sort(
       (a, b) =>
         new Date(a.fecha_inicio_estimada) - new Date(b.fecha_inicio_estimada),
@@ -125,10 +129,10 @@ export const getPedidosByOperario = async (req, res) => {
   }
 };
 
-//BUSCAR PEDIDOS POR CLIENTE
+//funcion para buscar pedidos por cliente
 export const getPedidosByCliente = async (req, res) => {
   try {
-    //Tenant: el cliente debe pertenecer a mi empresa.
+    //el cliente debe pertenecer a mi empresa
     if (!(await validarClienteDeMiEmpresa(req, res))) return;
 
     const [pedidos] = await sequelize.query(
@@ -151,10 +155,10 @@ export const getPedidosByCliente = async (req, res) => {
   }
 };
 
-//OBTENER DATOS FINANCIEROS DE UNA EMPRESA (con filtro temporal opcional)
+//funcion para obtener los datos financieros de una empresa (con filtro temporal opcional por mes o año)
 export const getFinanzasByEmpresa = async (req, res) => {
   try {
-    //Tenant: el :id es empresa_id; debe coincidir con el del JWT.
+    //el :id es el empresa_id, compruebo que coincida con el del JWT
     if (!assertEmpresaIdParam(req, res, "id")) return;
 
     const { id } = req.params;
@@ -186,10 +190,10 @@ export const getFinanzasByEmpresa = async (req, res) => {
   }
 };
 
-//BUSCAR PEDIDOS POR EMPRESA
+//funcion para buscar todos los pedidos de una empresa
 export const getPedidosByEmpresa = async (req, res) => {
   try {
-    //Tenant: el :id es empresa_id; debe coincidir con el del JWT.
+    //el :id es el empresa_id, compruebo que coincida con el del JWT
     if (!assertEmpresaIdParam(req, res, "id")) return;
 
     const { id } = req.params;
@@ -212,13 +216,14 @@ export const getPedidosByEmpresa = async (req, res) => {
   }
 };
 
-//COMPROBAR SI EXISTE PEDIDO PARA UN PRESUPUESTO
+//funcion para comprobar si ya existe un pedido vinculado a un presupuesto
+//lo uso desde el detalle del presupuesto para deshabilitar el boton de "convertir a pedido"
 export const existePedidoDePresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
     const pedido = await Pedido.findOne({ where: { presupuesto_id: id } });
 
-    //Tenant: si existe pedido, debe ser de mi empresa para evitar filtraciones.
+    //si existe pedido pero es de otra empresa devuelvo { existe: false } para no filtrar info
     if (pedido && !esSuperadmin(req)) {
       if (String(pedido.empresa_id) !== String(req.user.empresa_id)) {
         return res.status(200).json({ existe: false });
@@ -232,7 +237,7 @@ export const existePedidoDePresupuesto = async (req, res) => {
   }
 };
 
-//AÑADIR PEDIDO
+//funcion para añadir un pedido nuevo (normalmente al convertir un presupuesto)
 export const createPedido = async (req, res) => {
   try {
     const {
@@ -248,13 +253,13 @@ export const createPedido = async (req, res) => {
       return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
 
-    //empresa_id se toma del JWT, no del body.
+    //el empresa_id se coge del JWT, no del body
     const empresa_id = empresaIdEfectivo(req);
     if (!empresa_id) {
       return res.status(400).json({ message: "Empresa no identificada" });
     }
 
-    //Comprobamos que cliente y operario (si vienen) son de la misma empresa.
+    //compruebo que el cliente y el operario asignado (si llega) son de la misma empresa
     const cliente = await Cliente.findByPk(cliente_id);
     if (!cliente || String(cliente.empresa_id) !== String(empresa_id)) {
       return res.status(400).json({ message: "Cliente invalido para esta empresa" });
@@ -288,12 +293,13 @@ export const createPedido = async (req, res) => {
   }
 };
 
-//ACTUALIZAR PEDIDO
+//funcion para actualizar un pedido existente (con cambios parciales)
 export const updatePedido = async (req, res) => {
   try {
     const { id } = req.params;
 
     const pedido = await Pedido.findByPk(id);
+    //compruebo que el pedido sea de mi empresa
     if (!assertOwnsRecurso(req, res, pedido)) return;
 
     const {
@@ -309,7 +315,7 @@ export const updatePedido = async (req, res) => {
       notas_operario,
     } = req.body;
 
-    //Si se cambia cliente / operario, validamos que sean de la misma empresa.
+    //si me cambian el cliente o el operario asignado, valido que sean de la misma empresa que el pedido
     if (cliente_id) {
       const cli = await Cliente.findByPk(cliente_id);
       if (!cli || String(cli.empresa_id) !== String(pedido.empresa_id)) {
@@ -361,7 +367,7 @@ export const updatePedido = async (req, res) => {
   }
 };
 
-//BORRAR PEDIDO
+//funcion para borrar un pedido
 export const deletePedido = async (req, res) => {
   try {
     const { id } = req.params;
@@ -377,7 +383,7 @@ export const deletePedido = async (req, res) => {
   }
 };
 
-//MARCAR COMO FABRICADO
+//funcion para marcar un pedido como fabricado (la usa el operario desde su panel)
 export const marcarComoFabricado = async (req, res) => {
   try {
     const { id } = req.params;
@@ -399,12 +405,12 @@ export const marcarComoFabricado = async (req, res) => {
   }
 };
 
-//OBTENER HISTORIAL COMPLETO DE PEDIDOS DE UN OPERARIO
+//funcion para obtener el historial completo de pedidos de un operario (todos los estados)
 export const getPedidosHistorialByOperario = async (req, res) => {
   try {
     if (!(await validarOperarioDeMiEmpresa(req, res))) return;
 
-    //Si el solicitante es operario, solo su propio historial.
+    //si el que pide es un operario solo puede ver su propio historial
     if (
       req.user?.rol === "operario" &&
       String(req.user.id) !== String(req.params.id)

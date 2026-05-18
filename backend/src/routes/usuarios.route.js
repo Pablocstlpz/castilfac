@@ -35,7 +35,8 @@ import {
 
 const router = Router();
 
-//RUTAS PUBLICAS (no requieren JWT) — pasan por rate-limit + validator antes del controller.
+//RUTAS PUBLICAS (no requieren JWT)
+//cada una pasa por su rate-limit y su validator antes de llegar al controller
 router.post(
   "/usuarios/login",
   loginRateLimit,
@@ -54,6 +55,8 @@ router.post(
   validarRestablecerPassword,
   restablecerPassword,
 );
+//registro inicial: SOLO crea el primer admin de una empresa recien creada y no verificada
+//el controller valida estas invariantes para que no se use como puerta trasera
 router.post(
   "/usuarios/registro-inicial",
   registroRateLimit,
@@ -61,10 +64,10 @@ router.post(
   crearAdminInicial,
 );
 
-//A partir de aqui, TODAS las rutas requieren JWT valido.
+//a partir de aqui TODAS las rutas exigen JWT valido
 router.use(autenticarToken);
 
-//Gestion de usuarios: solo admin / superadmin.
+//gestion de usuarios: solo admin / superadmin pueden listar y leer
 router.get("/usuarios", autorizarRol(["admin", "superadmin"]), getUsuarios);
 router.get(
   "/usuarios/:id",
@@ -77,12 +80,7 @@ router.get(
   autorizarRol(["admin", "superadmin"]),
   getUsuarioPorEmpresa,
 );
-router.post(
-  "/usuarios",
-  autorizarRol(["admin"]),
-  validarCrearUsuario,
-  createUsuario,
-);
+router.post("/usuarios", autorizarRol(["admin"]), validarCrearUsuario, createUsuario);
 router.put(
   "/usuarios/:id",
   autorizarRol(["admin"]),
@@ -95,7 +93,7 @@ router.delete(
   validarIdParam,
   deleteUsuario,
 );
-//Borrado por correo: superadmin unicamente.
+//borrado por correo: solo superadmin (es una operacion masiva y poco habitual)
 router.delete(
   "/usuarios/correo/:correo",
   autorizarRol(["superadmin"]),

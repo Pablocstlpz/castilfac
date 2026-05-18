@@ -1,4 +1,3 @@
-
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../data/db.js';
 
@@ -51,15 +50,18 @@ export const Empresa = sequelize.define(
       allowNull: true,
     },
     suscripcion_activa: {
-      type: DataTypes.BOOLEAN, 
+      //true si la empresa esta al dia con su suscripcion, false si no
+      type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: 0,
     },
     fecha_vencimiento: {
+      //fecha hasta la que la empresa esta al dia con el pago
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
     activo: {
+      //para borrado logico o bloqueo manual por superadmin
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: 1,
@@ -79,26 +81,27 @@ export const Empresa = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     email_verificado: {
+      //true si la empresa ya ha verificado su email pulsando el link, false hasta entonces
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
     },
     token_verificacion: {
-      //BD: varchar(255). El hash sha256 son 64 chars, pero alineamos con BD
-      //por si en el futuro guardamos un algoritmo mas largo.
+      //BD: varchar(255). Aqui guardo el sha256 del token, no el token plano
+      //el plano solo va por email para que el usuario lo presente al pulsar el link
       type: DataTypes.STRING(255),
       allowNull: true,
     },
   },
   {
     tableName: 'empresas',
-    timestamps: false, // ya tienes columnas de fecha propias
+    timestamps: false, //ya tengo columnas de fecha propias
   }
 );
 
-//Limpieza automatica al serializar el modelo a JSON.
-//Evita que el token de verificacion de email se exponga por la API:
-//cualquiera que lo obtuviera podria verificar el correo de una empresa ajena.
+//limpieza automatica al serializar el modelo a JSON
+//asi el token de verificacion no se filtra en ninguna respuesta de la API
+//si se filtrase, cualquiera podria verificar el correo de una empresa ajena
 Empresa.prototype.toJSON = function () {
   const datos = { ...this.get() };
   delete datos.token_verificacion;

@@ -19,7 +19,7 @@ import {
 
 const router = Router();
 
-//Todas las rutas de clientes exigen JWT y suscripcion activa.
+//todas las rutas de clientes requieren JWT y suscripcion activa
 router.use(autenticarToken, checkSuscripcion);
 
 router.get("/clientes/:empresa_id", validarEmpresaIdParam, getClientesByEmpresa);

@@ -32,8 +32,8 @@ export const Material = sequelize.define(
       defaultValue: null,
     },
     tipo_unidad: {
-      //El enum de la BD solo permite 4 valores; eliminamos "litros" del modelo
-      //para no abrir un valor que MariaDB rechazaria en runtime.
+      //alineado con el ENUM real de la BD (solo 4 valores)
+      //antes tenia "litros" tambien y se rompia el insert porque MariaDB no lo aceptaba
       type: DataTypes.ENUM(
         "metros_lineales",
         "metros_cuadrados",
@@ -94,6 +94,6 @@ export const Material = sequelize.define(
   },
   {
     tableName: "materiales",
-    timestamps: false, // Usamos columnas manuales de fecha
+    timestamps: false, //ya tengo columnas de fecha propias
   },
 );

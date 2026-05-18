@@ -13,8 +13,7 @@ export const Cliente = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    //BD: varchar(150). Antes el modelo decia 255 y aceptaba inserts que MariaDB
-    //truncaba o rechazaba si el sql_mode estaba estricto.
+    //BD: varchar(150), si pongo mas grande MariaDB rompe los inserts >150
     nombre_empresa_o_particular: {
       type: DataTypes.STRING(150),
       allowNull: false,
@@ -36,8 +35,8 @@ export const Cliente = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    //Las 3 columnas siguientes existian en BD pero faltaban en el modelo.
-    //Sin ellas, Sequelize las ignoraba en INSERT/UPDATE y SELECT.
+    //las 3 columnas siguientes existian en BD pero faltaban en el modelo
+    //sin ellas sequelize las ignoraba en INSERT/UPDATE y nunca se persistia la direccion completa
     codigo_postal: {
       type: DataTypes.STRING(10),
       allowNull: true,
@@ -61,7 +60,7 @@ export const Cliente = sequelize.define(
       defaultValue: 0.0,
     },
     notas: {
-      //Existia en BD, faltaba en el modelo.
+      //columna que existia en BD pero no en el modelo
       type: DataTypes.TEXT,
       allowNull: true,
     },
@@ -82,8 +81,8 @@ export const Cliente = sequelize.define(
   },
   {
     tableName: "clientes",
-    //La BD tiene fecha_registro / fecha_actualizacion gestionadas via DEFAULT y
-    //ON UPDATE CURRENT_TIMESTAMP. Mantenemos timestamps: false para no chocar.
+    //la BD gestiona fecha_registro y fecha_actualizacion con DEFAULT y ON UPDATE CURRENT_TIMESTAMP
+    //pongo timestamps: false para que sequelize no intente meter sus propias columnas createdAt/updatedAt
     timestamps: false,
   },
 );
