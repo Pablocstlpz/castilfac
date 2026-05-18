@@ -32,6 +32,9 @@
   .grid-cols-2,
   .grid-cols-3,
   .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6,
+  .grid-cols-12,
   .sm\:grid-cols-2,
   .sm\:grid-cols-3,
   .sm\:grid-cols-4,
@@ -40,14 +43,27 @@
   .md\:grid-cols-4,
   .lg\:grid-cols-2,
   .lg\:grid-cols-3,
-  .lg\:grid-cols-4 {
+  .lg\:grid-cols-4,
+  .xl\:grid-cols-2,
+  .xl\:grid-cols-3,
+  .xl\:grid-cols-4,
+  .xl\:grid-cols-12,
+  .\32xl\:grid-cols-2,
+  .\32xl\:grid-cols-3,
+  .\32xl\:grid-cols-4 {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .mobile-card-list {
+  .mobile-card-list,
+  .mobile-card-list.min-w-full,
+  .mobile-card-list.w-full {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100%;
     border-collapse: separate;
     border-spacing: 0 1rem;
     table-layout: fixed;
+    white-space: normal !important;
   }
 
   .mobile-card-list thead {
@@ -59,6 +75,7 @@
   .mobile-card-list td {
     display: block;
     width: 100%;
+    max-width: 100%;
   }
 
   .mobile-card-list tr {
@@ -74,11 +91,14 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.9rem 1rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid #e2e8f0;
-    white-space: normal;
+    white-space: normal !important;
     text-align: left;
     align-items: flex-start;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   .mobile-card-list td:last-child {
@@ -87,26 +107,69 @@
 
   .mobile-card-list td::before {
     content: attr(data-label);
-    flex: 0 0 42%;
+    flex: 0 0 40%;
+    max-width: 40%;
     color: #64748b;
     font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .mobile-card-list td > * {
     min-width: 0;
+    max-width: 100%;
     text-align: right;
+    margin-left: auto;
   }
 
-  .mobile-card-list td[data-label='Acciones'] {
+  .mobile-card-list td .flex,
+  .mobile-card-list td .inline-flex {
+    flex-wrap: wrap;
     justify-content: flex-end;
   }
 
-  .mobile-card-list td[data-label='Acciones']::before {
+  .mobile-card-list td[data-label='Acciones'],
+  .mobile-card-list td[data-label='Actions'],
+  .mobile-card-list td[data-label*='cciones'] {
+    justify-content: flex-end;
+  }
+
+  .mobile-card-list td[data-label='Acciones']::before,
+  .mobile-card-list td[data-label='Actions']::before,
+  .mobile-card-list td[data-label*='cciones']::before {
     content: '';
     display: none;
+  }
+
+  .mobile-card-list td[data-label='Acciones'] .opacity-0,
+  .mobile-card-list td[data-label='Actions'] .opacity-0,
+  .mobile-card-list td[data-label*='cciones'] .opacity-0 {
+    opacity: 1 !important;
+  }
+
+  .mobile-card-list td.whitespace-nowrap,
+  .mobile-card-list .whitespace-nowrap {
+    white-space: normal !important;
+  }
+
+  .mobile-card-list td .truncate {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+
+  .mobile-card-list td .max-w-36,
+  .mobile-card-list td .max-w-25,
+  .mobile-card-list td [class*='max-w-['] {
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  .mobile-card-list td .w-32\.5 {
+    width: auto !important;
   }
 
   .mobile-scroll-safe {
