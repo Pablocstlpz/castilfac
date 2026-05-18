@@ -178,8 +178,6 @@ export class FormularioUsuario {
         this.router.navigate(['/inicioadmin/gestion-personal']);
       },
       error: (error) => {
-        console.error('Error al crear usuario:', error);
-        //muestro el mensaje del backend o uno generico si no llega ninguno
         this.snackBar.open(
           error?.message ?? this.translate.instant('staff.createErrorSnack'),
           this.translate.instant('common.close'),
@@ -212,7 +210,6 @@ export class FormularioUsuario {
         this.router.navigate(['/inicioadmin/gestion-personal']);
       },
       error: (error: unknown) => {
-        console.error('Error al actualizar usuario:', error);
         //si el error es del tipo "sin administradores" muestro un mensaje especifico
         //porque es un caso de uso que el usuario tiene que entender bien
         const mensaje =

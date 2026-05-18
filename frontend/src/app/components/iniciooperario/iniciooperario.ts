@@ -69,8 +69,7 @@ export class Iniciooperario {
 
   //funcion para marcar un pedido como fabricado cuando el operario da click al boton
   marcarFabricado(id: number): void {
-    try {
-      this.pedidosServices.marcarComoFabricado(id).subscribe({
+    this.pedidosServices.marcarComoFabricado(id).subscribe({
         next: () => {
           //recargo el listado para que el pedido marcado desaparezca de "en fabricacion"
           this.obtenerPedidosEnFabricacion();
@@ -86,7 +85,6 @@ export class Iniciooperario {
           );
         },
         error: (err) => {
-          console.error(err);
           this.snackBar.open(
             err?.message ?? this.translate.instant('operario.markOrderError'),
             this.translate.instant('common.close'),
@@ -98,9 +96,6 @@ export class Iniciooperario {
             },
           );
         },
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    });
   }
 }

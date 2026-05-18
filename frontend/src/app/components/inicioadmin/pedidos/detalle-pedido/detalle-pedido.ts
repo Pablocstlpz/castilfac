@@ -41,8 +41,9 @@ export class DetallePedido implements OnInit {
   public fechaEntregaReal: string = '';
   public fechaInstalacion: string = '';
 
-  //signal para feedback visual
+  //signals para feedback visual
   public mensajeExito = signal<string | null>(null);
+  public mensajeError = signal<string | null>(null);
 
   ngOnInit(): void {
     const usuario = this.authentication.obtenerUsuarioSesion()!;
@@ -68,8 +69,8 @@ export class DetallePedido implements OnInit {
           this.cargarPresupuesto(data.presupuesto_id);
         }
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.loadError'));
       },
     });
   }
@@ -79,8 +80,8 @@ export class DetallePedido implements OnInit {
       next: (data) => {
         this.presupuesto.set(data);
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.loadError'));
       },
     });
   }
@@ -90,8 +91,8 @@ export class DetallePedido implements OnInit {
       next: (usuarios) => {
         this.usuarios.set(usuarios);
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.loadError'));
       },
     });
   }
@@ -114,12 +115,11 @@ export class DetallePedido implements OnInit {
 
     //persisto el cambio en la base de datos
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
-      next: (response) => {
-        console.log(response.message);
+      next: () => {
         this.mostrarExito(this.translate.instant('orders.statusUpdated'));
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.saveError'));
       },
     });
   }
@@ -135,12 +135,11 @@ export class DetallePedido implements OnInit {
 
     //guardo en la base de datos
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
-      next: (response) => {
-        console.log(response.message);
+      next: () => {
         this.mostrarExito(this.translate.instant('orders.operatorAssigned'));
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.saveError'));
       },
     });
   }
@@ -156,7 +155,7 @@ export class DetallePedido implements OnInit {
 
     //valido que no se supere el importe acordado
     if (totalPagado > acordado) {
-      alert(this.translate.instant('orders.paymentExceeds'));
+      this.mostrarError(this.translate.instant('orders.paymentExceeds'));
       return;
     }
 
@@ -166,12 +165,11 @@ export class DetallePedido implements OnInit {
 
     //guardo el cobro en la base de datos
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
-      next: (response) => {
-        console.log(response.message);
+      next: () => {
         this.mostrarExito(this.translate.instant('orders.paymentRegistered'));
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.saveError'));
       },
     });
   }
@@ -185,11 +183,12 @@ export class DetallePedido implements OnInit {
     this.pedido.set(pedidoActualizado);
 
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
-      next: (response) => {
-        console.log(response.message);
+      next: () => {
         this.mostrarExito(this.translate.instant('orders.orderSettled'));
       },
-      error: (err) => console.log(err),
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.saveError'));
+      },
     });
   }
 
@@ -208,12 +207,11 @@ export class DetallePedido implements OnInit {
     this.pedido.set(pedidoActualizado);
 
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
-      next: (response) => {
-        console.log(response.message);
+      next: () => {
         this.mostrarExito(this.translate.instant('orders.notesSaved'));
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.saveError'));
       },
     });
   }
@@ -230,12 +228,11 @@ export class DetallePedido implements OnInit {
     this.pedido.set(pedidoActualizado);
 
     this.pedidosService.updatePedido(pedidoActualizado).subscribe({
-      next: (response) => {
-        console.log(response.message);
+      next: () => {
         this.mostrarExito(this.translate.instant('orders.datesUpdated'));
       },
-      error: (err) => {
-        console.log(err);
+      error: () => {
+        this.mostrarError(this.translate.instant('orders.saveError'));
       },
     });
   }
@@ -274,9 +271,13 @@ export class DetallePedido implements OnInit {
     return Math.min(Math.round((Number(p.importe_pagado) / acordado) * 100), 100);
   }
 
-  //muestro un mensaje de éxito que desaparece a los 2.5 segundos
   private mostrarExito(mensaje: string): void {
     this.mensajeExito.set(mensaje);
     setTimeout(() => this.mensajeExito.set(null), 2500);
+  }
+
+  private mostrarError(mensaje: string): void {
+    this.mensajeError.set(mensaje);
+    setTimeout(() => this.mensajeError.set(null), 3500);
   }
 }

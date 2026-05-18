@@ -889,7 +889,9 @@
     "paymentExceeds": "Amount paid cannot exceed agreed total.",
     "orderSettled": "Order settled successfully",
     "notesSaved": "Notes saved successfully",
-    "datesUpdated": "Dates updated successfully"
+    "datesUpdated": "Dates updated successfully",
+    "loadError": "Error loading order data",
+    "saveError": "Error saving changes"
   },
   "finance": {
     "title": "Financial Summary",

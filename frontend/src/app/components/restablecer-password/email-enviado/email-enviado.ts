@@ -46,8 +46,7 @@ export class EmailEnviado implements OnInit {
 
     //hago la peticion al backend para que reenvie el correo de recuperacion
     this.usuarioServicios.solicitarRecuperacion(this.email).subscribe({
-      next: (response) => {
-        console.log(response);
+      next: () => {
         //desactivo el estado de carga
         this.cargando.set(false);
         //muestro un mensaje de exito al usuario
@@ -57,9 +56,7 @@ export class EmailEnviado implements OnInit {
           { duration: 4000, horizontalPosition: 'center', verticalPosition: 'bottom' },
         );
       },
-      error: (error) => {
-        //enseño error
-        console.error('Error al reenviar el correo de recuperacion:', error);
+      error: () => {
         //desactivo el estado de carga
         this.cargando.set(false);
         //muestro el mismo mensaje de exito para no revelar si el email existe o no en la base de datos

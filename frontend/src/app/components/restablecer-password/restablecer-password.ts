@@ -48,16 +48,13 @@ export class RestablecerPassword {
 
     //hago la peticion al backend para solicitar el envio del correo de recuperacion de contraseña
     this.usuarioServicios.solicitarRecuperacion(this.email).subscribe({
-      next: (response) => {
-        console.log(response);
+      next: () => {
         //desactivo el estado de carga
         this.cargando.set(false);
         //redirijo a la pantalla de email enviado, pasando el email por el state para poder reenviarlo si es necesario
         this.router.navigate(['/email-enviado'], { state: { email: this.email } });
       },
-      error: (error) => {
-        //enseño error
-        console.error('Error al solicitar la recuperacion de contraseña:', error);
+      error: () => {
         //desactivo el estado de carga
         this.cargando.set(false);
         //navego igualmente para no revelar al usuario si el email existe en la base de datos o no

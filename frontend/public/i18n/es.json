@@ -889,7 +889,9 @@
     "paymentExceeds": "El importe pagado no puede superar el total acordado.",
     "orderSettled": "Pedido liquidado correctamente",
     "notesSaved": "Notas guardadas correctamente",
-    "datesUpdated": "Fechas actualizadas correctamente"
+    "datesUpdated": "Fechas actualizadas correctamente",
+    "loadError": "Error al cargar los datos del pedido",
+    "saveError": "Error al guardar los cambios"
   },
   "finance": {
     "title": "Resumen Financiero",

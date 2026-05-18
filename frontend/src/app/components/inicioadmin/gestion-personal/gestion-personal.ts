@@ -46,7 +46,6 @@ export class GestionPersonal {
   obtenerUsuarios(empresa_id: number): void {
     this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe((usuarios) => {
       this.usuarios.set(usuarios);
-      console.log(usuarios);
     });
   }
 

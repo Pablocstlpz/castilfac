@@ -70,7 +70,6 @@ export class Pedidos {
   cargarUsuarios(empresa_id: number): void {
     this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe((usuarios) => {
       this.usuarios.set(usuarios);
-      console.log(this.usuarios());
     });
   }
 
@@ -87,7 +86,6 @@ export class Pedidos {
   cargarClientes(empresa_id: number): void {
     this.clientesServices.getClientePorEmpresa(empresa_id).subscribe((clientes) => {
       this.clientes.set(clientes);
-      console.log(this.clientes());
     });
   }
 

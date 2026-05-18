@@ -108,8 +108,7 @@ export class Login implements AfterViewInit {
           this.router.navigate(['/logincorrecto']);
         }, 700); //pequeña espera para que el usuario vea la pantalla de espera
       },
-      error: (error) => {
-        console.error('Error en login con Google:', error);
+      error: () => {
         setTimeout(() => {
           this.router.navigate(['/loginfallido']);
         }, 700);
@@ -133,8 +132,7 @@ export class Login implements AfterViewInit {
           this.router.navigate(['/logincorrecto']);
         }, 700);
       },
-      error: (error) => {
-        console.error('Error al iniciar sesion:', error);
+      error: () => {
         setTimeout(() => {
           this.router.navigate(['/loginfallido']);
         }, 700);

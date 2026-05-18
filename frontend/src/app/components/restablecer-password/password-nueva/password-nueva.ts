@@ -80,16 +80,13 @@ export class PasswordNueva implements OnInit {
 
     //hago la peticion al backend con el token y la nueva contraseña para restablecerla
     this.usuarioServicios.restablecerPassword(this.tokenRecuperacion, this.password).subscribe({
-      next: (response) => {
-        console.log(response);
+      next: () => {
         //desactivo el estado de carga
         this.cargando.set(false);
         //redirijo a la pantalla de contraseña cambiada correctamente
         this.router.navigate(['/password-cambiada']);
       },
       error: (error) => {
-        //enseño error
-        console.error('Error al restablecer la contraseña:', error);
         //desactivo el estado de carga
         this.cargando.set(false);
         //muestro el mensaje de error que devuelve el backend (token expirado, no valido, etc)
