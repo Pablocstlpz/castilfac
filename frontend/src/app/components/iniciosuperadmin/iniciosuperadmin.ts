@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { environment } from '../../../environments/environment';
 
 //interfaces basadas en el modelo de la base de datos
 export interface Empresa {
@@ -47,7 +48,9 @@ export class InicioSuperadmin implements OnInit {
   private http = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
-  private apiUrl = 'http://localhost:3000/api'; //ajustar segun el entorno
+  //URL base del backend, leida del environment para que funcione en dev y produccion
+  //(antes estaba hardcodeada a localhost, lo que rompia el panel superadmin en produccion)
+  private apiUrl = environment.apiUrl;
 
   //listado completo de empresas que llega del backend
   public empresas = signal<Empresa[]>([]);
