@@ -57,7 +57,9 @@ router.post(
 router.get("/empresas/nif/:nif", validarNifParam, getEmpresaByNif);
 
 //A partir de aqui, JWT obligatorio.
-router.use(autenticarToken);
+//Usamos prefijo "/empresas" para que este middleware NO capture rutas de otros
+//routers (ej. POST /usuarios/login) que pasan por aqui antes de llegar a su router.
+router.use("/empresas", autenticarToken);
 
 router.get("/empresas", autorizarRol(["superadmin"]), getEmpresas);
 router.get("/empresas/:id", validarIdParam, getEmpresa);
