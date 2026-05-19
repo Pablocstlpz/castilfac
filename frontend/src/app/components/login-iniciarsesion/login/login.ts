@@ -12,6 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -36,6 +37,7 @@ const GOOGLE_CLIENT_ID = environment.googleClientId;
     ReactiveFormsModule,
     MatOptionModule,
     MatSelectModule,
+    MatSnackBarModule,
     RouterLink,
     TranslatePipe,
   ],
@@ -51,6 +53,7 @@ export class Login implements AfterViewInit {
   private authentication = inject(Authentication);
   private ngZone = inject(NgZone); //necesario para que Angular detecte el callback de google
   private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar); //para mostrar al usuario el mensaje real del backend (rate limit, etc.)
 
   //creo el formulario con sus validaciones
   constructor() {
@@ -108,10 +111,9 @@ export class Login implements AfterViewInit {
           this.router.navigate(['/logincorrecto']);
         }, 700); //pequeña espera para que el usuario vea la pantalla de espera
       },
-      error: () => {
-        setTimeout(() => {
-          this.router.navigate(['/loginfallido']);
-        }, 700);
+      error: (err) => {
+        //gestiono el error con el mensaje real del backend (rate limit, credenciales malas, etc.)
+        this.gestionarErrorLogin(err);
       },
     });
   }
@@ -132,12 +134,37 @@ export class Login implements AfterViewInit {
           this.router.navigate(['/logincorrecto']);
         }, 700);
       },
-      error: () => {
-        setTimeout(() => {
-          this.router.navigate(['/loginfallido']);
-        }, 700);
+      error: (err) => {
+        //gestiono el error con el mensaje real del backend (rate limit, credenciales malas, etc.)
+        this.gestionarErrorLogin(err);
       },
     });
+  }
+
+  //funcion compartida para gestionar el error de login (tanto del manual como del de Google)
+  //muestra un snackbar con el mensaje del backend y redirige segun sea rate limit o credenciales malas
+  private gestionarErrorLogin(err: Error | undefined): void {
+    const mensaje = err?.message;
+    //si el backend ha devuelto 429 (rate limit) el mensaje empieza por "Demasiados intentos"
+    //en ese caso vuelvo al login (no a /loginfallido) para que el usuario vea el snackbar y pueda esperar
+    const esRateLimit = !!mensaje && mensaje.toLowerCase().includes('demasiados');
+
+    //muestro un snackbar con el mensaje real del backend (o uno generico si no llega)
+    this.snackBar.open(
+      mensaje || 'No se ha podido iniciar sesion',
+      'Cerrar',
+      {
+        duration: esRateLimit ? 8000 : 5000, //rate limit dura mas para que se lea bien
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['snack-error'],
+      },
+    );
+
+    setTimeout(() => {
+      //si es rate limit vuelvo al login; si es otro error voy a la pantalla de loginfallido como hasta ahora
+      this.router.navigate([esRateLimit ? '/login' : '/loginfallido']);
+    }, 700);
   }
 
   //funcion para resetear el formulario

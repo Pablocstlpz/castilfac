@@ -121,7 +121,7 @@
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>{{ 'catalogue.basePriceLabel' | translate }}</mat-label>
                     <mat-icon matIconPrefix class="text-slate-400">euro</mat-icon>
-                    <input matInput type="number" step="0.0001" formControlName="precio_base" placeholder="0.00" />
+                    <input matInput type="number" step="0.0001" min="0" max="1000000" formControlName="precio_base" placeholder="0.00" />
                     @if (materialForm.get('precio_base')?.errors?.['required'] && materialForm.get('precio_base')?.touched) {
                       <mat-error>{{ 'catalogue.priceRequired' | translate }}</mat-error>
                     }
@@ -133,7 +133,7 @@
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>{{ 'catalogue.wasteLabel' | translate }}</mat-label>
                     <mat-icon matIconPrefix class="text-slate-400">percent</mat-icon>
-                    <input matInput type="number" formControlName="porcentaje_merma_recomendado" placeholder="10.00" />
+                    <input matInput type="number" step="0.01" min="0" max="100" formControlName="porcentaje_merma_recomendado" placeholder="10.00" />
                     @if (materialForm.get('porcentaje_merma_recomendado')?.errors?.['min']) {
                       <mat-error>{{ 'catalogue.wasteMin' | translate }}</mat-error>
                     }
