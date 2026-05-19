@@ -474,9 +474,9 @@ export const reenviarVerificacionEmpresa = async (req, res) => {
 //
 //las validaciones de formato las hace validarRegistroTransaccional antes de llegar aqui
 export const registroTransaccional = async (req, res) => {
-  const transaccion = await sequelize.transaction();
-
+  let transaccion;
   try {
+    transaccion = await sequelize.transaction();
     const { empresa: empresaInput, admin: adminInput } = req.body;
 
     if (!empresaInput || !adminInput) {

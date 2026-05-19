@@ -23,7 +23,7 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
     ]);
 
     if (!materiales || materiales.length === 0) {
-      return res.status(404).json({ error: "No se encontraron materiales" });
+      return res.status(404).json({ message: "No se encontraron materiales" });
     }
 
     //junto los 3 arrays en un solo objeto por material para que el frontend no tenga que hacer joins
@@ -43,7 +43,7 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
     res.status(200).json(resultado);
   } catch (error) {
     console.error("Error al obtener materiales con precio de empresa:", error);
-    res.status(500).json({ error: "Error al obtener materiales con precio de empresa" });
+    res.status(500).json({ message:"Error al obtener materiales con precio de empresa" });
   }
 };
 
@@ -60,7 +60,7 @@ export const obtenerMateriales = async (req, res) => {
     res.status(200).json(materiales);
   } catch (error) {
     console.error("Error al obtener materiales:", error);
-    res.status(500).json({ error: "Error al obtener materiales" });
+    res.status(500).json({ message:"Error al obtener materiales" });
   }
 };
 
@@ -74,13 +74,13 @@ export const obtenerMaterialPorId = async (req, res) => {
     const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
-      return res.status(404).json({ error: "Material no encontrado" });
+      return res.status(404).json({ message:"Material no encontrado" });
     }
 
     res.status(200).json(material);
   } catch (error) {
     console.error("Error al obtener material por ID:", error);
-    res.status(500).json({ error: "Error al obtener material por ID" });
+    res.status(500).json({ message:"Error al obtener material por ID" });
   }
 };
 
@@ -93,7 +93,7 @@ export const toggleActivoMaterial = async (req, res) => {
     const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
-      return res.status(404).json({ error: "Material no encontrado" });
+      return res.status(404).json({ message:"Material no encontrado" });
     }
 
     //invierto el valor de activo
@@ -102,16 +102,16 @@ export const toggleActivoMaterial = async (req, res) => {
     res.status(200).json(material);
   } catch (error) {
     console.error("Error al cambiar estado del material:", error);
-    res.status(500).json({ error: "Error al cambiar estado del material" });
+    res.status(500).json({ message:"Error al cambiar estado del material" });
   }
 };
 
 //funcion para crear un material nuevo
 //uso transaccion porque tambien tengo que crear el registro inicial en historial_precios_base
 export const crearMaterial = async (req, res) => {
-  const transaccion = await sequelize.transaction();
-
+  let transaccion;
   try {
+    transaccion = await sequelize.transaction();
     if (!assertEmpresaIdParam(req, res, "empresa_id")) {
       await transaccion.rollback();
       return;
@@ -172,9 +172,9 @@ export const crearMaterial = async (req, res) => {
     res.status(201).json(nuevoMaterial);
   } catch (error) {
     //si algo falla hago rollback para no dejar el material sin su historial inicial
-    await transaccion.rollback();
+    if (transaccion) await transaccion.rollback();
     console.error("Error al crear material:", error);
-    res.status(500).json({ error: "Error al crear material" });
+    res.status(500).json({ message: "Error al crear material" });
   }
 };
 
@@ -187,7 +187,7 @@ export const actualizarMaterial = async (req, res) => {
     const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
-      return res.status(404).json({ error: "Material no encontrado" });
+      return res.status(404).json({ message:"Material no encontrado" });
     }
 
     const {
@@ -224,7 +224,7 @@ export const actualizarMaterial = async (req, res) => {
     res.status(200).json(material);
   } catch (error) {
     console.error("Error al actualizar material:", error);
-    res.status(500).json({ error: "Error al actualizar material" });
+    res.status(500).json({ message:"Error al actualizar material" });
   }
 };
 
@@ -237,7 +237,7 @@ export const eliminarMaterial = async (req, res) => {
     const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
-      return res.status(404).json({ error: "Material no encontrado" });
+      return res.status(404).json({ message:"Material no encontrado" });
     }
 
     //borrado logico: pongo deleted_at en la fecha actual para que las queries lo filtren
@@ -246,6 +246,6 @@ export const eliminarMaterial = async (req, res) => {
     res.status(200).json({ message: "Material eliminado correctamente" });
   } catch (error) {
     console.error("Error al eliminar material:", error);
-    res.status(500).json({ error: "Error al eliminar material" });
+    res.status(500).json({ message:"Error al eliminar material" });
   }
 };

@@ -32,9 +32,9 @@ export const getPrecioEmpresa = async (req, res) => {
 //funcion para actualizar el PVP de empresa de un material y registrar el cambio en el historial
 //uso una transaccion para que la actualizacion del precio y el insert en historial vayan juntos o no se haga ninguno
 export const actualizarPrecioPvp = async (req, res) => {
-  const transaccion = await sequelize.transaction();
-
+  let transaccion;
   try {
+    transaccion = await sequelize.transaction();
     const { material_id, usuario_id, nuevo_precio } = req.body;
 
     //el empresa_id se coge del JWT, no del body
@@ -123,7 +123,7 @@ export const actualizarPrecioPvp = async (req, res) => {
     return res.status(200).json({ message: "Precio PVP actualizado correctamente" });
   } catch (error) {
     //si algo falla hago rollback para no dejar datos inconsistentes
-    await transaccion.rollback();
+    if (transaccion) await transaccion.rollback();
     console.error("Error al actualizar precio PVP empresa:", error);
     return res
       .status(500)

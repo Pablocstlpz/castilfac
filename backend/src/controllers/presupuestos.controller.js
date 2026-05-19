@@ -15,10 +15,18 @@ import {
 import { logger } from "../utils/logger.js";
 
 //funcion para cambiar solo el estado de un presupuesto (lo uso desde el detalle)
+const ESTADOS_PRESUPUESTO = ["borrador", "enviado", "aprobado", "rechazado", "caducado"];
+
 export const patchEstadoPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
     const { estado } = req.body;
+
+    if (!estado || !ESTADOS_PRESUPUESTO.includes(estado)) {
+      return res.status(400).json({
+        message: `Estado inválido. Valores permitidos: ${ESTADOS_PRESUPUESTO.join(", ")}`,
+      });
+    }
 
     const presupuesto = await Presupuesto.findByPk(id);
     //el presupuesto debe pertenecer a la empresa del JWT
@@ -153,9 +161,9 @@ export const getPresupuestos = async (req, res) => {
 //funcion para crear un presupuesto con todos sus elementos y materiales en una transaccion
 //si falla cualquier paso hago rollback y no queda nada a medias en la BD
 export const createPresupuesto = async (req, res) => {
-  const transaccion = await sequelize.transaction();
-
+  let transaccion;
   try {
+    transaccion = await sequelize.transaction();
     const {
       usuario_id,
       cliente_id,
@@ -278,7 +286,7 @@ export const createPresupuesto = async (req, res) => {
     await transaccion.commit();
     res.status(201).json(nuevoPresupuesto);
   } catch (error) {
-    await transaccion.rollback();
+    if (transaccion) await transaccion.rollback();
     logger.error("createPresupuesto", error);
     res.status(500).json({ message: "Error al crear el presupuesto" });
   }
@@ -287,9 +295,9 @@ export const createPresupuesto = async (req, res) => {
 //funcion para actualizar un presupuesto entero, cabecera + elementos + materiales
 //tambien en transaccion porque si falla algo no quiero dejar elementos huerfanos
 export const updatePresupuesto = async (req, res) => {
-  const transaccion = await sequelize.transaction();
-
+  let transaccion;
   try {
+    transaccion = await sequelize.transaction();
     const { id } = req.params;
     const {
       cliente_id,
@@ -440,7 +448,7 @@ export const updatePresupuesto = async (req, res) => {
     await transaccion.commit();
     res.status(200).json({ message: "Presupuesto actualizado correctamente" });
   } catch (error) {
-    await transaccion.rollback();
+    if (transaccion) await transaccion.rollback();
     logger.error("updatePresupuesto", error);
     res.status(500).json({ message: "Error al actualizar el presupuesto" });
   }
