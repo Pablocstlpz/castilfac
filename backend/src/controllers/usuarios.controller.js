@@ -1,4 +1,7 @@
 import { Usuario } from "../models/usuario.model.js";
+import { Pedido } from "../models/pedido.model.js";
+import { Presupuesto } from "../models/presupuesto.model.js";
+import { PrecioEmpresa } from "../models/precioEmpresa.model.js";
 import { sequelize } from "../data/db.js";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
@@ -328,6 +331,19 @@ export const deleteUsuario = async (req, res) => {
             message: "No se puede dejar la empresa sin administradores",
           });
       }
+    }
+
+    const [pedidos, presupuestos, precios] = await Promise.all([
+      Pedido.count({ where: { operario_asignado_id: usuario.id } }),
+      Presupuesto.count({ where: { usuario_id: usuario.id } }),
+      PrecioEmpresa.count({ where: { usuario_id: usuario.id } }),
+    ]);
+
+    if (pedidos > 0 || presupuestos > 0 || precios > 0) {
+      return res.status(409).json({
+        message:
+          "No se puede eliminar el usuario porque tiene pedidos, presupuestos o precios asociados.",
+      });
     }
 
     //elimino el usuario

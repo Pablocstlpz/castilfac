@@ -1,4 +1,6 @@
 import { Cliente } from "../models/cliente.model.js";
+import { Pedido } from "../models/pedido.model.js";
+import { Presupuesto } from "../models/presupuesto.model.js";
 import {
   assertEmpresaIdParam,
   assertOwnsRecurso,
@@ -86,6 +88,18 @@ export const deleteCliente = async (req, res) => {
     const cliente = await Cliente.findByPk(req.params.id);
     //solo se puede borrar un cliente de la propia empresa
     if (!assertOwnsRecurso(req, res, cliente)) return;
+
+    const [pedidos, presupuestos] = await Promise.all([
+      Pedido.count({ where: { cliente_id: cliente.id } }),
+      Presupuesto.count({ where: { cliente_id: cliente.id } }),
+    ]);
+
+    if (pedidos > 0 || presupuestos > 0) {
+      return res.status(409).json({
+        message:
+          "No se puede eliminar el cliente porque tiene pedidos o presupuestos asociados.",
+      });
+    }
 
     await cliente.destroy();
     res.status(200).json({ message: "Cliente borrado correctamente" });

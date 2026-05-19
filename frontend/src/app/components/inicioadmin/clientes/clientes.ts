@@ -84,11 +84,16 @@ export class Clientes {
             confirmButtonColor: '#2563eb',
           });
         },
-        error: (err: Error) => {
+        error: (err: Error & { status?: number }) => {
+          const hasAssociatedData = err.status === 409;
           void Swal.fire({
-            title: 'Error',
-            text: err.message ?? this.translate.instant('clients.deleteError'),
-            icon: 'error',
+            title: hasAssociatedData
+              ? this.translate.instant('clients.deleteBlockedTitle')
+              : 'Error',
+            text: hasAssociatedData
+              ? this.translate.instant('clients.deleteBlockedText')
+              : (err.message ?? this.translate.instant('clients.deleteError')),
+            icon: hasAssociatedData ? 'warning' : 'error',
             confirmButtonColor: '#2563eb',
           });
         },

@@ -79,14 +79,19 @@ export class GestionPersonal {
             });
           }
         },
-        error: (err: Error) => {
+        error: (err: Error & { status?: number }) => {
+          const hasAssociatedData = err.status === 409;
           void Swal.fire({
-            title: 'Error',
-            text: err.message ?? this.translate.instant('staff.deleteError'),
-            icon: 'error',
-              confirmButtonColor: '#2563eb',
-            });
-          },
+            title: hasAssociatedData
+              ? this.translate.instant('staff.deleteBlockedTitle')
+              : 'Error',
+            text: hasAssociatedData
+              ? this.translate.instant('staff.deleteBlockedText')
+              : (err.message ?? this.translate.instant('staff.deleteError')),
+            icon: hasAssociatedData ? 'warning' : 'error',
+            confirmButtonColor: '#2563eb',
+          });
+        },
         });
       });
   }

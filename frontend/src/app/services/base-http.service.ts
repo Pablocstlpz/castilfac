@@ -55,6 +55,8 @@ export class BaseHttpService {
     // Aqui solo traducimos a un Error con `message` legible que los componentes pintan.
     const errorMessage =
       error.error?.message || 'Error desconocido al procesar la solicitud';
-    return throwError(() => new Error(errorMessage));
+    const err = new Error(errorMessage) as Error & { status: number };
+    err.status = error.status;
+    return throwError(() => err);
   };
 }
