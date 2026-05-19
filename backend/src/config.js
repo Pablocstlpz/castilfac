@@ -21,6 +21,7 @@ export const REFRESH_SECRET_KEY=process.env.REFRESH_SECRET_KEY || process.env.SE
 const VARIABLES_REQUERIDAS = [
   "SECRET_KEY",
   "GOOGLE_CLIENT_ID",
+  "FRONTEND_URL",
   "DB_HOST",
   "DB_USER",
   "DB_PASSWORD",

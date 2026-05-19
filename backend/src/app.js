@@ -43,18 +43,22 @@ app.use(helmet({ contentSecurityPolicy: false }));
 
 //CORS: lista blanca de origenes permitidos
 //la formo con FRONTEND_URL del .env mas localhost en los puertos de dev de Angular y SSR
-//si FRONTEND_URL no esta definido no se autoriza ningun origen externo
+//normalizo quitando barras finales para que coincida aunque FRONTEND_URL o el Origin lleven "/"
+const normalizarOrigen = (url) => (url ? String(url).replace(/\/+$/, "") : url);
+
 const ORIGENES_PERMITIDOS = [
   FRONTEND_URL,
   "http://localhost:4200",
   "http://localhost:4000",
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map(normalizarOrigen);
 
 const corsOption = {
   origin: (origin, callback) => {
     //peticiones sin Origin (curl, server-to-server, mismo origin) las dejo pasar
     if (!origin) return callback(null, true);
-    if (ORIGENES_PERMITIDOS.includes(origin)) return callback(null, true);
+    if (ORIGENES_PERMITIDOS.includes(normalizarOrigen(origin))) return callback(null, true);
     //si el origin no esta en la whitelist lo rechazo en vez de devolver "*"
     return callback(new Error(`Origin no permitido por CORS: ${origin}`));
   },
