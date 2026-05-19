@@ -49,6 +49,10 @@ export const loginGoogle = async (req, res) => {
       return res.status(401).json({ message: "Token de Google inválido o expirado" });
     }
 
+    if (!payload || !payload.email) {
+      return res.status(401).json({ message: "Token de Google inválido o expirado" });
+    }
+
     const emailGoogle = payload.email;
 
     //busco el usuario por el email que devuelve google

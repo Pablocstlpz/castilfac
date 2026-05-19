@@ -104,6 +104,15 @@ app.use((req, res) => {
   res.status(404).json({ message: "Página no encontrada" });
 });
 
+// Manejador de errores global: captura cualquier error pasado con next(err) o
+// lanzado de forma sincrona en un middleware. Sin esto Express devuelve HTML por defecto.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error("[error]", err);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ message: "Error interno del servidor" });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

@@ -8,7 +8,7 @@ const router = Router();
 
 //Consultar la suscripcion requiere estar autenticado pero NO tener suscripcion
 //activa (precisamente este endpoint sirve para saber si la hay).
-router.use(autenticarToken);
+router.use("/suscripcion", autenticarToken);
 
 router.get("/suscripcion/check/:empresa_id", verificarSuscripcion);
 

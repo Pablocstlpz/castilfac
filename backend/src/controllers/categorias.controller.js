@@ -13,9 +13,7 @@ export const getCategorias = async (req, res) => {
     // Si todo va bien, devuelvo las categorias
     res.status(200).json(categorias);
   } catch (error) {
-    // si ocurre algun error
-    //doy el error
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error al obtener las categorías" });
   }
 };
 
@@ -34,7 +32,6 @@ export const getCategoria = async (req, res) => {
     //si hay dato lo devuelvo
     res.status(200).json(categoria);
   } catch (error) {
-    //doy el error
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error al obtener la categoría" });
   }
 };
