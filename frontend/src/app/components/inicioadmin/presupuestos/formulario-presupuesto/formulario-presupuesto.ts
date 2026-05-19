@@ -1,10 +1,11 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { forkJoin, of } from 'rxjs';
 
 // Tus interfaces
 import { Cliente } from '../../../../interfaces/cliente';
@@ -41,6 +42,8 @@ export class FormularioPresupuesto implements OnInit {
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
+  public cargando = signal<boolean>(true);
+
   // Arrays tipados con tus interfaces
   public clientesLista: Cliente[] = [];
   public materialesLista: MaterialConPrecio[] = [];
@@ -74,61 +77,59 @@ export class FormularioPresupuesto implements OnInit {
 
   ngOnInit(): void {
     const usuario = this.authentication.obtenerUsuarioSesion()!;
-    this.cargarListas(usuario.empresa_id);
 
     this.activatedRoute.paramMap.subscribe((params) => {
       this.id = Number(params.get('id'));
+      const editMode = !Number.isNaN(this.id) && this.id > 0;
 
-      if (!Number.isNaN(this.id) && this.id > 0) {
-        this.cargarPresupuesto(this.id);
-      } else {
+      if (!editMode) {
         this.presupuesto.empresa_id = usuario.empresa_id;
         this.presupuesto.usuario_id = usuario.id;
         this.presupuesto.numero_presupuesto = 'PRE-' + Date.now();
-
         const d = new Date();
         d.setDate(d.getDate() + 30);
         this.presupuesto.valido_hasta = d.toISOString().split('T')[0];
       }
-    });
-  }
 
-  cargarListas(empresaId: number): void {
-    this.clientesService
-      .getClientePorEmpresa(empresaId)
-      .subscribe((data) => (this.clientesLista = data));
-    this.materialesService
-      .getMaterialesConPrecioEmpresa(empresaId)
-      .subscribe((data) => (this.materialesLista = data));
+      this.cargando.set(true);
 
-    // Cargamos las categorías activas
-    this.categoriasService.getCategorias().subscribe((data) => {
-      this.categoriasLista = data.filter((c) => c.activo !== false);
-    });
-  }
+      forkJoin({
+        clientes: this.clientesService.getClientePorEmpresa(usuario.empresa_id),
+        materiales: this.materialesService.getMaterialesConPrecioEmpresa(usuario.empresa_id),
+        categorias: this.categoriasService.getCategorias(),
+        presupuesto: editMode ? this.presupuestosService.getPresupuesto(this.id) : of(null),
+      }).subscribe({
+        next: ({ clientes, materiales, categorias, presupuesto }) => {
+          this.clientesLista = clientes;
+          this.materialesLista = materiales;
+          this.categoriasLista = categorias.filter((c) => c.activo !== false);
 
-  cargarPresupuesto(id: number): void {
-    this.presupuestosService.getPresupuesto(id).subscribe({
-      next: (res) => {
-        this.presupuesto = res;
-        this.totalMinutosFabricacion = this.presupuesto.elementos.reduce(
-          (acc: number, el: any) => acc + (el.tiempo_estimado_minutos || 0) * (el.cantidad || 1),
-          0,
-        );
-        if (this.totalMinutosFabricacion > 0 && this.presupuesto.coste_mano_obra > 0) {
-          this.precioHoraTaller =
-            this.presupuesto.coste_mano_obra / (this.totalMinutosFabricacion / 60);
-        }
-        this.recalcularTodo();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.snackBar.open(this.translate.instant('quotes.loadError'), this.translate.instant('common.close'), {
-          duration: 3000,
-          panelClass: ['snack-error'],
-        });
-        this.cancelar();
-      },
+          if (presupuesto) {
+            this.presupuesto = presupuesto;
+            this.totalMinutosFabricacion = this.presupuesto.elementos.reduce(
+              (acc: number, el: any) => acc + (el.tiempo_estimado_minutos || 0) * (el.cantidad || 1),
+              0,
+            );
+            if (this.totalMinutosFabricacion > 0 && this.presupuesto.coste_mano_obra > 0) {
+              this.precioHoraTaller =
+                this.presupuesto.coste_mano_obra / (this.totalMinutosFabricacion / 60);
+            }
+            this.recalcularTodo();
+          }
+
+          this.cargando.set(false);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.cargando.set(false);
+          this.snackBar.open(
+            this.translate.instant('quotes.loadError'),
+            this.translate.instant('common.close'),
+            { duration: 3000, panelClass: ['snack-error'] },
+          );
+          this.cancelar();
+        },
+      });
     });
   }
 
