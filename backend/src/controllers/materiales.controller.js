@@ -6,13 +6,16 @@ import { HistorialPrecioBase } from "../models/historialPrecioBase.model.js";
 import { sequelize } from "../data/db.js";
 import { assertEmpresaIdParam } from "../utils/tenant.js";
 
+//funcion para obtener los materiales de una empresa enriquecidos con su categoria y su precio empresa
+//esto es lo que pide el catalogo para mostrar el listado completo
 export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
   try {
-    //Tenant: empresa_id de la URL debe coincidir con el del JWT.
+    //el empresa_id de la URL debe coincidir con el del JWT
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
 
     const { empresa_id } = req.params;
 
+    //hago las 3 peticiones en paralelo con Promise.all para que cargue mas rapido
     const [materiales, categorias, preciosEmpresa] = await Promise.all([
       Material.findAll({ where: { empresa_id, deleted_at: null } }),
       Categoria.findAll(),
@@ -23,6 +26,7 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
       return res.status(404).json({ error: "No se encontraron materiales" });
     }
 
+    //junto los 3 arrays en un solo objeto por material para que el frontend no tenga que hacer joins
     const resultado = materiales.map((m) => {
       const mPlano = m.toJSON();
       const cat = categorias.find((c) => c.id === mPlano.categoria_id);
@@ -30,6 +34,7 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
       return {
         ...mPlano,
         categoria_nombre: cat ? cat.nombre : "—",
+        //si la empresa no tiene precio propio para este material uso el precio base
         precio_venta: precio ? precio.precio_venta : mPlano.precio_base,
         porcentaje_merma: precio ? precio.porcentaje_merma : (mPlano.porcentaje_merma_recomendado ?? 0),
       };
@@ -42,6 +47,8 @@ export const obtenerMaterialesConPrecioEmpresa = async (req, res) => {
   }
 };
 
+//funcion para obtener los materiales base de una empresa (lista plana, sin enriquecer)
+//util para los select de los formularios
 export const obtenerMateriales = async (req, res) => {
   try {
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
@@ -49,7 +56,7 @@ export const obtenerMateriales = async (req, res) => {
 
     const materiales = await Material.findAll({ where: { empresa_id, deleted_at: null } });
 
-    //lista vacia -> 200 + []
+    //lista vacia -> 200 + [] para que el frontend no falle
     res.status(200).json(materiales);
   } catch (error) {
     console.error("Error al obtener materiales:", error);
@@ -57,11 +64,13 @@ export const obtenerMateriales = async (req, res) => {
   }
 };
 
+//funcion para obtener un material por su id (filtrado por empresa)
 export const obtenerMaterialPorId = async (req, res) => {
   try {
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
     const { empresa_id, id } = req.params;
 
+    //busco el material por id y empresa para que un usuario no pueda leer materiales de otra empresa
     const material = await Material.findOne({ where: { id, empresa_id } });
 
     if (!material) {
@@ -75,6 +84,7 @@ export const obtenerMaterialPorId = async (req, res) => {
   }
 };
 
+//funcion para activar o desactivar un material (cambio el activo al opuesto)
 export const toggleActivoMaterial = async (req, res) => {
   try {
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
@@ -86,6 +96,7 @@ export const toggleActivoMaterial = async (req, res) => {
       return res.status(404).json({ error: "Material no encontrado" });
     }
 
+    //invierto el valor de activo
     await material.update({ activo: !material.activo });
 
     res.status(200).json(material);
@@ -95,6 +106,8 @@ export const toggleActivoMaterial = async (req, res) => {
   }
 };
 
+//funcion para crear un material nuevo
+//uso transaccion porque tambien tengo que crear el registro inicial en historial_precios_base
 export const crearMaterial = async (req, res) => {
   const transaccion = await sequelize.transaction();
 
@@ -122,6 +135,7 @@ export const crearMaterial = async (req, res) => {
 
     const idUsuarioCreador = usuario_id ?? null;
 
+    //creo el material en la BD
     const nuevoMaterial = await Material.create(
       {
         empresa_id,
@@ -140,6 +154,7 @@ export const crearMaterial = async (req, res) => {
       { transaction: transaccion },
     );
 
+    //creo el registro inicial en el historial de precios base
     await HistorialPrecioBase.create(
       {
         material_id: nuevoMaterial.id,
@@ -151,16 +166,19 @@ export const crearMaterial = async (req, res) => {
       { transaction: transaccion },
     );
 
+    //todo bien, hago commit
     await transaccion.commit();
 
     res.status(201).json(nuevoMaterial);
   } catch (error) {
+    //si algo falla hago rollback para no dejar el material sin su historial inicial
     await transaccion.rollback();
     console.error("Error al crear material:", error);
     res.status(500).json({ error: "Error al crear material" });
   }
 };
 
+//funcion para actualizar un material existente
 export const actualizarMaterial = async (req, res) => {
   try {
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
@@ -210,6 +228,7 @@ export const actualizarMaterial = async (req, res) => {
   }
 };
 
+//funcion para eliminar un material (borrado logico, le pongo deleted_at)
 export const eliminarMaterial = async (req, res) => {
   try {
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
@@ -221,6 +240,7 @@ export const eliminarMaterial = async (req, res) => {
       return res.status(404).json({ error: "Material no encontrado" });
     }
 
+    //borrado logico: pongo deleted_at en la fecha actual para que las queries lo filtren
     await material.update({ deleted_at: new Date() });
 
     res.status(200).json({ message: "Material eliminado correctamente" });

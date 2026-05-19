@@ -9,13 +9,11 @@ import {
 } from "../middlewares/auth.middleware.js";
 import { logger } from "../utils/logger.js";
 
+//cliente de Google que verifica los id token que llegan del frontend
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-//-------------------------------------------------------------------------
-// Helper compartido: emite la pareja { accessToken, refreshToken } para un
-// usuario ya verificado contra empresa + suscripcion. Se usa desde loginGoogle
-// y desde el flujo nativo de password (getUsuarioCorreoContraseña).
-//-------------------------------------------------------------------------
+//funcion compartida que emite la pareja { accessToken, refreshToken } para un usuario ya validado
+//la uso desde el login con google y desde el login tradicional con password
 export const emitirTokens = (usuario) => {
   //payload minimo necesario para autorizar peticiones siguientes
   const payload = {
@@ -29,15 +27,17 @@ export const emitirTokens = (usuario) => {
   };
 };
 
+//funcion para iniciar sesion con google
 export const loginGoogle = async (req, res) => {
   try {
+    //recojo el credential que manda Google Identity Services desde el frontend
     const { credential } = req.body;
 
     if (!credential) {
       return res.status(400).json({ message: "El token de Google es requerido" });
     }
 
-    // Verificar que el token es auténtico y pertenece a nuestro CLIENT_ID
+    //verifico que el token sea autentico y pertenezca a nuestro CLIENT_ID
     let payload;
     try {
       const ticket = await client.verifyIdToken({
@@ -51,9 +51,10 @@ export const loginGoogle = async (req, res) => {
 
     const emailGoogle = payload.email;
 
-    // Buscar el usuario por email en nuestra base de datos
+    //busco el usuario por el email que devuelve google
     const usuario = await Usuario.findOne({ where: { email: emailGoogle } });
 
+    //si no esta registrado en nuestro sistema, no lo dejo entrar (tiene que registrarse manualmente primero)
     if (!usuario) {
       return res.status(404).json({
         message:
@@ -61,7 +62,7 @@ export const loginGoogle = async (req, res) => {
       });
     }
 
-    // Verificar que la empresa tiene el email verificado y la suscripción válida
+    //compruebo que la empresa del usuario tenga el email verificado
     const empresa = await Empresa.findByPk(usuario.empresa_id);
 
     if (!empresa || !empresa.email_verificado) {
@@ -71,13 +72,14 @@ export const loginGoogle = async (req, res) => {
       });
     }
 
-    // Comprobar suscripción (misma lógica que checkSuscripcion)
+    //compruebo que la suscripcion este activa o el trial siga vigente
     if (!empresa.suscripcion_activa) {
       const ahora = new Date();
       const fechaVencimiento = empresa.fecha_vencimiento
         ? new Date(empresa.fecha_vencimiento)
         : null;
 
+      //si el trial ha vencido devuelvo 403 con el tipo SUSCRIPCION_REQUERIDA para que el frontend redirija al pago
       if (!fechaVencimiento || ahora > fechaVencimiento) {
         return res.status(403).json({
           message: "Suscripción requerida. Tu prueba gratuita ha finalizado.",
@@ -86,7 +88,7 @@ export const loginGoogle = async (req, res) => {
       }
     }
 
-    //emito access + refresh token (el toJSON del modelo filtra password / reset_token)
+    //emito access + refresh token y devuelvo el usuario (el toJSON del modelo ya filtra password y reset_token)
     const tokens = emitirTokens(usuario);
     res.status(200).json({ ...tokens, usuario });
   } catch (error) {
@@ -95,16 +97,12 @@ export const loginGoogle = async (req, res) => {
   }
 };
 
-//-------------------------------------------------------------------------
-// POST /api/auth/refresh
-//-------------------------------------------------------------------------
-//El frontend envia el refreshToken en el body y recibe un nuevo access token
-//(y opcionalmente rotamos el refresh para detectar reuso). Si el refresh es
-//invalido o el usuario ya no existe -> 401 y el interceptor cerrara sesion.
+//funcion para POST /api/auth/refresh
+//el frontend manda el refreshToken y recibe una nueva pareja { accessToken, refreshToken }
+//roto tambien el refresh para detectar si alguien usa uno antiguo (asi el legitimo invalida al robado)
 //
-//Esta es una implementacion stateless (no se guarda nada en BD). Para hacerla
-//revocable haria falta una tabla de "tokens emitidos" con un id por token y
-//un campo `invalidado_en`. Lo dejamos como deuda razonable.
+//implementacion stateless (no guardo nada en BD). Para revocar tokens en caliente haria falta una tabla
+//de "refresh emitidos" con un id por token y un campo invalidado_en; lo dejo como deuda razonable
 export const refrescarToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -112,6 +110,7 @@ export const refrescarToken = async (req, res) => {
       return res.status(400).json({ message: "refreshToken requerido" });
     }
 
+    //verifico la firma del refresh; si esta caducado o invalido respondo 401
     let payload;
     try {
       payload = verificarRefreshToken(refreshToken);
@@ -119,23 +118,20 @@ export const refrescarToken = async (req, res) => {
       return res.status(401).json({ message: "Refresh token invalido o expirado" });
     }
 
-    //Releemos el usuario por id para confirmar que sigue existiendo y que su
-    //rol/empresa no han cambiado desde que se emitio el refresh.
+    //releo el usuario por id para confirmar que sigue existiendo y que su rol/empresa no han cambiado
     const usuario = await Usuario.findByPk(payload.id);
     if (!usuario) {
       return res.status(401).json({ message: "Usuario no encontrado" });
     }
 
-    //Comprobamos que la empresa sigue activa (no borrada). No exigimos
-    //suscripcion activa aqui: el refresh es solo "extender sesion"; el control
-    //de suscripcion lo hace checkSuscripcion en cada ruta operativa.
+    //compruebo que la empresa siga activa (no borrada)
+    //no exijo suscripcion activa aqui: el refresh solo extiende sesion, el control de suscripcion va en cada ruta operativa
     const empresa = await Empresa.findByPk(usuario.empresa_id);
     if (!empresa || empresa.activo === false) {
       return res.status(401).json({ message: "Empresa no disponible" });
     }
 
-    //Emitimos nueva pareja. La rotacion del refresh es opcional pero recomendada:
-    //asi un refresh robado caduca cuando el usuario legitimo refresca.
+    //emito nueva pareja de tokens
     const tokens = emitirTokens(usuario);
     res.status(200).json(tokens);
   } catch (error) {

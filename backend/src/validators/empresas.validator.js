@@ -9,13 +9,14 @@ import {
 } from "../utils/regex.js";
 import { handleValidation } from "./_handle.js";
 
-//Sanitizador: deja el NIF en mayusculas y sin espacios. Los regex de CIF asumen mayusculas.
+//sanitizador que deja el NIF en mayusculas y sin espacios
+//la regex de CIF asume mayusculas, asi me ahorro problemas si el usuario lo manda en minusculas
 const sanitizarNif = (value) =>
   typeof value === "string" ? value.trim().toUpperCase() : value;
 
-//Reglas comunes para create / update de empresa.
-//No incluyen suscripcion_activa, fecha_vencimiento, activo, email_verificado,
-//token_verificacion: el controller los ignora deliberadamente (whitelist del Bloque 1).
+//reglas comunes para crear o actualizar una empresa
+//NO incluyo aqui suscripcion_activa, fecha_vencimiento, activo, email_verificado ni token_verificacion
+//porque el controller los ignora a proposito (whitelist), los gestiona el servidor (Stripe / verificacion / superadmin)
 const reglasComunesEmpresa = [
   body("nombre_comercial")
     .isString()
@@ -80,37 +81,42 @@ const reglasComunesEmpresa = [
     .withMessage("El logo_url no puede superar 500 caracteres"),
 ];
 
+//validador para POST /empresas (creacion publica de empresa)
 export const validarCrearEmpresa = [...reglasComunesEmpresa, handleValidation];
 
+//validador para PUT /empresas/:id (actualizacion de empresa)
 export const validarActualizarEmpresa = [
   param("id").isInt({ min: 1 }).withMessage("El id debe ser un entero positivo"),
   ...reglasComunesEmpresa,
   handleValidation,
 ];
 
+//validador para POST /empresas/reenviar-verificacion
 export const validarReenviarVerificacion = [
   body("email").isString().trim().isEmail().withMessage("El email no es valido").normalizeEmail(),
   handleValidation,
 ];
 
+//validador para GET /empresas/verificar/:token (link del email de verificacion)
 export const validarVerificarToken = [
   param("token").isString().isLength({ min: 16, max: 100 }).withMessage("Token no valido"),
   handleValidation,
 ];
 
+//validador para GET /empresas/nif/:nif (busqueda publica por NIF durante el registro)
 export const validarNifParam = [
   param("nif").isString().customSanitizer(sanitizarNif).matches(REGEX_CIF).withMessage("El CIF no es valido"),
   handleValidation,
 ];
 
+//validador comun para parametro :id en URL
 export const validarIdParam = [
   param("id").isInt({ min: 1 }).withMessage("El id debe ser un entero positivo"),
   handleValidation,
 ];
 
-//---- POST /empresas/registro (endpoint transaccional empresa + admin) ----
-//Anida los mismos checks que validarCrearEmpresa bajo "empresa.*" y los del
-//admin bajo "admin.*". Asi un solo request crea ambas filas en una transaccion.
+//validador para POST /empresas/registro (endpoint transaccional que crea empresa + admin en una sola peticion)
+//anida los checks de empresa bajo "empresa.*" y los del admin bajo "admin.*"
 export const validarRegistroTransaccional = [
   //--- empresa ---
   body("empresa.nombre_comercial")

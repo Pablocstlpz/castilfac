@@ -34,7 +34,7 @@
 
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>{{ 'clients.nameLabel' | translate }}</mat-label>
-              <span matTextPrefix><mat-icon class="text-slate-400 mr-2">badge</mat-icon></span>
+              <mat-icon matIconPrefix class="text-slate-400">badge</mat-icon>
               <input
                 matInput
                 formControlName="nombre_empresa_o_particular"
@@ -63,7 +63,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'clients.phoneLabel' | translate }}</mat-label>
-                <span matTextPrefix><mat-icon class="text-slate-400 mr-2">phone</mat-icon></span>
+                <mat-icon matIconPrefix class="text-slate-400">phone</mat-icon>
                 <input
                   matInput
                   type="tel"
@@ -75,9 +75,7 @@
 
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>{{ 'clients.emailLabel' | translate }}</mat-label>
-              <span matTextPrefix
-                ><mat-icon class="text-slate-400 mr-2">alternate_email</mat-icon></span
-              >
+              <mat-icon matIconPrefix class="text-slate-400">alternate_email</mat-icon>
               <input matInput type="email" formControlName="email" placeholder="info@empresa.com" />
               @if (email.errors?.['email'] && email.touched) {
                 <mat-error>{{ 'clients.emailInvalid' | translate }}</mat-error>
@@ -139,9 +137,7 @@
 
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>{{ 'clients.addressLabel' | translate }}</mat-label>
-                <span matTextPrefix
-                  ><mat-icon class="text-slate-400 mr-2">location_on</mat-icon></span
-                >
+                <mat-icon matIconPrefix class="text-slate-400">location_on</mat-icon>
                 <textarea
                   matInput
                   formControlName="direccion"

@@ -1,16 +1,15 @@
-//Todo lo relativo al JWT
+//todo lo relativo al JWT (generar access y refresh, validar el token en peticiones, y autorizar por rol)
 
 import jwt from 'jsonwebtoken';
 import { SECRET_KEY, REFRESH_SECRET_KEY } from '../config.js';
 
-// Tiempo de expiración de tokens
-//Con el refresh flow en marcha, podemos bajar el TTL del access token a 15 min.
-//Asi si alguien intercepta el access, su ventana de uso es pequena. El frontend
-//pide refresh automaticamente (interceptor) usando el refresh token (7 dias).
+//tiempo de vida del access token (15 min, el corto)
+//como hay refresh flow, si alguien roba el access su ventana de uso es pequeña
 export const ACCESS_TOKEN_EXPIRY = '15m';
-export const REFRESH_TOKEN_EXPIRY = '7d';  // 7 días
+//tiempo de vida del refresh token (7 dias, el largo)
+export const REFRESH_TOKEN_EXPIRY = '7d';
 
-// Generar Access Token
+//funcion para generar el access token con el payload del usuario
 export const generarAccessToken = (payload) => {
     return jwt.sign(
         payload,
@@ -19,7 +18,8 @@ export const generarAccessToken = (payload) => {
     );
 };
 
-// Generar Refresh Token
+//funcion para generar el refresh token con el payload del usuario
+//uso una secret distinta a la del access para que si se filtra una no caigan las dos
 export const generarRefreshToken = (payload) => {
     return jwt.sign(
         payload,
@@ -29,40 +29,15 @@ export const generarRefreshToken = (payload) => {
 };
 
 
-// Rutas publicas que NO llevan JWT. Cada router montado en /api ejecuta su
-// router.use(autenticarToken) para cualquier path que no haya matcheado antes;
-// sin este bypass, peticiones como POST /auth/google moririan en el primer router
-// (empresas) con "Token no proporcionado" antes de llegar a auth.route.js.
-const RUTAS_PUBLICAS = [
-  { method: "POST", test: (p) => p === "/auth/google" },
-  { method: "POST", test: (p) => p === "/auth/refresh" },
-  { method: "POST", test: (p) => p === "/usuarios/login" },
-  { method: "POST", test: (p) => p === "/usuarios/registro-inicial" },
-  { method: "POST", test: (p) => p === "/usuarios/recuperar-password" },
-  { method: "POST", test: (p) => p === "/usuarios/restablecer-password" },
-  { method: "POST", test: (p) => p === "/empresas/registro" },
-  { method: "POST", test: (p) => p === "/empresas" },
-  { method: "POST", test: (p) => p === "/empresas/reenviar-verificacion" },
-  { method: "GET", test: (p) => p.startsWith("/empresas/verificar/") },
-  { method: "GET", test: (p) => p.startsWith("/empresas/nif/") },
-];
-
-export const esRutaPublica = (req) =>
-  RUTAS_PUBLICAS.some((r) => r.method === req.method && r.test(req.path));
-
-// Verificar token (Authorization: Bearer <token>)
+//middleware que valida el access token de la cabecera Authorization: Bearer <token>
 export const autenticarToken = (req, res, next) => {
-  if (esRutaPublica(req)) {
-    return next();
-  }
-
   const authHeader = req.headers["authorization"];
 
   if (!authHeader) {
     return res.status(401).json({ message: "Token no proporcionado" });
   }
 
-  //la cabecera tiene el formato "Bearer <token>" => lo partimos y nos quedamos con el token
+  //la cabecera tiene formato "Bearer <token>", la parto y me quedo con el token
   const partes = authHeader.split(" ");
   const token = partes.length === 2 && partes[0] === "Bearer" ? partes[1] : null;
 
@@ -72,19 +47,20 @@ export const autenticarToken = (req, res, next) => {
 
   jwt.verify(token, SECRET_KEY, (err, usuario) => {
     if (err) {
-      //token expirado o invalido -> 401 para que el front pueda cerrar sesion
+      //token caducado o invalido -> 401 para que el frontend pida refresh o cierre sesion
       return res.status(401).json({ message: "Token invalido o expirado" });
     }
-    //inyectamos el payload (id, rol, empresa_id) en req.user para los siguientes middlewares
+    //meto el payload del token (id, rol, empresa_id) en req.user para los siguientes middlewares
     req.user = usuario;
     next();
   });
 };
 
 
+//funcion para verificar un refresh token (la usa el endpoint POST /auth/refresh)
 export const verificarRefreshToken = (token) => {
     try {
-        // Verifica el token usando la clave secreta del refresh token
+        //verifico la firma usando la secret del refresh, devuelvo el payload
         const payload = jwt.verify(token, REFRESH_SECRET_KEY);
         return payload;
     } catch (error) {
@@ -92,7 +68,7 @@ export const verificarRefreshToken = (token) => {
     }
 };
 
-//averiguar si está autorizado según el rol
+//middleware que autoriza por rol (lo monto despues de autenticarToken en las rutas)
 //acepta tanto array como string -> autorizarRol('admin') o autorizarRol(['admin','superadmin'])
 export const autorizarRol = (rolesPermitidos) => {
   const roles = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];

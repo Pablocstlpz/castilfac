@@ -1,5 +1,3 @@
-
-
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../data/db.js';
 
@@ -16,7 +14,7 @@ export const Usuario = sequelize.define(
       allowNull: false,
     },
     nombre: {
-      //BD: varchar(100). Antes el modelo decia 200 y rompia inserts >100.
+      //BD: varchar(100), si pongo mas grande MariaDB rompe los inserts >100
       type: DataTypes.STRING(100),
       allowNull: false,
     },
@@ -26,20 +24,19 @@ export const Usuario = sequelize.define(
       validate: { isEmail: true },
     },
     password: {
-      //BD: varchar(255). Lo dejamos en 255 para soportar futuros algoritmos
-      //(argon2 ~96 chars, bcrypt 60). Antes el modelo limitaba a 60.
+      //BD: varchar(255), lo dejo asi para tener margen por si en el futuro uso otro algoritmo
+      //bcrypt son 60 chars, argon2 unos 96, asi no me veo limitado
       type: DataTypes.STRING(255),
       allowNull: false,
     },
     rol: {
-      //Alineado con el ENUM real de la BD (incluye superadmin).
+      //alineado con el ENUM real de la BD que incluye superadmin
       type: DataTypes.ENUM('admin', 'operario', 'superadmin'),
       allowNull: true,
       defaultValue: 'operario',
     },
     activo: {
-      //Existe en BD pero faltaba en el modelo. Sin esto Sequelize ignora la
-      //columna al hacer findAll y nunca podemos desactivar/reactivar usuarios.
+      //la columna existia en BD pero faltaba en el modelo, sin esto sequelize la ignora
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: true,
@@ -59,25 +56,28 @@ export const Usuario = sequelize.define(
       allowNull: true,
     },
     reset_token: {
-      type: DataTypes.STRING(100), //token de restablecimiento de contraseña, se genera con randomBytes(32) que produce 64 caracteres hexadecimales
+      //guardo el sha256 del token de reset, no el token plano
+      //el plano solo va por email para que el usuario lo presente al restablecer
+      type: DataTypes.STRING(100),
       allowNull: true,
     },
     reset_token_expira: {
-      type: DataTypes.DATE, //fecha de expiracion del token, sera valido durante 1 hora desde su generacion
+      //fecha de expiracion del token de reset, sera valido durante 1 hora desde que se genera
+      type: DataTypes.DATE,
       allowNull: true,
     },
   },
   {
     tableName: 'usuarios',
-    timestamps: false, // ya tienes columnas de fecha propias
+    timestamps: false, //ya tengo columnas de fecha propias
   }
 );
 
-//Limpieza automatica al serializar el modelo a JSON.
-//Asi cualquier res.json(usuario) o JSON.stringify(usuario) ya NO viaja con el hash bcrypt
-//ni con el token de reset, sin tener que tocar cada controlador.
-//Si necesitas el password en codigo (login), accedelo via la propiedad: usuario.password
-//porque toJSON solo afecta a la serializacion, no al objeto en memoria.
+//limpieza automatica al serializar el modelo a JSON
+//asi cualquier res.json(usuario) o JSON.stringify(usuario) ya no manda el hash bcrypt ni el token de reset
+//y no tengo que ir uno por uno por cada controller eliminando estos campos a mano
+//si necesito el password en codigo (ej. en el login para bcrypt.compare) lo accedo via usuario.password
+//porque toJSON solo afecta a la serializacion, no al objeto en memoria
 Usuario.prototype.toJSON = function () {
   const datos = { ...this.get() };
   delete datos.password;

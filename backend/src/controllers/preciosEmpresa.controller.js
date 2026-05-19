@@ -8,18 +8,20 @@ import {
   empresaIdEfectivo,
 } from "../utils/tenant.js";
 
+//funcion para obtener todos los precios de empresa por su empresa_id
 export const getPrecioEmpresa = async (req, res) => {
   try {
-    //Tenant: el :id de la URL es empresa_id; debe coincidir con el del JWT.
+    //el :id de la URL es el empresa_id, compruebo que coincida con el del JWT
     if (!assertEmpresaIdParam(req, res, "id")) return;
 
     const empresa_id = req.params.id;
 
+    //busco todos los precios asociados a esta empresa
     const precio = await PrecioEmpresa.findAll({
       where: { empresa_id: empresa_id },
     });
 
-    //lista vacia -> 200 + []
+    //si no hay precios devuelvo array vacio con 200 para que el frontend no falle
     res.status(200).json(precio);
   } catch (error) {
     console.error("[getPrecioEmpresa] error:", error);
@@ -27,19 +29,19 @@ export const getPrecioEmpresa = async (req, res) => {
   }
 };
 
+//funcion para actualizar el PVP de empresa de un material y registrar el cambio en el historial
+//uso una transaccion para que la actualizacion del precio y el insert en historial vayan juntos o no se haga ninguno
 export const actualizarPrecioPvp = async (req, res) => {
-  // Inicio la transacción para garantizar que la actualización del precio y el registro en historial
-  // se realizan juntos, o ninguno si ocurre algún error en cualquiera de los dos pasos
   const transaccion = await sequelize.transaction();
 
   try {
     const { material_id, usuario_id, nuevo_precio } = req.body;
 
-    //empresa_id se toma del JWT, no del body. Esto evita que un body manipulado
-    //actualice precios de OTRA empresa.
+    //el empresa_id se coge del JWT, no del body
+    //asi un body manipulado no puede actualizar precios de otra empresa
     const empresa_id = empresaIdEfectivo(req);
 
-    // Valido que todos los campos obligatorios están presentes antes de continuar
+    //valido que esten todos los campos necesarios antes de seguir
     if (
       !material_id ||
       !empresa_id ||
@@ -54,33 +56,33 @@ export const actualizarPrecioPvp = async (req, res) => {
       });
     }
 
-    // Busco si ya existe un registro de precio de empresa para este material y empresa concretos
+    //busco si ya existe un precio para este material en esta empresa
     const precioExistente = await PrecioEmpresa.findOne({
       where: { material_id: material_id, empresa_id: empresa_id },
       transaction: transaccion,
     });
 
-    // Guardo el precio anterior antes de sobreescribirlo, para dejarlo en el historial
-    // Si es la primera vez que se fija el precio, no había valor previo y lo dejamos en null
+    //guardo el precio anterior antes de sobreescribirlo para dejarlo en el historial
+    //si es la primera vez que se fija precio para este material no habia valor previo y queda en null
     const precioAnterior = precioExistente ? precioExistente.precio_venta : null;
 
     let registroPrecioEmpresa;
 
     if (precioExistente) {
-      // Actualizo el registro existente con el nuevo precio y el usuario que hace la modificación
+      //actualizo el registro existente con el nuevo precio y el usuario que hace el cambio
       await precioExistente.update(
         { precio_venta: nuevo_precio, usuario_id: usuario_id },
         { transaction: transaccion },
       );
       registroPrecioEmpresa = precioExistente;
     } else {
-      // Si no existe ningún registro previo, busco el material para confirmar que existe
+      //si no existia registro previo, busco el material para confirmar que existe
       const materialEncontrado = await Material.findByPk(material_id, {
         transaction: transaccion,
       });
 
-      //Tenant: el material debe pertenecer a la misma empresa, si no, 404
-      //para no filtrar la existencia de un material ajeno.
+      //compruebo tenant: el material debe pertenecer a la misma empresa
+      //si no, devuelvo 404 para no filtrar la existencia de un material ajeno
       if (
         !materialEncontrado ||
         String(materialEncontrado.empresa_id) !== String(empresa_id)
@@ -89,7 +91,7 @@ export const actualizarPrecioPvp = async (req, res) => {
         return res.status(404).json({ message: "Material no encontrado" });
       }
 
-      // Creo el nuevo registro de precio de empresa con el precio que el usuario ha introducido
+      //creo el nuevo registro de precio de empresa con el precio que ha introducido el usuario
       registroPrecioEmpresa = await PrecioEmpresa.create(
         {
           empresa_id: empresa_id,
@@ -101,8 +103,8 @@ export const actualizarPrecioPvp = async (req, res) => {
       );
     }
 
-    // Registramos el cambio de precio en el historial de forma explícita desde el controller,
-    // independientemente de si fue una creación o una actualización del registro de precio empresa
+    //registro el cambio en el historial de precios de empresa
+    //esto se hace siempre, tanto si era creacion como si era actualizacion del registro de precio
     await HistorialPrecioEmpresa.create(
       {
         precio_empresa_id: registroPrecioEmpresa.id,
@@ -115,12 +117,12 @@ export const actualizarPrecioPvp = async (req, res) => {
       { transaction: transaccion },
     );
 
-    // Todo ha ido bien, confirmo la transacción para que el cambio quede guardado
+    //todo ha ido bien, hago commit para guardar los cambios
     await transaccion.commit();
 
     return res.status(200).json({ message: "Precio PVP actualizado correctamente" });
   } catch (error) {
-    // Si ha ocurrido cualquier error revierto la transacción para no dejar datos inconsistentes
+    //si algo falla hago rollback para no dejar datos inconsistentes
     await transaccion.rollback();
     console.error("Error al actualizar precio PVP empresa:", error);
     return res

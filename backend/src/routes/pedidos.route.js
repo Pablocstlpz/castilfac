@@ -18,11 +18,11 @@ import { checkSuscripcion } from "../middlewares/checkSuscripcion.middleware.js"
 
 const router = Router();
 
-//Todas las rutas de pedidos requieren JWT y suscripcion vigente.
+//todas las rutas de pedidos requieren JWT y suscripcion vigente
 router.use(autenticarToken, checkSuscripcion);
 
-// las rutas especificas van antes que /pedidos/:id para que express no las capture como id
-router.get("/pedidos", autorizarRol(["superadmin"]), getPedidos);
+//las rutas especificas van ANTES que /pedidos/:id para que express no las capture como si fueran un id
+router.get("/pedidos", autorizarRol(["superadmin"]), getPedidos); //listado global solo para superadmin
 router.get("/pedidos/finanzas/empresa/:id", getFinanzasByEmpresa);
 router.get("/pedidos/empresa/:id", getPedidosByEmpresa);
 router.get("/pedidos/operario/:id", getPedidosByOperario);

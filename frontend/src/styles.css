@@ -29,9 +29,43 @@
 }
 
 @media (max-width: 767px) {
+  /* === SCROLL FIX: el layout protegido pone overflow-hidden en <main> y la cabecera móvil sticky
+       ocupa espacio dentro del main, por lo que el contenido con min-h-screen quedaba recortado.
+       Hacemos main scrollable en móvil. === */
+  .h-screen.overflow-hidden > main.overflow-hidden {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Algunos componentes (iniciooperario) renderizan su propio <main flex flex-col overflow-hidden>
+     internamente; aseguramos también el scroll vertical para esos casos. */
+  main.flex-col.overflow-hidden {
+    overflow-y: auto !important;
+  }
+
+  /* === ICONOS / ACCIONES OCULTAS POR HOVER ===
+       Patrón `opacity-0 group-hover:opacity-100` no se activa en táctil; forzamos visibilidad. */
+  [class*='group-hover:opacity-100'],
+  [class*='sm:group-hover:opacity-100'] {
+    opacity: 1 !important;
+  }
+
+  /* Asegurar que mat-icon se renderice como bloque inline visible incluso en celdas alineadas */
+  mat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+  }
+
+  /* === GRIDS A 1 COLUMNA EN MÓVIL === */
   .grid-cols-2,
   .grid-cols-3,
   .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6,
+  .grid-cols-12,
   .sm\:grid-cols-2,
   .sm\:grid-cols-3,
   .sm\:grid-cols-4,
@@ -40,14 +74,28 @@
   .md\:grid-cols-4,
   .lg\:grid-cols-2,
   .lg\:grid-cols-3,
-  .lg\:grid-cols-4 {
+  .lg\:grid-cols-4,
+  .xl\:grid-cols-2,
+  .xl\:grid-cols-3,
+  .xl\:grid-cols-4,
+  .xl\:grid-cols-12,
+  .\32xl\:grid-cols-2,
+  .\32xl\:grid-cols-3,
+  .\32xl\:grid-cols-4 {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .mobile-card-list {
+  /* === TABLAS COMO TARJETAS === */
+  .mobile-card-list,
+  .mobile-card-list.min-w-full,
+  .mobile-card-list.w-full {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100%;
     border-collapse: separate;
     border-spacing: 0 1rem;
     table-layout: fixed;
+    white-space: normal !important;
   }
 
   .mobile-card-list thead {
@@ -59,6 +107,7 @@
   .mobile-card-list td {
     display: block;
     width: 100%;
+    max-width: 100%;
   }
 
   .mobile-card-list tr {
@@ -74,11 +123,14 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.9rem 1rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid #e2e8f0;
-    white-space: normal;
+    white-space: normal !important;
     text-align: left;
-    align-items: flex-start;
+    align-items: center;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   .mobile-card-list td:last-child {
@@ -87,28 +139,62 @@
 
   .mobile-card-list td::before {
     content: attr(data-label);
-    flex: 0 0 42%;
+    flex: 0 0 38%;
+    max-width: 38%;
     color: #64748b;
     font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: normal;
+    word-break: break-word;
   }
 
+  /* Celdas vacías (colspan, sin data-label): ocultar el ::before y centrar contenido */
+  .mobile-card-list td:not([data-label])::before {
+    content: none;
+    display: none;
+  }
+
+  .mobile-card-list td:not([data-label]) {
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Hijo directo (contenedor del valor): se alinea a la derecha sin reventar iconos */
   .mobile-card-list td > * {
     min-width: 0;
+    max-width: 60%;
     text-align: right;
   }
 
+  /* En celdas sin etiqueta, el contenido puede usar todo el ancho */
+  .mobile-card-list td:not([data-label]) > * {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  /* Flex/inline-flex dentro del valor: alinear al final pero permitiendo wrap */
+  .mobile-card-list td > .flex,
+  .mobile-card-list td > .inline-flex {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  /* === CELDA DE ACCIONES === */
   .mobile-card-list td[data-label='Acciones'],
   .mobile-card-list td[data-label='Acción'],
-  .mobile-card-list td[data-label='Action'] {
+  .mobile-card-list td[data-label='Action'],
+  .mobile-card-list td[data-label='Actions'],
+  .mobile-card-list td[data-label*='cciones'] {
     justify-content: flex-end;
   }
 
   .mobile-card-list td[data-label='Acciones']::before,
   .mobile-card-list td[data-label='Acción']::before,
-  .mobile-card-list td[data-label='Action']::before {
+  .mobile-card-list td[data-label='Action']::before,
+  .mobile-card-list td[data-label='Actions']::before,
+  .mobile-card-list td[data-label*='cciones']::before {
     content: '';
     display: none;
   }
@@ -120,6 +206,35 @@
 
   .mobile-card-list td[colspan]::before {
     display: none;
+  }
+
+  /* Botones de acciones ocultos por hover: forzados visibles en móvil */
+  .mobile-card-list td .opacity-0 {
+    opacity: 1 !important;
+  }
+
+  /* Anular whitespace-nowrap y truncate dentro de la tarjeta para que el contenido se ajuste */
+  .mobile-card-list td.whitespace-nowrap,
+  .mobile-card-list .whitespace-nowrap {
+    white-space: normal !important;
+  }
+
+  .mobile-card-list td .truncate {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+
+  /* Anular anchos fijos que romperían la card en móvil */
+  .mobile-card-list td .max-w-36,
+  .mobile-card-list td .max-w-25,
+  .mobile-card-list td [class*='max-w-['] {
+    max-width: 100% !important;
+  }
+
+  .mobile-card-list td .w-32\.5,
+  .mobile-card-list td .w-full {
+    width: auto !important;
   }
 
   .mobile-scroll-safe {

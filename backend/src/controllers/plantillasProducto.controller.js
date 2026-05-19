@@ -2,10 +2,11 @@
 import { PlantillaProducto } from "../models/plantillaProducto.model.js";
 import { assertEmpresaIdParam } from "../utils/tenant.js";
 
+//funcion para obtener todas las plantillas de producto (catalogo comun a todas las empresas)
 export const getPlantillasProducto = async (req, res) => {
   try {
     const plantillas = await PlantillaProducto.findAll();
-    //lista vacia -> 200 + []
+    //si no hay plantillas devuelvo array vacio con 200 para que el frontend no falle
     res.status(200).json(plantillas);
   } catch (error) {
     console.error("[getPlantillasProducto] error:", error);
@@ -13,9 +14,10 @@ export const getPlantillasProducto = async (req, res) => {
   }
 };
 
+//funcion para obtener las plantillas de producto de una empresa concreta
 export const getPlantillaProductoPorIdEmpresa = async (req, res) => {
   try {
-    //Tenant: el :id es empresa_id; debe coincidir con el del JWT.
+    //el :id de la URL es el empresa_id, compruebo que coincida con el del JWT
     if (!assertEmpresaIdParam(req, res, "id")) return;
 
     const { id } = req.params;
@@ -28,4 +30,3 @@ export const getPlantillaProductoPorIdEmpresa = async (req, res) => {
     res.status(500).json({ message: "Error al obtener la plantilla" });
   }
 };
-

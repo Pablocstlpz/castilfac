@@ -5,20 +5,21 @@ import {
   empresaIdEfectivo,
 } from "../utils/tenant.js";
 
-//Las validaciones de formato (tipo_cliente enum, longitudes, regex de telefono/NIF/CIF,
-//descuento_fijo 0-100, email) las hace ahora el validator de express-validator
-//en la ruta — ver backend/src/validators/clientes.validator.js.
-//Aqui solo aplicamos reglas de NEGOCIO: tenant isolation y persistencia.
+//las validaciones de formato (tipo_cliente, longitudes, regex de telefono y NIF/CIF, descuento_fijo, email)
+//las hace el validator de express-validator en la ruta antes de llegar al controller
+//aqui solo me ocupo de las reglas de negocio: aislamiento de empresa y persistencia
 
-//OBTENER TODOS LOS CLIENTES DE UNA EMPRESA
+//funcion para obtener todos los clientes de una empresa
 export const getClientesByEmpresa = async (req, res) => {
   try {
+    //compruebo que el empresa_id de la URL coincide con el del JWT (salvo superadmin)
     if (!assertEmpresaIdParam(req, res, "empresa_id")) return;
 
     const empresa_id = Number(req.params.empresa_id);
     const clientes = await Cliente.findAll({ where: { empresa_id } });
 
-    //lista vacia -> 200 + []; reservamos 404 para id concreto inexistente.
+    //si no hay clientes devuelvo array vacio con 200 para que el frontend no falle
+    //reservo el 404 para los casos en los que se pida un id concreto que no existe
     res.status(200).json(clientes);
   } catch (error) {
     console.error("[getClientesByEmpresa] error:", error);
@@ -28,10 +29,11 @@ export const getClientesByEmpresa = async (req, res) => {
   }
 };
 
-//BUSCAR CLIENTE POR SU ID
+//funcion para buscar un cliente por su id
 export const getClienteById = async (req, res) => {
   try {
     const cliente = await Cliente.findByPk(req.params.id);
+    //compruebo que el cliente pertenezca a mi empresa; si no, devuelve 404 para no filtrar la existencia del id ajeno
     if (!assertOwnsRecurso(req, res, cliente)) return;
     res.status(200).json(cliente);
   } catch (error) {
@@ -40,11 +42,11 @@ export const getClienteById = async (req, res) => {
   }
 };
 
-//AÑADIR CLIENTE
+//funcion para añadir un cliente nuevo
 export const addCliente = async (req, res) => {
   try {
-    //empresa_id se toma SIEMPRE del JWT (ignorando el del body)
-    //salvo superadmin, que puede crear clientes en cualquier empresa.
+    //el empresa_id se coge SIEMPRE del JWT ignorando el del body
+    //solo el superadmin puede crear clientes en empresas distintas a la suya
     const empresa_id = empresaIdEfectivo(req);
     if (!empresa_id) {
       return res.status(400).json({ message: "Empresa no identificada" });
@@ -78,10 +80,11 @@ export const addCliente = async (req, res) => {
   }
 };
 
-//BORRAR CLIENTE
+//funcion para borrar un cliente
 export const deleteCliente = async (req, res) => {
   try {
     const cliente = await Cliente.findByPk(req.params.id);
+    //solo se puede borrar un cliente de la propia empresa
     if (!assertOwnsRecurso(req, res, cliente)) return;
 
     await cliente.destroy();
@@ -92,10 +95,11 @@ export const deleteCliente = async (req, res) => {
   }
 };
 
-//ACTUALIZAR CLIENTE
+//funcion para actualizar un cliente existente
 export const updateCliente = async (req, res) => {
   try {
     const cliente = await Cliente.findByPk(req.params.id);
+    //el cliente debe pertenecer a mi empresa
     if (!assertOwnsRecurso(req, res, cliente)) return;
 
     const {
@@ -108,8 +112,7 @@ export const updateCliente = async (req, res) => {
       direccion,
     } = req.body;
 
-    //empresa_id NO se acepta del body: si el cliente pertenece a la empresa X,
-    //sigue perteneciendo a la empresa X. Evita reasignacion via PUT.
+    //empresa_id NO se acepta del body, asi un PUT manipulado no puede mover un cliente a otra empresa
     const clienteActualizado = await cliente.update({
       empresa_id: cliente.empresa_id,
       nombre_empresa_o_particular,

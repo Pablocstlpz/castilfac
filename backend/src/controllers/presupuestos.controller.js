@@ -14,13 +14,14 @@ import {
 } from "../utils/tenant.js";
 import { logger } from "../utils/logger.js";
 
+//funcion para cambiar solo el estado de un presupuesto (lo uso desde el detalle)
 export const patchEstadoPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
     const { estado } = req.body;
 
     const presupuesto = await Presupuesto.findByPk(id);
-    //Tenant: el presupuesto debe ser de la empresa del JWT.
+    //el presupuesto debe pertenecer a la empresa del JWT
     if (!assertOwnsRecurso(req, res, presupuesto)) return;
 
     await presupuesto.update({ estado, fecha_actualizacion: new Date() });
@@ -31,17 +32,22 @@ export const patchEstadoPresupuesto = async (req, res) => {
   }
 };
 
+//funcion para obtener un presupuesto completo con sus elementos y materiales asociados
+//es el endpoint mas complejo del controller porque devuelve toda la estructura para el detalle
 export const getPresupuestoById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const presupuesto = await Presupuesto.findByPk(id);
+    //compruebo que el presupuesto pertenezca a mi empresa antes de devolverlo
     if (!assertOwnsRecurso(req, res, presupuesto)) return;
 
+    //busco el cliente para mostrar su nombre en el detalle
     const cliente = await Cliente.findByPk(presupuesto.cliente_id, {
       attributes: ["nombre_empresa_o_particular"],
     });
 
+    //cargo los elementos del presupuesto ordenados por su campo orden
     const elementosRaw = await Elemento.findAll({
       where: { presupuesto_id: id },
       order: [["orden", "ASC"]],
@@ -52,11 +58,13 @@ export const getPresupuestoById = async (req, res) => {
     let elementosMaterialesRaw = [];
     let materiales = [];
 
+    //si hay elementos cargo sus desgloses de materiales con una sola query (Op.in)
     if (elementoIds.length > 0) {
       elementosMaterialesRaw = await ElementoMaterial.findAll({
         where: { elemento_id: { [Op.in]: elementoIds } },
       });
 
+      //saco la lista unica de material_id para hacer una sola query a Material
       const materialIds = [
         ...new Set(elementosMaterialesRaw.map((em) => em.material_id)),
       ];
@@ -69,6 +77,7 @@ export const getPresupuestoById = async (req, res) => {
       }
     }
 
+    //monto un mapa { material_id: material } para poder buscar rapido despues
     const materialesMap = {};
     materiales.forEach((m) => {
       materialesMap[m.id] = m.dataValues;
@@ -122,9 +131,10 @@ export const getPresupuestoById = async (req, res) => {
   }
 };
 
+//funcion para obtener todos los presupuestos de una empresa
 export const getPresupuestos = async (req, res) => {
   try {
-    //Tenant: el :id es empresa_id en /empresas/:id/presupuestos.
+    //el :id es el empresa_id (la ruta es /empresas/:id/presupuestos)
     if (!assertEmpresaIdParam(req, res, "id")) return;
 
     const { id } = req.params;
@@ -132,7 +142,7 @@ export const getPresupuestos = async (req, res) => {
       where: { empresa_id: id },
     });
 
-    //lista vacia -> 200 + [] (antes daba 404 erroneamente)
+    //si no hay presupuestos devuelvo array vacio con 200 para que el frontend no falle
     res.status(200).json(presupuestos);
   } catch (error) {
     console.error("[getPresupuestos] error:", error);
@@ -140,7 +150,8 @@ export const getPresupuestos = async (req, res) => {
   }
 };
 
-// CREAR PRESUPUESTO
+//funcion para crear un presupuesto con todos sus elementos y materiales en una transaccion
+//si falla cualquier paso hago rollback y no queda nada a medias en la BD
 export const createPresupuesto = async (req, res) => {
   const transaccion = await sequelize.transaction();
 
@@ -164,11 +175,10 @@ export const createPresupuesto = async (req, res) => {
       elementos,
     } = req.body;
 
-    //empresa_id se toma del JWT, no del body, para evitar crear presupuestos
-    //en otras empresas.
+    //el empresa_id se coge del JWT no del body, asi nadie crea presupuestos en otra empresa
     const empresa_id = empresaIdEfectivo(req);
 
-    // Validaciones
+    //valido que esten los campos obligatorios
     if (!empresa_id || !cliente_id || !usuario_id || !numero_presupuesto) {
       await transaccion.rollback();
       return res
@@ -179,14 +189,14 @@ export const createPresupuesto = async (req, res) => {
         });
     }
 
-    //El cliente al que se asocia el presupuesto debe ser de la propia empresa.
+    //el cliente al que asocio el presupuesto debe ser de la propia empresa
     const clienteRel = await Cliente.findByPk(cliente_id, { transaction: transaccion });
     if (!clienteRel || String(clienteRel.empresa_id) !== String(empresa_id)) {
       await transaccion.rollback();
       return res.status(400).json({ message: "Cliente invalido para esta empresa" });
     }
 
-    // 1. Crear cabecera
+    //1. creo la cabecera del presupuesto
     const nuevoPresupuesto = await Presupuesto.create(
       {
         empresa_id,
@@ -210,11 +220,12 @@ export const createPresupuesto = async (req, res) => {
       { transaction: transaccion },
     );
 
-    // 2. Crear elementos y sus materiales
+    //2. creo los elementos y sus materiales asociados (uno a uno con orden)
     if (elementos && elementos.length > 0) {
       for (let i = 0; i < elementos.length; i++) {
         const el = elementos[i];
 
+        //compruebo que cada elemento tenga descripcion y cantidad
         if (!el.descripcion || el.cantidad === undefined) {
           await transaccion.rollback();
           return res.status(400).json({
@@ -273,7 +284,8 @@ export const createPresupuesto = async (req, res) => {
   }
 };
 
-// ACTUALIZAR PRESUPUESTO
+//funcion para actualizar un presupuesto entero, cabecera + elementos + materiales
+//tambien en transaccion porque si falla algo no quiero dejar elementos huerfanos
 export const updatePresupuesto = async (req, res) => {
   const transaccion = await sequelize.transaction();
 
@@ -305,9 +317,8 @@ export const updatePresupuesto = async (req, res) => {
       return res.status(404).json({ message: "Presupuesto no encontrado" });
     }
 
-    //Tenant: el presupuesto debe pertenecer a la empresa del JWT.
-    //Hacemos el chequeo a mano (en vez de assertOwnsRecurso) porque tenemos
-    //transaccion abierta y hay que rollbackearla antes de responder.
+    //compruebo tenant a mano (no uso assertOwnsRecurso porque tengo transaccion abierta y necesito hacer rollback antes de responder)
+    //devuelvo 404 en vez de 403 para no filtrar la existencia del id ajeno
     if (
       req.user?.rol !== "superadmin" &&
       String(presupuesto.empresa_id) !== String(req.user.empresa_id)
@@ -316,7 +327,7 @@ export const updatePresupuesto = async (req, res) => {
       return res.status(404).json({ message: "Presupuesto no encontrado" });
     }
 
-    //Si llega cliente_id en el body, validamos que el cliente sea de la misma empresa.
+    //si llega cliente_id en el body, valido que ese cliente sea de la misma empresa
     if (cliente_id) {
       const clienteRel = await Cliente.findByPk(cliente_id, {
         transaction: transaccion,
@@ -332,7 +343,7 @@ export const updatePresupuesto = async (req, res) => {
       }
     }
 
-    // 1. Actualizar datos de cabecera
+    //1. actualizo los datos de cabecera y subo la version del presupuesto
     await presupuesto.update(
       {
         cliente_id,
@@ -354,9 +365,9 @@ export const updatePresupuesto = async (req, res) => {
       { transaction: transaccion },
     );
 
-    // 2. Si vienen elementos, se reemplazan los antiguos por los nuevos
+    //2. si vienen elementos en el body, reemplazo los antiguos por los nuevos (borro todos y vuelvo a crear)
     if (elementos) {
-      // Buscar elementos actuales
+      //busco los elementos actuales del presupuesto
       const elementosActuales = await Elemento.findAll({
         where: { presupuesto_id: id },
         transaction: transaccion,
@@ -364,7 +375,7 @@ export const updatePresupuesto = async (req, res) => {
 
       const idsElementos = elementosActuales.map((e) => e.id);
 
-      // Eliminar historial viejo (primero hijos, luego padres)
+      //borro primero los hijos (materiales de cada elemento) y luego los padres (elementos)
       if (idsElementos.length > 0) {
         await ElementoMaterial.destroy({
           where: { elemento_id: idsElementos },
@@ -376,7 +387,7 @@ export const updatePresupuesto = async (req, res) => {
         });
       }
 
-      // Insertar la nueva configuración de elementos
+      //inserto la nueva configuracion de elementos uno a uno con su orden
       for (let i = 0; i < elementos.length; i++) {
         const el = elementos[i];
 
@@ -406,7 +417,7 @@ export const updatePresupuesto = async (req, res) => {
 
         if (el.materiales_desglose && el.materiales_desglose.length > 0) {
           for (const mat of el.materiales_desglose) {
-            // Validación de seguridad para que el array venga bien formado
+            //si el item viene mal formado lo salto para no petar el insert
             if (!mat.material_id) continue;
 
             await ElementoMaterial.create(

@@ -30,12 +30,11 @@ import { registroRateLimit } from "../middlewares/rateLimit.middleware.js";
 
 const router = Router();
 
-//RUTAS PUBLICAS (necesarias en el flujo de registro / verificacion de email).
-//Aplicamos rate limit para limitar abuso de creacion de empresas y de envio
-//de emails de verificacion.
+//RUTAS PUBLICAS (las necesito en el flujo de registro y verificacion por email)
+//aplico rate-limit para limitar abuso de creacion de empresas y envio de emails de verificacion
 
-//Endpoint TRANSACCIONAL: crea empresa + admin en una sola tx.
-//Es el endpoint recomendado para el formulario de registro publico.
+//endpoint TRANSACCIONAL: crea empresa + admin en una sola transaccion
+//es el endpoint que usa el formulario de registro publico del frontend
 router.post(
   "/empresas/registro",
   registroRateLimit,
@@ -43,9 +42,8 @@ router.post(
   registroTransaccional,
 );
 
-//Endpoint legacy de creacion de empresa (sin admin). Lo mantenemos para no
-//romper integraciones externas. El frontend del formulario de registro pasa
-//a usar /empresas/registro.
+//endpoint legacy de creacion de empresa sin admin
+//lo mantengo por compatibilidad con integraciones externas, pero el form de registro ya no lo usa
 router.post("/empresas", registroRateLimit, validarCrearEmpresa, createEmpresa);
 router.get("/empresas/verificar/:token", validarVerificarToken, verificarEmailEmpresa);
 router.post(

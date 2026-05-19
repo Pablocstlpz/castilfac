@@ -6,10 +6,10 @@ import {
 } from "../utils/regex.js";
 import { handleValidation } from "./_handle.js";
 
+//roles que acepto al crear/actualizar un usuario
 const ROLES = ["admin", "operario", "superadmin"];
 
-//---- POST /usuarios/login ----
-//El frontend manda { correo, contraseña } (campo en espanol historico).
+//validador para POST /usuarios/login (el frontend manda { correo, contraseña })
 export const validarLogin = [
   body("correo")
     .isString()
@@ -30,7 +30,7 @@ export const validarLogin = [
   handleValidation,
 ];
 
-//---- POST /usuarios/recuperar-password ----
+//validador para POST /usuarios/recuperar-password
 export const validarRecuperarPassword = [
   body("email")
     .isString()
@@ -43,7 +43,7 @@ export const validarRecuperarPassword = [
   handleValidation,
 ];
 
-//---- POST /usuarios/restablecer-password ----
+//validador para POST /usuarios/restablecer-password (el cliente manda el token plano del email)
 export const validarRestablecerPassword = [
   body("token")
     .isString()
@@ -58,9 +58,8 @@ export const validarRestablecerPassword = [
   handleValidation,
 ];
 
-//---- POST /usuarios/registro-inicial ----
-//Endpoint publico que crea el primer admin de una empresa recien dada de alta.
-//El rol lo fuerza el controlador a 'admin', asi que no se valida aqui.
+//validador para POST /usuarios/registro-inicial (endpoint publico para crear el primer admin de una empresa recien creada)
+//el controller fuerza rol='admin' a fuego asi que aqui no valido el rol
 export const validarRegistroInicial = [
   body("empresa_id")
     .exists({ checkNull: true })
@@ -93,7 +92,7 @@ export const validarRegistroInicial = [
   handleValidation,
 ];
 
-//---- POST /usuarios (admin) ----
+//validador para POST /usuarios (solo admin puede crear usuarios)
 export const validarCrearUsuario = [
   body("empresa_id")
     .exists({ checkNull: true })
@@ -125,9 +124,9 @@ export const validarCrearUsuario = [
   handleValidation,
 ];
 
-//---- PUT /usuarios/:id (admin) ----
-//En update, la contrasena es OPCIONAL: si llega vacia o no llega, el controlador
-//mantiene la actual. Si llega, debe ser fuerte (lo valida el propio controller con REGEX_PASSWORD_FUERTE).
+//validador para PUT /usuarios/:id (solo admin puede actualizar usuarios)
+//en update la contraseña es OPCIONAL: si llega vacia o no llega, el controller mantiene la actual
+//si llega tiene que ser >= 8; la regla de "password fuerte" (mayuscula + digito + simbolo) la valida el controller porque es politica de seguridad
 export const validarActualizarUsuario = [
   param("id").isInt({ min: 1 }).withMessage("El id debe ser un entero positivo"),
   body("empresa_id")
@@ -153,8 +152,7 @@ export const validarActualizarUsuario = [
   body("rol")
     .isIn(ROLES)
     .withMessage(`El rol debe ser uno de: ${ROLES.join(", ")}`),
-  //password opcional: si llega tiene que ser >= 8; el controller hace la validacion
-  //de "fuerte" (mayuscula + numero + especial) porque es politica de seguridad.
+  //password opcional: si llega tiene que ser >= 8 caracteres
   body("password")
     .optional({ checkFalsy: true })
     .isString()
@@ -163,7 +161,7 @@ export const validarActualizarUsuario = [
   handleValidation,
 ];
 
-//---- Validaciones de ID en parametros ----
+//validador comun para parametro :id en URL
 export const validarIdParam = [
   param("id").isInt({ min: 1 }).withMessage("El id debe ser un entero positivo"),
   handleValidation,

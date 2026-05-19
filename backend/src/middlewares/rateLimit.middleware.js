@@ -1,13 +1,12 @@
 import rateLimit from "express-rate-limit";
 
-//Limitadores especificos para los endpoints sensibles.
-//Convencion: clave por IP. Si vamos detras de un proxy (nginx/cloudflare), hay
-//que activar 'trust proxy' en app.js para que la IP real llegue. Lo dejamos
-//comentado y se documenta en solucion-auditoria.md cuando haga falta.
+//limitadores de peticiones para los endpoints sensibles
+//la clave es la IP del cliente. Si la API queda detras de un proxy (nginx, cloudflare)
+//tengo que activar 'trust proxy' en app.js para que llegue la IP real, si no se cuenta todo
+//contra la IP del proxy y se bloquea a todos los usuarios a la vez
 
-//---- Login / Google login --------------------------------------------------
-//Mas estricto: 5 intentos por IP cada 15 minutos. Bloquea fuerza bruta basica
-//sin afectar al usuario legitimo (que normalmente acierta a la 1-3).
+//limitador para login y login con google -> 5 intentos cada 15 minutos por IP
+//bloquea fuerza bruta basica sin afectar al usuario legitimo (que normalmente acierta a la primera)
 export const loginRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
@@ -18,8 +17,8 @@ export const loginRateLimit = rateLimit({
   },
 });
 
-//---- Recuperacion / restablecimiento de password ---------------------------
-//3 solicitudes / hora por IP. Evita spam de emails de recuperacion.
+//limitador para recuperacion y restablecimiento de password -> 3 solicitudes por hora por IP
+//asi evito que alguien me llene de emails un buzon spameando "olvide mi contraseña"
 export const passwordResetRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,
@@ -31,9 +30,8 @@ export const passwordResetRateLimit = rateLimit({
   },
 });
 
-//---- Registro / reenvio verificacion --------------------------------------
-//3 por hora por IP. Reduce abuso de creacion de empresas y de envios de email
-//de verificacion.
+//limitador para registro y reenvio de verificacion -> 5 por hora por IP
+//evita el abuso de creacion de empresas y de envio masivo de emails de verificacion
 export const registroRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,

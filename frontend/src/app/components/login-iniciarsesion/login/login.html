@@ -19,9 +19,7 @@
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>{{ 'auth.emailLabel' | translate }}</mat-label>
-            <span matTextPrefix
-              ><mat-icon class="text-slate-400 h-5 w-5 text-[20px] leading-5">alternate_email</mat-icon></span
-            >
+            <mat-icon matIconPrefix class="text-slate-400">alternate_email</mat-icon>
             <input
               matInput
               formControlName="emailUsuario"
@@ -38,7 +36,7 @@
 
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>{{ 'auth.passwordLabel' | translate }}</mat-label>
-            <span matTextPrefix><mat-icon class="text-slate-400 h-5 w-5 text-[20px] leading-5">key</mat-icon></span>
+            <mat-icon matIconPrefix class="text-slate-400">key</mat-icon>
             <input
               type="password"
               matInput

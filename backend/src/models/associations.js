@@ -1,17 +1,12 @@
-//Asociaciones Sequelize centralizadas.
+//asociaciones Sequelize centralizadas en un solo archivo
+//hasta ahora cada relacion empresa/usuario/cliente/pedido/etc se resolvia con findByPk manuales en los controllers
+//declarando las relaciones aqui consigo:
+//   - poder usar `include: [Empresa]` en queries futuras sin tocar mas
+//   - tener una unica fuente de verdad de las FK
+//   - documentar la topologia del modelo de datos
 //
-//Hasta ahora cada relacion empresa/usuario/cliente/pedido/etc se resolvia con
-//findByPk manuales en los controllers. Declaramos las relaciones aqui (efecto
-//secundario del import en app.js) para:
-//
-//  - poder usar `include: [Empresa]` en queries futuras sin tocar nada mas.
-//  - tener una unica fuente de verdad de la cardinalidad de las FK.
-//  - documentar la topologia del modelo de datos para quien lea el codigo.
-//
-//IMPORTANTE: NO usamos `as:` (alias) en ninguna asociacion porque eso obligaria
-//a renombrar las consultas existentes (`include: [{ model: Empresa, as: '...' }]`).
-//Al dejar el nombre por defecto, Sequelize usa el del modelo y todas las
-//queries actuales siguen funcionando sin cambios.
+//IMPORTANTE: no uso alias `as:` en ninguna asociacion porque eso obligaria a renombrar las consultas existentes
+//al dejar el nombre por defecto, sequelize usa el nombre del modelo y las queries actuales siguen funcionando
 
 import { Empresa } from "./empresa.model.js";
 import { Usuario } from "./usuario.model.js";
@@ -28,7 +23,7 @@ import { HistorialPrecioEmpresa } from "./historialPrecioEmpresa.model.js";
 import { PlantillaProducto } from "./plantillaProducto.model.js";
 import { PlantillaMaterial } from "./plantillaMaterial.model.js";
 
-//---- Empresa -> Usuario / Cliente / Pedido / Presupuesto / Material / PrecioEmpresa ----
+//Empresa -> Usuario / Cliente / Pedido / Presupuesto / Material / PrecioEmpresa / HistorialPrecioEmpresa / PlantillaProducto
 Empresa.hasMany(Usuario, { foreignKey: "empresa_id", onDelete: "CASCADE" });
 Usuario.belongsTo(Empresa, { foreignKey: "empresa_id" });
 
@@ -53,14 +48,14 @@ HistorialPrecioEmpresa.belongsTo(Empresa, { foreignKey: "empresa_id" });
 Empresa.hasMany(PlantillaProducto, { foreignKey: "empresa_id" });
 PlantillaProducto.belongsTo(Empresa, { foreignKey: "empresa_id" });
 
-//---- Cliente -> Pedidos / Presupuestos ----
+//Cliente -> Pedidos / Presupuestos
 Cliente.hasMany(Pedido, { foreignKey: "cliente_id" });
 Pedido.belongsTo(Cliente, { foreignKey: "cliente_id" });
 
 Cliente.hasMany(Presupuesto, { foreignKey: "cliente_id" });
 Presupuesto.belongsTo(Cliente, { foreignKey: "cliente_id" });
 
-//---- Usuario -> Pedidos (operario asignado) / Presupuestos (autor) / Precios ----
+//Usuario -> Pedidos (como operario asignado) / Presupuestos (como autor) / PrecioEmpresa
 Usuario.hasMany(Pedido, { foreignKey: "operario_asignado_id" });
 Pedido.belongsTo(Usuario, { foreignKey: "operario_asignado_id" });
 
@@ -70,14 +65,14 @@ Presupuesto.belongsTo(Usuario, { foreignKey: "usuario_id" });
 Usuario.hasMany(PrecioEmpresa, { foreignKey: "usuario_id" });
 PrecioEmpresa.belongsTo(Usuario, { foreignKey: "usuario_id" });
 
-//---- Presupuesto -> Pedido / Elemento ----
+//Presupuesto -> Pedido / Elemento
 Presupuesto.hasMany(Pedido, { foreignKey: "presupuesto_id" });
 Pedido.belongsTo(Presupuesto, { foreignKey: "presupuesto_id" });
 
 Presupuesto.hasMany(Elemento, { foreignKey: "presupuesto_id", onDelete: "CASCADE" });
 Elemento.belongsTo(Presupuesto, { foreignKey: "presupuesto_id" });
 
-//---- Elemento -> ElementoMaterial -> Material ----
+//Elemento -> ElementoMaterial -> Material
 Elemento.hasMany(ElementoMaterial, { foreignKey: "elemento_id", onDelete: "CASCADE" });
 ElementoMaterial.belongsTo(Elemento, { foreignKey: "elemento_id" });
 
@@ -93,11 +88,11 @@ HistorialPrecioBase.belongsTo(Material, { foreignKey: "material_id" });
 Material.hasMany(HistorialPrecioEmpresa, { foreignKey: "material_id" });
 HistorialPrecioEmpresa.belongsTo(Material, { foreignKey: "material_id" });
 
-//---- Categoria -> Material ----
+//Categoria -> Material
 Categoria.hasMany(Material, { foreignKey: "categoria_id" });
 Material.belongsTo(Categoria, { foreignKey: "categoria_id" });
 
-//---- PlantillaProducto -> PlantillaMaterial -> Material ----
+//PlantillaProducto -> PlantillaMaterial -> Material
 PlantillaProducto.hasMany(PlantillaMaterial, { foreignKey: "plantilla_id", onDelete: "CASCADE" });
 PlantillaMaterial.belongsTo(PlantillaProducto, { foreignKey: "plantilla_id" });
 
