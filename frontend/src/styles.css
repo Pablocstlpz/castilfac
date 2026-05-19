@@ -100,12 +100,25 @@
     text-align: right;
   }
 
-  .mobile-card-list td[data-label='Acciones'] {
+  .mobile-card-list td[data-label='Acciones'],
+  .mobile-card-list td[data-label='Acción'],
+  .mobile-card-list td[data-label='Action'] {
     justify-content: flex-end;
   }
 
-  .mobile-card-list td[data-label='Acciones']::before {
+  .mobile-card-list td[data-label='Acciones']::before,
+  .mobile-card-list td[data-label='Acción']::before,
+  .mobile-card-list td[data-label='Action']::before {
     content: '';
+    display: none;
+  }
+
+  .mobile-card-list td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  .mobile-card-list td[colspan]::before {
     display: none;
   }
 
