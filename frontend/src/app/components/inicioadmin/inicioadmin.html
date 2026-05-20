@@ -1,7 +1,11 @@
 <section class="h-full flex flex-col overflow-hidden bg-slate-50 relative">
   @if (cargando()) {
-    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
-      <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4"></div>
+    <div
+      class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm"
+    >
+      <div
+        class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4"
+      ></div>
       <p class="text-slate-500 text-sm font-medium">{{ 'common.loading' | translate }}</p>
     </div>
   }
@@ -11,20 +15,12 @@
       <span class="font-bold text-slate-800">{{ 'common.brand' | translate }}</span>
     </div>
 
-    <h1 class="hidden md:block text-xl font-bold text-slate-800">{{ 'admin.workshopSummary' | translate }}</h1>
-
-    <div class="flex items-center gap-4">
-      <button
-        class="hidden sm:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm"
-      >
-        <mat-icon class="text-sm">add</mat-icon> {{ 'admin.newQuote' | translate }}
-      </button>
-    </div>
+    <h1 class="hidden md:block text-xl font-bold text-slate-800">
+      {{ 'admin.workshopSummary' | translate }}
+    </h1>
   </header>
 
-  <div
-    class="flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6 lg:p-8 pb-8"
-  >
+  <div class="flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6 lg:p-8 pb-8">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
@@ -42,10 +38,13 @@
             <mat-icon class="text-sm">{{
               (porcentajeCambioMes() ?? 0) >= 0 ? 'trending_up' : 'trending_down'
             }}</mat-icon>
-            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}% {{ 'admin.vsLastMonth' | translate }}
+            {{ (porcentajeCambioMes() ?? 0) >= 0 ? '+' : '' }}{{ porcentajeCambioMes() }}%
+            {{ 'admin.vsLastMonth' | translate }}
           </p>
         } @else {
-          <p class="text-sm text-slate-400 mt-2 font-medium">{{ 'admin.noPreviousMonthData' | translate }}</p>
+          <p class="text-sm text-slate-400 mt-2 font-medium">
+            {{ 'admin.noPreviousMonthData' | translate }}
+          </p>
         }
       </div>
 
@@ -57,12 +56,16 @@
           </div>
         </div>
         <p class="text-3xl font-bold text-slate-800">{{ numeroPedidos() }}</p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">{{ 'admin.inFabrication' | translate }}</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">
+          {{ 'admin.inFabrication' | translate }}
+        </p>
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-slate-500 text-sm font-medium">{{ 'admin.estimatedRevenue' | translate }}</h3>
+          <h3 class="text-slate-500 text-sm font-medium">
+            {{ 'admin.estimatedRevenue' | translate }}
+          </h3>
           <div class="p-2 bg-emerald-50 rounded-lg">
             <mat-icon class="text-emerald-600">euro</mat-icon>
           </div>
@@ -70,7 +73,9 @@
         <p class="text-3xl font-bold text-slate-800">
           {{ ingresosEstimados() | number: '1.0-0' }}€
         </p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">{{ 'admin.approvedQuotes' | translate }}</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">
+          {{ 'admin.approvedQuotes' | translate }}
+        </p>
       </div>
 
       <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -81,7 +86,9 @@
           </div>
         </div>
         <p class="text-3xl font-bold text-slate-800">{{ numeroUsuarios() }}</p>
-        <p class="text-sm text-slate-500 mt-2 font-medium">{{ 'admin.operatorsInSystem' | translate }}</p>
+        <p class="text-sm text-slate-500 mt-2 font-medium">
+          {{ 'admin.operatorsInSystem' | translate }}
+        </p>
       </div>
     </div>
 
