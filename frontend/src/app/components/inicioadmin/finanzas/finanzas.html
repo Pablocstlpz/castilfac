@@ -64,11 +64,11 @@
           >
             <mat-icon class="text-indigo-500 text-sm">assignment</mat-icon> {{ 'finance.agreedIncome' | translate }}
           </h3>
-          <div class="flex items-baseline gap-2">
-            <span class="text-4xl font-black text-slate-800">{{
+          <div class="flex items-baseline gap-2 min-w-0">
+            <span class="text-2xl sm:text-4xl font-black text-slate-800 break-all min-w-0">{{
               ingresosPactados() | number: '1.2-2'
             }}</span>
-            <span class="text-xl font-bold text-slate-400">€</span>
+            <span class="text-lg sm:text-xl font-bold text-slate-400 shrink-0">€</span>
           </div>
           <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase">
             {{ 'finance.agreedIncomeHint' | translate }}
@@ -88,11 +88,11 @@
           >
             <mat-icon class="text-emerald-500 text-sm">payments</mat-icon> {{ 'finance.collected' | translate }}
           </h3>
-          <div class="flex items-baseline gap-2">
-            <span class="text-4xl font-black text-emerald-600">{{
+          <div class="flex items-baseline gap-2 min-w-0">
+            <span class="text-2xl sm:text-4xl font-black text-emerald-600 break-all min-w-0">{{
               ingresosReales() | number: '1.2-2'
             }}</span>
-            <span class="text-xl font-bold text-emerald-400">€</span>
+            <span class="text-lg sm:text-xl font-bold text-emerald-400 shrink-0">€</span>
           </div>
           <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase">
             {{ 'finance.collectedHint' | translate }}
@@ -112,11 +112,11 @@
           >
             <mat-icon class="text-red-500 text-sm">money_off</mat-icon> {{ 'finance.pendingDebt' | translate }}
           </h3>
-          <div class="flex items-baseline gap-2">
-            <span class="text-4xl font-black text-red-600">{{
+          <div class="flex items-baseline gap-2 min-w-0">
+            <span class="text-2xl sm:text-4xl font-black text-red-600 break-all min-w-0">{{
               deudaTotal() | number: '1.2-2'
             }}</span>
-            <span class="text-xl font-bold text-red-400">€</span>
+            <span class="text-lg sm:text-xl font-bold text-red-400 shrink-0">€</span>
           </div>
           <p class="text-[10px] font-bold text-red-400 mt-2 uppercase">{{ 'finance.pendingDebtHint' | translate }}</p>
         </div>
