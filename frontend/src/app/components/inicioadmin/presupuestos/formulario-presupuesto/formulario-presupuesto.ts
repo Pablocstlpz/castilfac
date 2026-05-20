@@ -318,9 +318,17 @@ export class FormularioPresupuesto implements OnInit {
     if (!this.presupuesto.cliente_id || this.presupuesto.elementos.length === 0) return true;
     if (!this.presupuesto.valido_hasta || this.presupuesto.valido_hasta < this.hoyISO || this.presupuesto.valido_hasta > this.maxFechaISO) return true;
     if ((Number(this.presupuesto.descuento_aplicado) || 0) > 0 && !(this.presupuesto.motivo_descuento || '').trim()) return true;
+    if (!this.numeroEnRango(this.precioHoraTaller, 0, 10_000)) return true;
+    if (!this.numeroEnRango(this.presupuesto.otros_costes ?? 0, 0, 1_000_000)) return true;
+    if (!this.numeroEnRango(this.presupuesto.porcentaje_beneficio ?? 0, 0, 1_000)) return true;
+    if (!this.numeroEnRango(this.presupuesto.descuento_aplicado ?? 0, 0, 100)) return true;
     for (const el of this.presupuesto.elementos) {
       if (!el.tipo_producto || !(el.descripcion || '').trim()) return true;
       if (!el.materiales_desglose || el.materiales_desglose.length === 0) return true;
+      if (!this.numeroEnRango(el.medida_ancho, 0, 100)) return true;
+      if (!this.numeroEnRango(el.medida_alto, 0, 100)) return true;
+      if (!this.numeroEnRango(el.cantidad, 1, 10_000)) return true;
+      if (!this.numeroEnRango(el.tiempo_estimado_minutos, 0, 100_000)) return true;
     }
     return false;
   }
