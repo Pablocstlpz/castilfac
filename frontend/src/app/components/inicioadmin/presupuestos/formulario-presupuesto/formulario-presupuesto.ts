@@ -56,6 +56,23 @@ export class FormularioPresupuesto implements OnInit {
   public precioHoraTaller: number = 30;
   //suma de minutos de fabricacion de todos los elementos, lo uso para calcular la mano de obra
   public totalMinutosFabricacion: number = 0;
+  //fecha de hoy en formato ISO para limitar el input de "valido_hasta" y no permitir fechas pasadas
+  public hoyISO: string = new Date().toISOString().split('T')[0];
+  //fecha tope (5 años desde hoy) para evitar que se metan fechas absurdas tipo año 9999
+  public maxFechaISO: string = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 5);
+    return d.toISOString().split('T')[0];
+  })();
+
+  //limites de longitud para los campos de texto/textarea del formulario
+  public readonly LIMITES_TEXTO = {
+    descripcion: 500,
+    notas_fabricacion: 1000,
+    motivo_descuento: 500,
+    notas_internas: 5000,
+    notas_cliente: 5000,
+  };
 
   //objeto presupuesto que se va rellenando con el formulario y se manda al backend al guardar
   public presupuesto: any = {
@@ -81,7 +98,8 @@ export class FormularioPresupuesto implements OnInit {
   };
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
 
     //miro si me llega un id por la URL para saber si estoy editando o creando
     this.activatedRoute.paramMap.subscribe((params) => {
@@ -284,14 +302,137 @@ export class FormularioPresupuesto implements OnInit {
       (this.presupuesto.precio_sin_descuento || 0) * (1 - descuento / 100) || 0;
   }
 
+  //funcion para mostrar un snackbar de error de validacion
+  private mostrarErrorValidacion(mensaje: string): void {
+    this.snackBar.open(mensaje, this.translate.instant('common.close'), {
+      duration: 3500,
+      panelClass: ['snack-error'],
+    });
+  }
+
+  //funcion para validar que un numero esta dentro de un rango, devuelve true si es valido
+  private numeroEnRango(valor: any, min: number, max: number): boolean {
+    const n = Number(valor);
+    return !isNaN(n) && isFinite(n) && n >= min && n <= max;
+  }
+
+  //funcion para validar todos los campos numericos del presupuesto antes de guardar
+  //devuelve true si todo esta bien, false si hay algun valor invalido (y muestra snackbar)
+  private validarRangos(): boolean {
+    //valido los campos generales del presupuesto
+    if (!this.numeroEnRango(this.precioHoraTaller, 0, 10000)) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.invalidHourlyRate'));
+      return false;
+    }
+    if (!this.numeroEnRango(this.presupuesto.otros_costes || 0, 0, 1000000)) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.invalidExtraCosts'));
+      return false;
+    }
+    if (!this.numeroEnRango(this.presupuesto.porcentaje_beneficio || 0, 0, 1000)) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.invalidMargin'));
+      return false;
+    }
+    if (!this.numeroEnRango(this.presupuesto.descuento_aplicado || 0, 0, 100)) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.invalidDiscount'));
+      return false;
+    }
+
+    //recorro cada elemento para validar sus campos numericos y de texto
+    for (let i = 0; i < this.presupuesto.elementos.length; i++) {
+      const el = this.presupuesto.elementos[i];
+      const linea = i + 1;
+      //el tipo de producto es obligatorio (viene del select)
+      if (!el.tipo_producto) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidProductType', { line: linea }));
+        return false;
+      }
+      //la descripcion no puede estar vacia y no puede exceder el limite
+      const desc = (el.descripcion || '').trim();
+      if (!desc) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidDescription', { line: linea }));
+        return false;
+      }
+      if (desc.length > this.LIMITES_TEXTO.descripcion) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.tooLongDescription', { line: linea, max: this.LIMITES_TEXTO.descripcion }));
+        return false;
+      }
+      if (!this.numeroEnRango(el.medida_ancho, 0, 100)) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidWidth', { line: linea }));
+        return false;
+      }
+      if (!this.numeroEnRango(el.medida_alto, 0, 100)) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidHeight', { line: linea }));
+        return false;
+      }
+      if (!this.numeroEnRango(el.cantidad, 1, 10000)) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidQuantity', { line: linea }));
+        return false;
+      }
+      if (!this.numeroEnRango(el.tiempo_estimado_minutos, 0, 100000)) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidTime', { line: linea }));
+        return false;
+      }
+      //las notas de fabricacion son opcionales pero si existen no pueden pasarse del limite
+      if (el.notas_fabricacion && el.notas_fabricacion.length > this.LIMITES_TEXTO.notas_fabricacion) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.tooLongFabNotes', { line: linea, max: this.LIMITES_TEXTO.notas_fabricacion }));
+        return false;
+      }
+      //fuerzo que cada elemento tenga al menos un material para que el coste no quede a 0
+      if (!el.materiales_desglose || el.materiales_desglose.length === 0) {
+        this.mostrarErrorValidacion(this.translate.instant('quotes.invalidNoMaterials', { line: linea }));
+        return false;
+      }
+    }
+
+    //valido la fecha de validez: obligatoria, no pasada y no mas de 5 años en el futuro
+    if (!this.presupuesto.valido_hasta) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.missingValidUntil'));
+      return false;
+    }
+    if (this.presupuesto.valido_hasta < this.hoyISO) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.invalidValidUntil'));
+      return false;
+    }
+    if (this.presupuesto.valido_hasta > this.maxFechaISO) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.farValidUntil'));
+      return false;
+    }
+
+    //si hay descuento debe haber un motivo, si no, los motivos de cortesia no se pueden auditar luego
+    const descuento = Number(this.presupuesto.descuento_aplicado) || 0;
+    const motivo = (this.presupuesto.motivo_descuento || '').trim();
+    if (descuento > 0 && !motivo) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.missingDiscountReason'));
+      return false;
+    }
+    if (motivo.length > this.LIMITES_TEXTO.motivo_descuento) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.tooLongDiscountReason', { max: this.LIMITES_TEXTO.motivo_descuento }));
+      return false;
+    }
+
+    //valido la longitud maxima de las notas internas y de cliente
+    if ((this.presupuesto.notas_internas || '').length > this.LIMITES_TEXTO.notas_internas) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.tooLongInternalNotes', { max: this.LIMITES_TEXTO.notas_internas }));
+      return false;
+    }
+    if ((this.presupuesto.notas_cliente || '').length > this.LIMITES_TEXTO.notas_cliente) {
+      this.mostrarErrorValidacion(this.translate.instant('quotes.tooLongClientNotes', { max: this.LIMITES_TEXTO.notas_cliente }));
+      return false;
+    }
+
+    return true;
+  }
+
   //funcion que se ejecuta al pulsar guardar el presupuesto
   onSubmit(): void {
     //validacion minima: tiene que haber cliente y al menos un elemento
     if (!this.presupuesto.cliente_id || this.presupuesto.elementos.length === 0) {
-      this.snackBar.open(this.translate.instant('quotes.validationClientElement'), this.translate.instant('common.close'), {
-        duration: 3000,
-        panelClass: ['snack-error'],
-      });
+      this.mostrarErrorValidacion(this.translate.instant('quotes.validationClientElement'));
+      return;
+    }
+
+    //valido los rangos numericos antes de guardar para evitar valores negativos o absurdos
+    if (!this.validarRangos()) {
       return;
     }
 

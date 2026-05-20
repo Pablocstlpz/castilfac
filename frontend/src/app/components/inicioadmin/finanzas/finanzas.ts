@@ -55,7 +55,8 @@ export class Finanzas {
 
   ngOnInit(): void {
     //al cargar la pagina traigo los datos financieros del usuario para su empresa
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
     this.cargarDatos(usuario.empresa_id, this.filtroTiempo());
   }
 

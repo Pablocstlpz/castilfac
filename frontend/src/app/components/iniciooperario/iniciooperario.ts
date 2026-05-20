@@ -21,8 +21,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 export class Iniciooperario {
   private authentication = inject(Authentication);
   private router = inject(Router);
-  //usuario operario en sesion, lo necesito para pedir solo sus pedidos
-  public usuario: Usuario = this.authentication.obtenerUsuarioSesion()!;
+  //usuario operario en sesion, lo cargo en ngOnInit con null-check para que no rompa si se borra la sesion en otra pestaña
+  public usuario!: Usuario;
   private pedidosServices = inject(PedidosServices);
   private presupuestosService = inject(PresupuestosService);
   private pdfService = inject(PdfService);
@@ -32,6 +32,10 @@ export class Iniciooperario {
   private translate = inject(TranslateService);
 
   ngOnInit(): void {
+    //compruebo que hay sesion antes de usar el usuario, si no rebote a /sesioncerrada
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(['/sesioncerrada']); return; }
+    this.usuario = usuario;
     this.obtenerPedidosEnFabricacion();
   }
 

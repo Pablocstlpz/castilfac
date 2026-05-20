@@ -68,7 +68,8 @@ export class Inicioadmin {
 
   ngOnInit() {
     //al cargar el panel, traigo los datos del usuario para sacar el empresa_id
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
     this.obtenerUsuarios(usuario.empresa_id);
     this.obtenerTrabajos(usuario.empresa_id);
     this.obtenerPresupuestos(usuario.empresa_id);

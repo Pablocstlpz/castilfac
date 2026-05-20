@@ -48,7 +48,8 @@ export class Pedidos {
   });
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
     this.obtenerPedidos(usuario.empresa_id);
     this.cargarUsuarios(usuario.empresa_id);
     this.cargarClientes(usuario.empresa_id);

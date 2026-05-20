@@ -140,7 +140,8 @@ export class HistorialPrecio {
   });
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
 
     // Leemos la URL para sacar el ID del material
     // Soporta tanto /ruta/:id como ?id=5

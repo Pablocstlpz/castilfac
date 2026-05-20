@@ -38,7 +38,8 @@ export class GestionPersonal {
   });
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
     this.obtenerUsuarios(usuario.empresa_id);
   }
 

@@ -44,7 +44,8 @@ export class Clientes {
 
   ngOnInit(): void {
     //al entrar a la pagina cojo el empresa_id de la sesion y cargo sus clientes
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
     this.cargarClientes(usuario.empresa_id);
   }
 

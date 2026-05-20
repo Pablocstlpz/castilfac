@@ -46,7 +46,8 @@ export class DetallePedido implements OnInit {
   public mensajeError = signal<string | null>(null);
 
   ngOnInit(): void {
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
 
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {

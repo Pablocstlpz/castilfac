@@ -83,7 +83,8 @@ export class Presupuestos {
 
   ngOnInit(): void {
     //al cargar la pagina cojo el empresa_id de la sesion y traigo presupuestos y clientes
-    const usuario = this.authentication.obtenerUsuarioSesion()!;
+    const usuario = this.authentication.obtenerUsuarioSesion();
+    if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
     this.cargarPresupuestos(usuario.empresa_id);
     this.cargarClientes(usuario.empresa_id);
   }
