@@ -1,10 +1,10 @@
 # Etapa 1: construccion (build) del Angular
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 # Copiamos archivos de dependencias y los instalamos primero (cache de Docker)
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copiamos el resto del codigo y generamos el dist en modo produccion
 COPY . .
