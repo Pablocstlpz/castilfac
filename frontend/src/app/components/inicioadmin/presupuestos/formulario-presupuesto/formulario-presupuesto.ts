@@ -238,11 +238,23 @@ export class FormularioPresupuesto implements OnInit {
   //funcion que recalcula todos los importes del presupuesto (cantidades, costes, mano de obra y precio final)
   //se llama cada vez que cambia algo en el formulario para que los totales esten siempre actualizados
   recalcularTodo(): void {
+    //clampeo los campos generales para evitar valores negativos o absurdos
+    this.precioHoraTaller = Math.min(Math.max(+this.precioHoraTaller || 0, 0), 10000);
+    this.presupuesto.otros_costes = Math.min(Math.max(+this.presupuesto.otros_costes || 0, 0), 1_000_000);
+    this.presupuesto.porcentaje_beneficio = Math.min(Math.max(+this.presupuesto.porcentaje_beneficio || 0, 0), 1000);
+    this.presupuesto.descuento_aplicado = Math.min(Math.max(+this.presupuesto.descuento_aplicado || 0, 0), 100);
+
     let costeMatTotal = 0;
     this.totalMinutosFabricacion = 0;
 
     //recorro cada elemento para calcular sus costes de material
     this.presupuesto.elementos.forEach((el: any) => {
+      //clampeo los campos numericos de cada elemento
+      el.medida_ancho = Math.min(Math.max(+el.medida_ancho || 0, 0), 100);
+      el.medida_alto = Math.min(Math.max(+el.medida_alto || 0, 0), 100);
+      el.cantidad = Math.min(Math.max(+el.cantidad || 1, 1), 10000);
+      el.tiempo_estimado_minutos = Math.min(Math.max(+el.tiempo_estimado_minutos || 0, 0), 100_000);
+
       let costeEl = 0;
       const cantidad = Number(el.cantidad) || 0;
       const ancho = Number(el.medida_ancho) || 0;
