@@ -177,12 +177,10 @@
                   <div class="flex items-center justify-end gap-1">
                     <span
                       class="text-sm font-bold"
-                      [ngClass]="
-                        item.precio_venta <= item.precio_base ? 'text-red-600' : 'text-emerald-700'
-                      "
+                      [ngClass]="margenNegativo(item) ? 'text-red-600' : 'text-emerald-700'"
                     >
                       {{ item.precio_venta | number: '1.2-2' }} €
-                      @if (item.precio_venta <= item.precio_base) {
+                      @if (margenNegativo(item)) {
                         <mat-icon
                           class="text-[12px] align-middle ml-1"
                           [attr.title]="'catalogue.negativeMargin' | translate"

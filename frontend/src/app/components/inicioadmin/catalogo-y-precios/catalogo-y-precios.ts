@@ -73,6 +73,18 @@ export class CatalogoYPrecios {
     });
   }
 
+  //comprueba si el PVP no cubre el coste real (precio base + merma)
+  //necesario porque el backend devuelve los DECIMAL como string y un compare directo
+  //haria comparacion lexicografica ("10.0000" <= "9.0000" daria true por orden de caracteres)
+  margenNegativo(item: MaterialConPrecio): boolean {
+    const pvp = Number(item.precio_venta);
+    const base = Number(item.precio_base);
+    const merma = Number(item.porcentaje_merma) || 0;
+    if (isNaN(pvp) || isNaN(base)) return false;
+    const costeReal = base * (1 + merma / 100);
+    return pvp <= costeReal;
+  }
+
   //funcion para traducir el tipo de unidad a un texto legible en el idioma actual
   etiquetaTipoUnidad(tipo: string): string {
     const keys: Record<string, string> = {
