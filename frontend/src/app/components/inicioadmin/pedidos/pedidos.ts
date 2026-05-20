@@ -5,7 +5,7 @@ import { UpperCasePipe } from '@angular/common';
 import { PedidosServices } from '../../../services/pedidos';
 import { Pedido } from '../../../interfaces/pedido';
 import { Authentication } from '../../../services/authentication';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuariosServices } from '../../../services/usuarios';
@@ -26,6 +26,7 @@ export class Pedidos {
   private usuariosServices = inject(UsuariosServices);
   private clientesServices = inject(ClientesServices);
   private translate = inject(TranslateService);
+  private router = inject(Router);
 
   private todosPedidos = signal<Pedido[]>([]);
   public usuarios = signal<Usuario[]>([]);
