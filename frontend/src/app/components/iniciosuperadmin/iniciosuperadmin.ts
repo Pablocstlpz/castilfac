@@ -6,6 +6,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import { SpinnerCargaDatos } from '../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 //interfaces basadas en el modelo de la base de datos
 export interface Empresa {
@@ -40,7 +41,7 @@ export interface Usuario {
 @Component({
   selector: 'app-superadmin',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatSnackBarModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, MatIconModule, MatSnackBarModule, FormsModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './iniciosuperadmin.html',
   styleUrl: './iniciosuperadmin.css',
 })
