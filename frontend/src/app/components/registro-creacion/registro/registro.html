@@ -191,11 +191,15 @@
                 <mat-label>{{ 'register.password' | translate }}</mat-label>
                 <mat-icon matIconPrefix class="text-slate-400">lock</mat-icon>
                 <input type="password" matInput formControlName="password" placeholder="••••••••" />
+                <mat-hint>{{ 'register.passwordHint' | translate }}</mat-hint>
                 @if (password.errors?.['required'] && password.touched) {
                 <mat-error>{{ 'register.passwordRequired' | translate }}</mat-error>
                 }
                 @if (password.errors?.['minlength']) {
                 <mat-error>{{ 'register.passwordMin' | translate }}</mat-error>
+                }
+                @if (password.errors?.['pattern'] && password.touched && !password.errors?.['minlength']) {
+                <mat-error>{{ 'register.passwordPattern' | translate }}</mat-error>
                 }
               </mat-form-field>
             </div>

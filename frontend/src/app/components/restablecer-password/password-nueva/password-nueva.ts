@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UsuariosServices } from '../../../services/usuarios';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { REGEX_PASSWORD_FUERTE } from '../../../shared/regex';
 
 @Component({
   selector: 'app-password-nueva',
@@ -59,11 +60,17 @@ export class PasswordNueva implements OnInit {
     this.mostrarPassword = !this.mostrarPassword;
   }
 
+  //comprueba que la password cumple el regex fuerte (8+ chars, 1 mayuscula, 1 numero, 1 caracter especial)
+  //lo uso para deshabilitar el boton y mostrar el aviso debajo del campo
+  get passwordCumpleRegex(): boolean {
+    return REGEX_PASSWORD_FUERTE.test(this.password);
+  }
+
   //cuando se hace submit del formulario para guardar la nueva contraseña:
   guardarPassword(): void {
 
     //el boton ya esta desactivado en el HTML si no cumple las condiciones, pero lo valido tambien aqui por seguridad
-    if (this.password.length < 8 || this.password !== this.confirmPassword) return;
+    if (!this.passwordCumpleRegex || this.password !== this.confirmPassword) return;
 
     //valido que tengamos token antes de hacer la peticion
     if (!this.tokenRecuperacion) {

@@ -69,11 +69,15 @@
               placeholder="••••••••"
               autocomplete="new-password"
             />
+            <mat-hint>{{ 'staff.passwordHint' | translate }}</mat-hint>
             @if (password.errors?.['required'] && password.touched) {
               <mat-error>{{ 'staff.passwordRequired' | translate }}</mat-error>
             }
             @if (password.errors?.['minlength'] && password.touched) {
               <mat-error>{{ 'staff.passwordMinLength' | translate }}</mat-error>
+            }
+            @if (password.errors?.['pattern'] && password.touched && !password.errors?.['minlength']) {
+              <mat-error>{{ 'staff.passwordPattern' | translate }}</mat-error>
             }
           </mat-form-field>
 

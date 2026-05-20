@@ -22,6 +22,10 @@ export const REGEX_NOMBRE_PERSONA = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-']+$/;
 // NIF/CIF permisivo para CLIENTES (DNI/NIE/CIF/VAT extranjero)
 export const REGEX_NIF_CIF_PERMISIVO = /^[A-Za-z0-9]{8,12}$/;
 
+// Password fuerte: minimo 8 caracteres, 1 mayuscula, 1 digito y 1 caracter especial
+// Gemelo de REGEX_PASSWORD_FUERTE en backend/src/utils/regex.js
+export const REGEX_PASSWORD_FUERTE = /^(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+
 // Tipos de cliente alineados con el ENUM del modelo
 export const TIPOS_CLIENTE = ["particular", "empresa", "vip", "mayorista"] as const;
 export type TipoCliente = (typeof TIPOS_CLIENTE)[number];

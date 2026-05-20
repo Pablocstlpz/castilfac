@@ -23,6 +23,7 @@ import {
   REGEX_CODIGO_POSTAL,
   REGEX_NOMBRE_GEOGRAFICO,
   REGEX_NOMBRE_PERSONA,
+  REGEX_PASSWORD_FUERTE,
   REGEX_TELEFONO,
 } from '../../../shared/regex';
 
@@ -116,7 +117,14 @@ export class Registro {
         '',
         [Validators.required, Validators.email, Validators.maxLength(LIMITES.EMAIL_MAX)],
       ],
-      password: ['', [Validators.required, Validators.minLength(LIMITES.PASSWORD_MIN)]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(LIMITES.PASSWORD_MIN),
+          Validators.pattern(REGEX_PASSWORD_FUERTE),
+        ],
+      ],
     });
   }
 

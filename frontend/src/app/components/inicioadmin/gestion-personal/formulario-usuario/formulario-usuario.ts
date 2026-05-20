@@ -22,6 +22,7 @@ import { Authentication } from '../../../../services/authentication';
 import {
   LIMITES,
   REGEX_NOMBRE_PERSONA,
+  REGEX_PASSWORD_FUERTE,
 } from '../../../../shared/regex';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
@@ -72,7 +73,14 @@ export class FormularioUsuario {
         '',
         [Validators.required, Validators.email, Validators.maxLength(LIMITES.EMAIL_MAX)],
       ],
-      password: ['', [Validators.required, Validators.minLength(LIMITES.PASSWORD_MIN)]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(LIMITES.PASSWORD_MIN),
+          Validators.pattern(REGEX_PASSWORD_FUERTE),
+        ],
+      ],
       rol: ['operario', [Validators.required]],
     });
   }
@@ -84,8 +92,12 @@ export class FormularioUsuario {
       if (this.id) {
         //si estoy editando, la contraseña deja de ser obligatoria
         //si el admin la deja en blanco el backend mantiene la actual y no la cambia
+        //pero si escribe una nueva, debe cumplir las reglas de password fuerte
         this.password.clearValidators();
-        this.password.setValidators([Validators.minLength(LIMITES.PASSWORD_MIN)]);
+        this.password.setValidators([
+          Validators.minLength(LIMITES.PASSWORD_MIN),
+          Validators.pattern(REGEX_PASSWORD_FUERTE),
+        ]);
         this.password.updateValueAndValidity();
 
         //pido el usuario al backend y relleno el formulario con sus datos
