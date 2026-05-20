@@ -314,6 +314,17 @@ export class FormularioPresupuesto implements OnInit {
       (this.presupuesto.precio_sin_descuento || 0) * (1 - descuento / 100) || 0;
   }
 
+  get formularioInvalido(): boolean {
+    if (!this.presupuesto.cliente_id || this.presupuesto.elementos.length === 0) return true;
+    if (!this.presupuesto.valido_hasta || this.presupuesto.valido_hasta < this.hoyISO || this.presupuesto.valido_hasta > this.maxFechaISO) return true;
+    if ((Number(this.presupuesto.descuento_aplicado) || 0) > 0 && !(this.presupuesto.motivo_descuento || '').trim()) return true;
+    for (const el of this.presupuesto.elementos) {
+      if (!el.tipo_producto || !(el.descripcion || '').trim()) return true;
+      if (!el.materiales_desglose || el.materiales_desglose.length === 0) return true;
+    }
+    return false;
+  }
+
   //funcion para mostrar un snackbar de error de validacion
   private mostrarErrorValidacion(mensaje: string): void {
     this.snackBar.open(mensaje, this.translate.instant('common.close'), {
