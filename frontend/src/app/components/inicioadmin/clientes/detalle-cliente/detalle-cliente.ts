@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,27 +29,23 @@ export class DetalleCliente {
 
   // Signal para almacenar los pedidos del cliente
   public pedidosCliente = signal<any[]>([]);
+  public cargando = signal<boolean>(true);
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
-      this.cargarCliente(Number(idParam));
-      this.cargarPedidosCliente(Number(idParam));
+      forkJoin({
+        cliente: this.clientesService.getCliente(Number(idParam)),
+        pedidos: this.pedidosService.getPedidosByCliente(Number(idParam)),
+      }).subscribe({
+        next: ({ cliente, pedidos }) => {
+          this.cliente.set(cliente);
+          this.pedidosCliente.set(pedidos);
+          this.cargando.set(false);
+        },
+        error: () => { this.cargando.set(false); },
+      });
     }
-  }
-
-  //funcion para cargar los datos del cliente por su id
-  cargarCliente(id: number): void {
-    this.clientesService.getCliente(id).subscribe((cliente) => {
-      this.cliente.set(cliente);
-    });
-  }
-
-  //funcion para cargar todos los pedidos de este cliente
-  cargarPedidosCliente(id: number): void {
-    this.pedidosService.getPedidosByCliente(id).subscribe((pedidos) => {
-      this.pedidosCliente.set(pedidos);
-    });
   }
 
   //funcion para calcular el saldo pendiente sumando lo que queda por pagar en cada pedido

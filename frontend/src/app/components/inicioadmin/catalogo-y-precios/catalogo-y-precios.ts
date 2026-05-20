@@ -1,4 +1,5 @@
 import { Component, signal, inject } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DecimalPipe, NgClass } from '@angular/common';
@@ -50,31 +51,24 @@ export class CatalogoYPrecios {
 
   //guarda temporalmente el precio que el usuario esta escribiendo en el input de edicion en linea
   public precioEnEdicion = signal<number>(0);
+  public cargando = signal<boolean>(true);
 
   ngOnInit(): void {
-    //obtengo el usuario de la sesion para saber a que empresa pertenece
     const usuario = this.authentication.obtenerUsuarioSesion();
-    //cargo las categorias que se usan en el selector de filtro
-    this.cargarCategorias();
-    //si hay usuario logado, cargo los materiales de su empresa
-    if (usuario) {
-      this.cargarMateriales(usuario.empresa_id);
-    }
-  }
-
-  //funcion para cargar las categorias del selector de filtro desde el backend
-  cargarCategorias(): void {
-    this.categoriasService.getCategorias().subscribe((data) => {
-      this.categorias.set(data);
-    });
-  }
-
-  //funcion para cargar los materiales con su categoria y precio de empresa desde el backend
-  cargarMateriales(empresaId: number): void {
-    this.materialesService.getMaterialesConPrecioEmpresa(empresaId).subscribe((data) => {
-      this._materiales.set(data);
-      this.totalMateriales.set(data.length);
-      this.filtrarMateriales();
+    forkJoin({
+      categorias: this.categoriasService.getCategorias(),
+      materiales: usuario
+        ? this.materialesService.getMaterialesConPrecioEmpresa(usuario.empresa_id)
+        : of([] as MaterialConPrecio[]),
+    }).subscribe({
+      next: ({ categorias, materiales }) => {
+        this.categorias.set(categorias);
+        this._materiales.set(materiales);
+        this.totalMateriales.set(materiales.length);
+        this.filtrarMateriales();
+        this.cargando.set(false);
+      },
+      error: () => { this.cargando.set(false); },
     });
   }
 

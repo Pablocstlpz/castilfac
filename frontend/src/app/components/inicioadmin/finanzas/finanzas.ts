@@ -25,6 +25,7 @@ export class Finanzas {
   public listaPedidos = signal<Pedido[]>([]);
   //texto que ha escrito el usuario en la busqueda de deudores
   public busqueda = signal<string>('');
+  public cargando = signal<boolean>(true);
 
   //ingresos totales que tendria que cobrar la empresa segun lo acordado en cada pedido
   public ingresosPactados = computed(() =>
@@ -71,8 +72,14 @@ export class Finanzas {
 
   //funcion para cargar los pedidos de finanzas filtrados por rango temporal
   cargarDatos(empresa_id: number, rango: 'mes' | 'anio' | 'global'): void {
-    this.pedidosServices.getFinanzasPorEmpresa(empresa_id, rango).subscribe((pedidos) => {
-      this.listaPedidos.set(pedidos);
+    this.pedidosServices.getFinanzasPorEmpresa(empresa_id, rango).subscribe({
+      next: (pedidos) => {
+        this.listaPedidos.set(pedidos);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      },
     });
   }
 

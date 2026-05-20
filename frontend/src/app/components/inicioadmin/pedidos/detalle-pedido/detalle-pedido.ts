@@ -44,6 +44,7 @@ export class DetallePedido implements OnInit {
   //signals para feedback visual
   public mensajeExito = signal<string | null>(null);
   public mensajeError = signal<string | null>(null);
+  public cargando = signal<boolean>(true);
 
   ngOnInit(): void {
     const usuario = this.authentication.obtenerUsuarioSesion();
@@ -61,16 +62,16 @@ export class DetallePedido implements OnInit {
     this.pedidosService.getPedido(id).subscribe({
       next: (data) => {
         this.pedido.set(data);
-        //sincronizo los inputs con los datos que vengan del pedido
         this.notasPedido = data.notas_operario || '';
         this.fechaEntregaReal = this.formatearFecha(data.fecha_entrega_real);
         this.fechaInstalacion = this.formatearFecha(data.fecha_instalacion);
-        //cargo el presupuesto vinculado al pedido
+        this.cargando.set(false);
         if (data.presupuesto_id) {
           this.cargarPresupuesto(data.presupuesto_id);
         }
       },
       error: () => {
+        this.cargando.set(false);
         this.mostrarError(this.translate.instant('orders.loadError'));
       },
     });

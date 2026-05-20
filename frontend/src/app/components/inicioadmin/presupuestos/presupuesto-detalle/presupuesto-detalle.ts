@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -42,6 +43,7 @@ export class PresupuestoDetalle implements OnInit {
   public tienePedido = signal<boolean>(false);
   //controla si el modal de convertir a pedido esta visible
   public modalPedidoVisible = signal(false);
+  public cargando = signal<boolean>(true);
 
   //datos del formulario del modal de creacion de pedido
   public operarioSeleccionado: number | null = null;
@@ -61,44 +63,34 @@ export class PresupuestoDetalle implements OnInit {
       { valor: 'caducado', etiqueta: this.translate.instant('quotes.statusExpired') },
     ];
 
-    //leo el id del presupuesto de la url y cargo los datos
+    const usuario = this.authentication.obtenerUsuarioSesion();
+
+    //leo el id del presupuesto de la url y cargo los datos en paralelo
     this.route.params.subscribe((params) => {
       const idPresupuesto = params['id'];
 
       if (idPresupuesto) {
-        this.cargarPresupuesto(Number(idPresupuesto));
-        this.comprobarSiTienePedido(Number(idPresupuesto));
+        forkJoin({
+          presupuesto: this.presupuestosService.getPresupuesto(Number(idPresupuesto)),
+          tienePedido: this.pedidosService.existePedidoDePresupuesto(Number(idPresupuesto)),
+          operarios: usuario
+            ? this.usuariosService.getUsuarioPorEmpresa(usuario.empresa_id)
+            : of([] as Usuario[]),
+        }).subscribe({
+          next: ({ presupuesto, tienePedido, operarios }) => {
+            this.presupuesto.set(presupuesto);
+            this.tienePedido.set(tienePedido.existe);
+            this.operarios.set(operarios.filter((u) => u.rol === 'operario'));
+            this.cargando.set(false);
+          },
+          error: (err) => {
+            const mensaje = err.message || this.translate.instant('quotes.quoteLoadError');
+            this.mostrarErrorYVolver(mensaje);
+          },
+        });
       } else {
         this.mostrarErrorYVolver(this.translate.instant('quotes.noQuoteId'));
       }
-    });
-
-    //cargo los operarios de la empresa para que el admin pueda asignarlos al convertir a pedido
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (usuario) {
-      this.usuariosService.getUsuarioPorEmpresa(usuario.empresa_id).subscribe({
-        next: (data) => this.operarios.set(data.filter((u) => u.rol === 'operario')),
-        error: () => {},
-      });
-    }
-  }
-
-  //funcion para cargar el presupuesto por su id
-  cargarPresupuesto(id: number): void {
-    this.presupuestosService.getPresupuesto(id).subscribe({
-      next: (datos) => this.presupuesto.set(datos),
-      error: (err) => {
-        const mensaje = err.message || this.translate.instant('quotes.quoteLoadError');
-        this.mostrarErrorYVolver(mensaje);
-      },
-    });
-  }
-
-  //funcion para comprobar si este presupuesto ya tiene un pedido asociado
-  comprobarSiTienePedido(presupuestoId: number): void {
-    this.pedidosService.existePedidoDePresupuesto(presupuestoId).subscribe({
-      next: (res) => this.tienePedido.set(res.existe),
-      error: () => {},
     });
   }
 

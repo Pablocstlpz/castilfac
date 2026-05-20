@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -40,6 +40,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 export class ClienteFormulario {
   public clienteForm!: FormGroup;
   public id!: number; //id del cliente si estamos editando
+  public cargando = signal<boolean>(false);
 
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
@@ -69,6 +70,7 @@ export class ClienteFormulario {
       this.id = params['id'];
       if (this.id) {
         //si hay id, pido el cliente y relleno el formulario con sus datos
+        this.cargando.set(true);
         this.clientesService.getCliente(this.id).subscribe({
           next: (cliente) => {
             this.clienteForm.patchValue({
@@ -81,7 +83,9 @@ export class ClienteFormulario {
               descuento_fijo: cliente.descuento_fijo,
               direccion: cliente.direccion ?? '',
             });
+            this.cargando.set(false);
           },
+          error: () => { this.cargando.set(false); },
         });
       }
     });

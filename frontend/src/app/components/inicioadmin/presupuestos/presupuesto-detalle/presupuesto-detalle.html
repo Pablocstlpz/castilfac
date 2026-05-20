@@ -1,4 +1,10 @@
-<div class="flex-1 bg-slate-50 h-screen overflow-y-auto p-5 sm:p-6 lg:p-6 font-sans">
+<div class="flex-1 bg-slate-50 h-screen overflow-y-auto p-5 sm:p-6 lg:p-6 font-sans relative">
+  @if (cargando()) {
+    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
+      <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4"></div>
+      <p class="text-slate-500 text-sm font-medium">{{ 'common.loading' | translate }}</p>
+    </div>
+  }
   @if (presupuesto(); as pres) {
     <!-- Contenedor con padding inferior extra (pb-20) para evitar que el footer tape las notas -->
     <div class="max-w-[1400px] mx-auto pb-20">
@@ -418,14 +424,5 @@
         </div>
       </div>
     }
-  } @else {
-    <div class="flex items-center justify-center min-h-[50vh]">
-      <div class="flex flex-col items-center gap-3">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          {{ 'quotes.loadingQuote' | translate }}
-        </p>
-      </div>
-    </div>
   }
 </div>

@@ -28,6 +28,7 @@ export class Clientes {
   public busqueda = signal<string>('');
   //tipo de cliente por el que esta filtrando (particular, empresa, vip, mayorista o todos)
   public filtroTipo = signal<string>('todos');
+  public cargando = signal<boolean>(true);
 
   //listado de clientes filtrados que se muestran en la tabla
   //se recalcula automaticamente al cambiar busqueda o filtroTipo
@@ -51,8 +52,14 @@ export class Clientes {
 
   //funcion para cargar los clientes de una empresa
   cargarClientes(empresa_id: number): void {
-    this.clientesService.getClientePorEmpresa(empresa_id).subscribe((clientes) => {
-      this.clientesArray.set(clientes);
+    this.clientesService.getClientePorEmpresa(empresa_id).subscribe({
+      next: (clientes) => {
+        this.clientesArray.set(clientes);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      },
     });
   }
 

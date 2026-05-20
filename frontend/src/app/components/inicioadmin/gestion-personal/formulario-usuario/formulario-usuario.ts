@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -54,6 +54,7 @@ export class FormularioUsuario {
 
   //id del usuario que voy a editar, si esta seteado estoy editando y si no estoy creando
   public id!: number;
+  public cargando = signal<boolean>(false);
 
   //creo el formulario del usuario con sus validaciones
   constructor() {
@@ -88,6 +89,7 @@ export class FormularioUsuario {
         this.password.updateValueAndValidity();
 
         //pido el usuario al backend y relleno el formulario con sus datos
+        this.cargando.set(true);
         this.usuarioServicios.getUsuario(this.id).subscribe({
           next: (response: any) => {
             this.userForm.patchValue({
@@ -98,7 +100,9 @@ export class FormularioUsuario {
             });
             //importante: NO precargo la contraseña, asi el admin escribe una nueva si quiere cambiarla
             this.password.setValue('');
+            this.cargando.set(false);
           },
+          error: () => { this.cargando.set(false); },
         });
       }
     });

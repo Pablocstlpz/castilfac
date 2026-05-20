@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { UpperCasePipe } from '@angular/common';
@@ -34,6 +35,7 @@ export class Pedidos {
 
   public busqueda = signal<string>('');
   public filtroEstado = signal<string>('todos');
+  public cargando = signal<boolean>(true);
 
   public pedidos = computed(() => {
     const q = this.busqueda().toLowerCase().trim();
@@ -51,14 +53,18 @@ export class Pedidos {
   ngOnInit(): void {
     const usuario = this.authentication.obtenerUsuarioSesion();
     if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
-    this.obtenerPedidos(usuario.empresa_id);
-    this.cargarUsuarios(usuario.empresa_id);
-    this.cargarClientes(usuario.empresa_id);
-  }
-
-  obtenerPedidos(empresa_id: number): void {
-    this.pedidosServices.getPedidosByEmpresa(empresa_id).subscribe((pedidos) => {
-      this.todosPedidos.set(pedidos);
+    forkJoin({
+      pedidos: this.pedidosServices.getPedidosByEmpresa(usuario.empresa_id),
+      usuarios: this.usuariosServices.getUsuarioPorEmpresa(usuario.empresa_id),
+      clientes: this.clientesServices.getClientePorEmpresa(usuario.empresa_id),
+    }).subscribe({
+      next: ({ pedidos, usuarios, clientes }) => {
+        this.todosPedidos.set(pedidos);
+        this.usuarios.set(usuarios);
+        this.clientes.set(clientes);
+        this.cargando.set(false);
+      },
+      error: () => { this.cargando.set(false); },
     });
   }
 
@@ -68,13 +74,6 @@ export class Pedidos {
     return Math.round((pagado / acordado) * 100);
   }
 
-  //funcion para cargar los usuarios de una empresa
-  cargarUsuarios(empresa_id: number): void {
-    this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe((usuarios) => {
-      this.usuarios.set(usuarios);
-    });
-  }
-
   // Funcion para transformar el ID en Nombre buscando en el Signal de usuarios
   getNombreOperario(id: any): string {
     if (!id) return this.translate.instant('orders.unassigned');
@@ -82,13 +81,6 @@ export class Pedidos {
     const operario = this.usuarios().find((u) => u.id == id);
 
     return operario ? operario.nombre : this.translate.instant('orders.loading');
-  }
-
-  //funcion para cargar todos los clientes de la empresa
-  cargarClientes(empresa_id: number): void {
-    this.clientesServices.getClientePorEmpresa(empresa_id).subscribe((clientes) => {
-      this.clientes.set(clientes);
-    });
   }
 
   // Funcion para transformar el ID en Nombre buscando en el Signal de clientes

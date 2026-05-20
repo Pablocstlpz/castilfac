@@ -25,6 +25,7 @@ export class GestionPersonal {
   public usuarios = signal<Usuario[]>([]);
   public busqueda = signal<string>('');
   public filtroRol = signal<string>('todos');
+  public cargando = signal<boolean>(true);
 
   public usuariosFiltrados = computed(() => {
     const q = this.busqueda().toLowerCase().trim();
@@ -45,8 +46,14 @@ export class GestionPersonal {
 
   //funcion para obtener los usuarios de la empresa
   obtenerUsuarios(empresa_id: number): void {
-    this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe((usuarios) => {
-      this.usuarios.set(usuarios);
+    this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe({
+      next: (usuarios) => {
+        this.usuarios.set(usuarios);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      },
     });
   }
 

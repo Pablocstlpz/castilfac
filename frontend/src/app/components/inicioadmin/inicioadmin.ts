@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -28,6 +29,7 @@ export class Inicioadmin {
   public numeroPedidos = signal<number>(0);
   //todos los presupuestos de la empresa, los uso para calcular las estadisticas
   public todosPresupuestos = signal<Presupuesto[]>([]);
+  public cargando = signal<boolean>(true);
 
   //numero de presupuestos creados en el mes actual
   public presupuestosMes = computed(() => {
@@ -70,42 +72,25 @@ export class Inicioadmin {
     //al cargar el panel, traigo los datos del usuario para sacar el empresa_id
     const usuario = this.authentication.obtenerUsuarioSesion();
     if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
-    this.obtenerUsuarios(usuario.empresa_id);
-    this.obtenerTrabajos(usuario.empresa_id);
-    this.obtenerPresupuestos(usuario.empresa_id);
+    forkJoin({
+      usuarios: this.usuariosServices.getUsuarioPorEmpresa(usuario.empresa_id),
+      pedidos: this.pedidosServices.getPedidosByEmpresa(usuario.empresa_id),
+      presupuestos: this.presupuestosService.getPresupuestosEmpresa(usuario.empresa_id),
+    }).subscribe({
+      next: ({ usuarios, pedidos, presupuestos }) => {
+        this.numeroUsuarios.set(usuarios.length);
+        //filtro solo los que estan en estado en_fabricacion porque son los trabajos activos
+        this.numeroPedidos.set(pedidos.filter((p) => p.estado_fabricacion === 'en_fabricacion').length);
+        this.todosPresupuestos.set(presupuestos);
+        this.cargando.set(false);
+      },
+      error: () => { this.cargando.set(false); },
+    });
   }
 
   //funcion para cerrar la sesion del usuario y redirigir a la pantalla de sesion cerrada
   cerrarSesion() {
     this.authentication.cerrarSesion();
     this.router.navigate(['/sesioncerrada']);
-  }
-
-  //funcion para contar cuantos usuarios tiene la empresa
-  obtenerUsuarios(empresa_id: number) {
-    this.usuariosServices.getUsuarioPorEmpresa(empresa_id).subscribe({
-      next: (usuarios) => this.numeroUsuarios.set(usuarios.length),
-      error: () => {},
-    });
-  }
-
-  //funcion para contar cuantos pedidos en fabricacion tiene la empresa
-  obtenerTrabajos(empresa_id: number) {
-    this.pedidosServices.getPedidosByEmpresa(empresa_id).subscribe({
-      next: (pedidos) => {
-        //filtro solo los que estan en estado en_fabricacion porque son los trabajos activos
-        const enFabricacion = pedidos.filter((p) => p.estado_fabricacion === 'en_fabricacion');
-        this.numeroPedidos.set(enFabricacion.length);
-      },
-      error: () => {},
-    });
-  }
-
-  //funcion para cargar todos los presupuestos de la empresa
-  obtenerPresupuestos(empresa_id: number) {
-    this.presupuestosService.getPresupuestosEmpresa(empresa_id).subscribe({
-      next: (data) => this.todosPresupuestos.set(data),
-      error: () => {},
-    });
   }
 }

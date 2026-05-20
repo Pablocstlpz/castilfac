@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,6 +47,7 @@ export class MaterialDetalle {
 
   //id del material si estamos editando, null si es nuevo
   public id: number | null = null;
+  public cargando = signal<boolean>(true);
 
   //formulario reactivo con todos los campos del material
   public materialForm: FormGroup = this.fb.group({
@@ -62,40 +64,44 @@ export class MaterialDetalle {
   });
 
   ngOnInit(): void {
-    this.cargarCategorias();
-    //obtengo el id de la url para saber si es edicion o creacion
     const idParam = this.activatedRoute.snapshot.params['id'];
+    const usuario = this.authentication.obtenerUsuarioSesion();
+
     if (idParam) {
       this.id = Number(idParam);
-      this.cargarMaterial(this.id);
-    }
-  }
-
-  //funcion para cargar las categorias del select
-  cargarCategorias(): void {
-    this.categoriasService.getCategorias().subscribe((data) => {
-      this.categorias.set(data);
-    });
-  }
-
-  //funcion para cargar los datos del material cuando se edita
-  cargarMaterial(id: number): void {
-    const usuario = this.authentication.obtenerUsuarioSesion();
-    if (!usuario) { this.router.navigate(['/sesioncerrada']); return; }
-    this.materialesService.getMaterial(usuario.empresa_id, id).subscribe((material) => {
-      this.materialForm.patchValue({
-        nombre: material.nombre,
-        codigo_interno: material.codigo_interno ?? '',
-        categoria_id: material.categoria_id,
-        descripcion: material.descripcion ?? '',
-        tipo_unidad: material.tipo_unidad,
-        precio_base: material.precio_base,
-        porcentaje_merma_recomendado: material.porcentaje_merma_recomendado ?? 10,
-        proveedor: material.proveedor ?? '',
-        referencia_proveedor: material.referencia_proveedor ?? '',
-        activo: material.activo,
+      if (!usuario) { this.router.navigate(['/sesioncerrada']); return; }
+      forkJoin({
+        categorias: this.categoriasService.getCategorias(),
+        material: this.materialesService.getMaterial(usuario.empresa_id, this.id),
+      }).subscribe({
+        next: ({ categorias, material }) => {
+          this.categorias.set(categorias);
+          this.materialForm.patchValue({
+            nombre: material.nombre,
+            codigo_interno: material.codigo_interno ?? '',
+            categoria_id: material.categoria_id,
+            descripcion: material.descripcion ?? '',
+            tipo_unidad: material.tipo_unidad,
+            precio_base: material.precio_base,
+            porcentaje_merma_recomendado: material.porcentaje_merma_recomendado ?? 10,
+            proveedor: material.proveedor ?? '',
+            referencia_proveedor: material.referencia_proveedor ?? '',
+            activo: material.activo,
+          });
+          this.cargando.set(false);
+        },
+        error: () => { this.cargando.set(false); },
       });
-    });
+    } else {
+      //modo creacion: solo cargo las categorias
+      this.categoriasService.getCategorias().subscribe({
+        next: (data) => {
+          this.categorias.set(data);
+          this.cargando.set(false);
+        },
+        error: () => { this.cargando.set(false); },
+      });
+    }
   }
 
   //funcion que se ejecuta al hacer submit del formulario

@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
@@ -34,6 +35,7 @@ export class Presupuestos {
   public busqueda = signal<string>('');
   //estado por el que el usuario ha filtrado
   public filtroEstado = signal<string>('todos');
+  public cargando = signal<boolean>(true);
 
   //listado de presupuestos filtrados que se muestran en la tabla
   public presupuestosFiltrados = computed(() => {
@@ -85,23 +87,16 @@ export class Presupuestos {
     //al cargar la pagina cojo el empresa_id de la sesion y traigo presupuestos y clientes
     const usuario = this.authentication.obtenerUsuarioSesion();
     if (!usuario) { this.router.navigate(["/sesioncerrada"]); return; }
-    this.cargarPresupuestos(usuario.empresa_id);
-    this.cargarClientes(usuario.empresa_id);
-  }
-
-  //funcion para cargar todos los presupuestos de una empresa
-  cargarPresupuestos(empresa_id: number): void {
-    this.presupuestosService.getPresupuestosEmpresa(empresa_id).subscribe({
-      next: (data) => this.presupuestos.set(data),
-      error: (err) => console.error('Error al cargar presupuestos', err),
-    });
-  }
-
-  //funcion para cargar todos los clientes de la empresa
-  cargarClientes(empresa_id: number): void {
-    this.clientesServices.getClientePorEmpresa(empresa_id).subscribe({
-      next: (data) => this.clientes.set(data),
-      error: (err) => console.error('Error al cargar clientes', err),
+    forkJoin({
+      presupuestos: this.presupuestosService.getPresupuestosEmpresa(usuario.empresa_id),
+      clientes: this.clientesServices.getClientePorEmpresa(usuario.empresa_id),
+    }).subscribe({
+      next: ({ presupuestos, clientes }) => {
+        this.presupuestos.set(presupuestos);
+        this.clientes.set(clientes);
+        this.cargando.set(false);
+      },
+      error: () => { this.cargando.set(false); },
     });
   }
 
