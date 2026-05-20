@@ -5,11 +5,11 @@ import rateLimit from "express-rate-limit";
 //tengo que activar 'trust proxy' en app.js para que llegue la IP real, si no se cuenta todo
 //contra la IP del proxy y se bloquea a todos los usuarios a la vez
 
-//limitador para login y login con google -> 5 intentos cada 15 minutos por IP
+//limitador para login y login con google -> 20 intentos cada 15 minutos por IP
 //bloquea fuerza bruta basica sin afectar al usuario legitimo (que normalmente acierta a la primera)
 export const loginRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
