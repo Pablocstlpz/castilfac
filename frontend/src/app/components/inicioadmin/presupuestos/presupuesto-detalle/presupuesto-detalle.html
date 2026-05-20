@@ -1,10 +1,5 @@
 <div class="flex-1 bg-slate-50 h-screen overflow-y-auto p-5 sm:p-6 lg:p-6 font-sans relative">
-  @if (cargando()) {
-    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
-      <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4"></div>
-      <p class="text-slate-500 text-sm font-medium">{{ 'common.loading' | translate }}</p>
-    </div>
-  }
+  <app-spinner-carga-datos [cargando]="cargando()" />
   @if (presupuesto(); as pres) {
     <!-- Contenedor con padding inferior extra (pb-20) para evitar que el footer tape las notas -->
     <div class="max-w-[1400px] mx-auto pb-20">

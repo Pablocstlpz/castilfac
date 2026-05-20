@@ -25,6 +25,7 @@ import {
   REGEX_PASSWORD_FUERTE,
 } from '../../../../shared/regex';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-formulario-usuario',
@@ -38,6 +39,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
     MatSelectModule,
     MatSnackBarModule,
     TranslatePipe,
+    SpinnerCargaDatos,
   ],
   templateUrl: './formulario-usuario.html',
 })

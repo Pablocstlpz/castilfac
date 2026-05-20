@@ -9,10 +9,11 @@ import { UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-gestion-personal',
-  imports: [MatIcon, DatePipe, UpperCasePipe, FormsModule, TranslatePipe],
+  imports: [MatIcon, DatePipe, UpperCasePipe, FormsModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './gestion-personal.html',
   styleUrl: './gestion-personal.css',
 })

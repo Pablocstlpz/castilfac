@@ -19,6 +19,7 @@ import { Cliente } from '../../../../interfaces/cliente';
 import { ClientesServices } from '../../../../services/clientes';
 import { Authentication } from '../../../../services/authentication';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-cliente-formulario',
@@ -33,6 +34,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
     MatSelectModule,
     MatSnackBarModule,
     TranslatePipe,
+    SpinnerCargaDatos,
   ],
   templateUrl: './cliente-formulario.html',
   styleUrl: './cliente-formulario.css',

@@ -8,10 +8,11 @@ import { MatIcon } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-historial-completo-operario',
-  imports: [MatIcon, DatePipe, RouterLink, TranslatePipe],
+  imports: [MatIcon, DatePipe, RouterLink, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './historial-completo-operario.html',
   styleUrl: './historial-completo-operario.css',
 })
@@ -23,6 +24,7 @@ export class HistorialCompletoOperario {
   private pedidosServices = inject(PedidosServices);
   //signal con el historial completo de pedidos de este operario
   public pedidosArray = signal<Pedido[]>([]);
+  public cargando = signal<boolean>(true);
 
   ngOnInit(): void {
     //compruebo que hay sesion antes de usar el usuario, si no rebote a /sesioncerrada
@@ -34,8 +36,15 @@ export class HistorialCompletoOperario {
 
   //funcion para obtener el historial completo de pedidos de este operario
   obtenerHistorialPedidos(): void {
-    this.pedidosServices.getPedidosHistorialByOperario(this.usuario.id).subscribe((pedidos) => {
-      this.pedidosArray.set(pedidos);
+    this.cargando.set(true);
+    this.pedidosServices.getPedidosHistorialByOperario(this.usuario.id).subscribe({
+      next: (pedidos) => {
+        this.pedidosArray.set(pedidos);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      },
     });
   }
 

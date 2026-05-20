@@ -13,10 +13,11 @@ import { Pedido } from '../../../../interfaces/pedido';
 import { Usuario } from '../../../../interfaces/usuario';
 import { Presupuesto } from '../../../../interfaces/presupuesto';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-detalle-pedido',
-  imports: [CommonModule, MatIconModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, MatIconModule, FormsModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './detalle-pedido.html',
   styleUrl: './detalle-pedido.css',
 })

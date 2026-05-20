@@ -12,10 +12,11 @@ import { PdfService } from '../../../services/pdf';
 import { Presupuesto } from '../../../interfaces/presupuesto';
 import { Cliente } from '../../../interfaces/cliente';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-presupuestos',
-  imports: [MatIcon, DatePipe, DecimalPipe, NgClass, FormsModule, RouterLink, TranslatePipe],
+  imports: [MatIcon, DatePipe, DecimalPipe, NgClass, FormsModule, RouterLink, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './presupuestos.html',
   styleUrl: './presupuestos.css',
 })

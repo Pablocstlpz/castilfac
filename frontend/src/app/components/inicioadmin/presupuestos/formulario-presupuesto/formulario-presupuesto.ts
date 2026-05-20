@@ -20,11 +20,12 @@ import { Materiales } from '../../../../services/materiales';
 import { Presupuestos } from '../../../../services/presupuestos';
 import { Categorias } from '../../../../services/categorias';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-presupuesto-formulario',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './formulario-presupuesto.html',
   styleUrl: './formulario-presupuesto.css',
 })

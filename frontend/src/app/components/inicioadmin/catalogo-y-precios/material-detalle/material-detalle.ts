@@ -15,6 +15,7 @@ import { Materiales } from '../../../../services/materiales';
 import { Categorias } from '../../../../services/categorias';
 import { Authentication } from '../../../../services/authentication';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-material-formulario',
@@ -28,6 +29,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
     MatButtonModule,
     MatSnackBarModule,
     TranslatePipe,
+    SpinnerCargaDatos,
   ],
   templateUrl: './material-detalle.html',
   styleUrl: './material-detalle.css',

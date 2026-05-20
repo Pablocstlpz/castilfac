@@ -8,11 +8,12 @@ import { Cliente } from '../../../interfaces/cliente';
 import { ClientesServices } from '../../../services/clientes';
 import { Authentication } from '../../../services/authentication';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 //pantalla del admin para listar, buscar, crear, editar y borrar clientes de la empresa
 @Component({
   selector: 'app-clientes',
-  imports: [CommonModule, MatIconModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, MatIconModule, FormsModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './clientes.html',
   styleUrl: './clientes.css',
 })

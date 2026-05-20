@@ -11,10 +11,11 @@ import { Authentication } from '../../../services/authentication';
 import { MaterialConPrecio } from '../../../interfaces/material';
 import { Categoria } from '../../../interfaces/categoria';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [FormsModule, MatIconModule, DecimalPipe, NgClass, RouterLink, MatSnackBarModule, TranslatePipe],
+  imports: [FormsModule, MatIconModule, DecimalPipe, NgClass, RouterLink, MatSnackBarModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './catalogo-y-precios.html',
   styleUrl: './catalogo-y-precios.css',
 })

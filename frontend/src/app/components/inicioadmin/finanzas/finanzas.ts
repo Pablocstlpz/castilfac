@@ -7,10 +7,11 @@ import { Authentication } from '../../../services/authentication';
 import { PedidosServices } from '../../../services/pedidos';
 import { Pedido } from '../../../interfaces/pedido';
 import { TranslatePipe } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-finanzas',
-  imports: [MatIcon, CommonModule, FormsModule, TranslatePipe],
+  imports: [MatIcon, CommonModule, FormsModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './finanzas.html',
   styleUrl: './finanzas.css',
 })

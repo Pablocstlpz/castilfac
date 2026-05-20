@@ -15,11 +15,12 @@ import { UsuariosServices } from '../../../../services/usuarios';
 import { Authentication } from '../../../../services/authentication';
 import { PdfService } from '../../../../services/pdf';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-presupuesto-detalle',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './presupuesto-detalle.html',
   styleUrl: './presupuesto-detalle.css',
 })

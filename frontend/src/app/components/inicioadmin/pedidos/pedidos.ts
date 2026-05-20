@@ -14,10 +14,11 @@ import { Usuario } from '../../../interfaces/usuario';
 import { ClientesServices } from '../../../services/clientes';
 import { Cliente } from '../../../interfaces/cliente';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-pedidos',
-  imports: [MatIcon, DatePipe, UpperCasePipe, NgClass, RouterLink, FormsModule, TranslatePipe],
+  imports: [MatIcon, DatePipe, UpperCasePipe, NgClass, RouterLink, FormsModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './pedidos.html',
   styleUrl: './pedidos.css',
 })

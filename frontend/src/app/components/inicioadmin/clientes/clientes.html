@@ -1,12 +1,7 @@
 <!-- IMPLEMENTAR TODA LOGICA Y VER LOS DETALLES Y EDITAR Y AGREGAR CLIENTES -->
 
 <div class="flex-1 overflow-y-auto p-5 sm:p-8 bg-slate-50 min-h-screen pb-6 sm:pb-8 font-sans relative">
-  @if (cargando()) {
-    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
-      <div class="w-14 h-14 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4"></div>
-      <p class="text-slate-500 text-sm font-medium">{{ 'common.loading' | translate }}</p>
-    </div>
-  }
+  <app-spinner-carga-datos [cargando]="cargando()" />
   <div class="sm:flex sm:items-center sm:justify-between mb-8">
     <div>
       <h1

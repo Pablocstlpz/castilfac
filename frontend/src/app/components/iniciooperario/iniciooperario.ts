@@ -11,10 +11,11 @@ import { Pedido } from '../../interfaces/pedido';
 import { Signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-iniciooperario',
-  imports: [CommonModule, MatIconModule, TranslatePipe],
+  imports: [CommonModule, MatIconModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './iniciooperario.html',
   styleUrl: './iniciooperario.css',
 })
@@ -28,6 +29,7 @@ export class Iniciooperario {
   private pdfService = inject(PdfService);
   //signal con los pedidos en fabricacion que tiene asignados el operario
   public pedidosArray = signal<Pedido[]>([]);
+  public cargando = signal<boolean>(true);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
@@ -47,8 +49,15 @@ export class Iniciooperario {
 
   //funcion para obtener todos los pedidos de este operario que esten en fabricacion
   obtenerPedidosEnFabricacion() {
-    this.pedidosServices.getPedidosByOperario(this.usuario.id).subscribe((pedidos) => {
-      this.pedidosArray.set(pedidos);
+    this.cargando.set(true);
+    this.pedidosServices.getPedidosByOperario(this.usuario.id).subscribe({
+      next: (pedidos) => {
+        this.pedidosArray.set(pedidos);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      },
     });
   }
 

@@ -9,10 +9,11 @@ import { PedidosServices } from '../../services/pedidos';
 import { Presupuestos as PresupuestosService } from '../../services/presupuestos';
 import { Presupuesto } from '../../interfaces/presupuesto';
 import { TranslatePipe } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-inicioadmin',
-  imports: [MatIconModule, CommonModule, DecimalPipe, RouterLink, TranslatePipe],
+  imports: [MatIconModule, CommonModule, DecimalPipe, RouterLink, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './inicioadmin.html',
   styleUrl: './inicioadmin.css',
 })

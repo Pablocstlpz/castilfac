@@ -8,10 +8,11 @@ import { ClientesServices } from '../../../../services/clientes';
 import { PedidosServices } from '../../../../services/pedidos';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { SpinnerCargaDatos } from '../../../partes-html/spinner-carga-datos/spinner-carga-datos';
 
 @Component({
   selector: 'app-detalle-cliente',
-  imports: [CommonModule, MatIconModule, TranslatePipe],
+  imports: [CommonModule, MatIconModule, TranslatePipe, SpinnerCargaDatos],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
 })
